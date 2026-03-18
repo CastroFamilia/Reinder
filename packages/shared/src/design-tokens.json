@@ -1,0 +1,67 @@
+{
+  "colors": {
+    "bgPrimary": "#0D0D0D",
+    "accentPrimary": "#FF6B00",
+    "textPrimary": "#F5F0E8",
+    "surface": "#1E1A15",
+    "accentReject": "#8B3A3A",
+    "accentSold": "#6B4E00",
+    "textMuted": "#9E9080",
+    "border": "#2E2820",
+    "cssVars": {
+      "--bg-primary": "#0D0D0D",
+      "--accent-primary": "#FF6B00",
+      "--text-primary": "#F5F0E8",
+      "--surface": "#1E1A15",
+      "--accent-reject": "#8B3A3A",
+      "--accent-sold": "#6B4E00",
+      "--text-muted": "#9E9080",
+      "--border": "#2E2820"
+    }
+  },
+  "typography": {
+    "fontDisplay": "Clash Display",
+    "fontBody": "Inter",
+    "fontWeightBold": 700,
+    "fontWeightMedium": 500,
+    "fontWeightRegular": 400,
+    "priceFontSize": 32,
+    "priceFontWeight": 700,
+    "badgeFontSize": 13,
+    "badgeFontWeight": 400
+  },
+  "spacing": {
+    "base": 8,
+    "unit": "px",
+    "scale": [0, 4, 8, 12, 16, 20, 24, 32, 40, 48, 56, 64, 80, 96]
+  },
+  "animation": {
+    "durationFast": "150ms",
+    "durationNormal": "300ms",
+    "durationPayoff": "600ms",
+    "easeSpring": "cubic-bezier(0.34, 1.56, 0.64, 1)",
+    "cssVars": {
+      "--duration-fast": "150ms",
+      "--duration-normal": "300ms",
+      "--duration-payoff": "600ms",
+      "--ease-spring": "cubic-bezier(0.34, 1.56, 0.64, 1)"
+    }
+  },
+  "radii": {
+    "card": "24px",
+    "button": "12px",
+    "pill": "999px",
+    "cssVars": {
+      "--radius-card": "24px",
+      "--radius-btn": "12px",
+      "--radius-pill": "999px"
+    }
+  },
+  "glassmorphism": {
+    "blurLight": "8px",
+    "blurMedium": "16px",
+    "blurHeavy": "24px",
+    "fallbackBackground": "rgba(30, 26, 21, 0.95)",
+    "backgroundGradient": "radial-gradient(circle at 20% 50%, rgba(255, 107, 0, 0.12), #0D0D0D)"
+  }
+}

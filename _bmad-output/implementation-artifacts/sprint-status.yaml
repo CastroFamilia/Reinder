@@ -1,0 +1,104 @@
+# generated: 2026-03-18T12:42:21+01:00
+# last_updated: 2026-03-18T16:20:51+01:00
+# project: Reinder
+# project_key: NOKEY
+# tracking_system: file-system
+# story_location: _bmad-output/implementation-artifacts
+
+# STATUS DEFINITIONS:
+# ==================
+# Epic Status:
+#   - backlog: Epic not yet started
+#   - in-progress: Epic actively being worked on
+#   - done: All stories in epic completed
+#
+# Epic Status Transitions:
+#   - backlog → in-progress: Automatically when first story is created (via create-story)
+#   - in-progress → done: Manually when all stories reach 'done' status
+#
+# Story Status:
+#   - backlog: Story only exists in epic file
+#   - ready-for-dev: Story file created in stories folder
+#   - in-progress: Developer actively working on implementation
+#   - review: Ready for code review (via Dev's code-review workflow)
+#   - done: Story completed
+#
+# Retrospective Status:
+#   - optional: Can be completed but not required
+#   - done: Retrospective has been completed
+#
+# WORKFLOW NOTES:
+# ===============
+# - Epic transitions to 'in-progress' automatically when first story is created
+# - Stories can be worked in parallel if team capacity allows
+# - SM typically creates next story after previous one is 'done' to incorporate learnings
+# - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
+
+generated: 2026-03-18T12:42:21+01:00
+last_updated: 2026-03-18T16:20:51+01:00
+project: Reinder
+project_key: NOKEY
+tracking_system: file-system
+story_location: _bmad-output/implementation-artifacts
+
+development_status:
+  # ─── Epic 1: Identidad y Acceso ────────────────────────────────────────────
+  epic-1: in-progress
+  1-1-inicializacion-monorepo-sistema-diseno: done
+  1-2-configuracion-supabase-schema-inicial: done
+  1-3-registro-comprador-email-tc: done
+  1-4-registro-login-google-oauth: done
+  1-5-login-agente-administrador-agencia: done
+  1-6-proteccion-rutas-redireccion-usuarios-no-autenticados: backlog
+  epic-1-retrospective: optional
+
+  # ─── Epic 2: Swipe Loop ────────────────────────────────────────────────────
+  epic-2: backlog
+  2-1-componentes-base-glasspanel-propertybadge-design-foundation: backlog
+  2-2-feed-propiedades-propertycard-swipeactions: backlog
+  2-3-gesto-swipe-match-matchpayoff-animation: backlog
+  2-4-gesto-descarte: backlog
+  2-5-vista-detalle-propiedad-bottom-sheet: backlog
+  2-6-match-recap-screen: backlog
+  2-7-historial-matches-badge-nuevas-propiedades: backlog
+  2-8-tabbar-comprador-navegacion-rol-based: backlog
+  epic-2-retrospective: optional
+
+  # ─── Epic 3: Vínculo Comprador–Agente Representante ───────────────────────
+  epic-3: backlog
+  3-1-generacion-link-referral-por-agente: backlog
+  3-2-aceptacion-vinculo-comprador-via-referral-link: backlog
+  3-3-reconfirmacion-periodica-desvinculacion-voluntaria: backlog
+  3-4-sobreescritura-listing-agent-ui: backlog
+  epic-3-retrospective: optional
+
+  # ─── Epic 4: Panel del Agente Representante ────────────────────────────────
+  epic-4: backlog
+  4-1-lista-clientes-vinculados-panel-agente: backlog
+  4-2-notificacion-tiempo-real-match-cliente: backlog
+  4-3-historial-matches-rechazos-por-cliente: backlog
+  4-4-deep-link-notificacion-detalle-match: backlog
+  epic-4-retrospective: optional
+
+  # ─── Epic 5: Gestión de Listings e Integración CRM ────────────────────────
+  epic-5: backlog
+  5-1-conexion-crm-agencia-inmovilla: backlog
+  5-2-sincronizacion-listings-webhook-batch-desacoplados: backlog
+  5-3-validacion-exclusividad-deteccion-duplicados: backlog
+  5-4-ciclo-vida-listing-retirada-vendida: backlog
+  epic-5-retrospective: optional
+
+  # ─── Epic 6: Descubrimiento Orgánico y SEO ────────────────────────────────
+  epic-6: backlog
+  6-1-paginas-listing-ssr-indexables-google: backlog
+  6-2-datos-estructurados-schemaorg-paginas-listing: backlog
+  6-3-gated-content-preview-usuarios-no-autenticados: backlog
+  epic-6-retrospective: optional
+
+  # ─── Epic 7: Administración de Plataforma ─────────────────────────────────
+  epic-7: backlog
+  7-1-cicd-pipeline-observabilidad-sentry-analytics: backlog
+  7-2-panel-activacion-agencias: backlog
+  7-3-resolucion-listings-duplicados: backlog
+  7-4-dashboard-metricas-globales-plataforma: backlog
+  epic-7-retrospective: optional
