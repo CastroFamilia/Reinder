@@ -122,6 +122,17 @@ Ver tracking completo: [`sprint-status.yaml`](_bmad-output/implementation-artifa
 
 ---
 
+## 🚀 Workflow de Git
+
+> **Regla para todos los agentes:** Al finalizar cada story completamente (todos los criterios de aceptación cumplidos y el sprint-status actualizado), **SIEMPRE se debe hacer push a GitHub** usando el skill `git-helpers` con un commit descriptivo del tipo `feat: <descripción de la story>`.
+
+**Pasos obligatorios al cerrar una story:**
+1. Actualizar el estado de la story a `done` en `sprint-status.yaml` y `CLAUDE.md`
+2. Hacer commit y push con el skill `git-helpers`
+3. Confirmar al usuario que el push se realizó correctamente
+
+---
+
 ## 🗂️ Protocolo de Ideas Futuras
 
 > **Regla para todos los agentes:** Toda idea, feature o concepto que surja durante el trabajo y quede fuera del scope actual **DEBE añadirse a `future-ideas.md`**, además de donde quede documentado en el artefacto de la sesión.
