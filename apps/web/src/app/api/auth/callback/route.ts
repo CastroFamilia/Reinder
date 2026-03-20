@@ -9,16 +9,24 @@
  * 3. Usamos el cliente Supabase autenticado para leer/escribir user_profiles
  *    (evita la instabilidad del cliente postgres.js en Route Handlers)
  * 4. Si es usuario nuevo → crear user_profile sin terms_accepted_at → /terms
- * 5. Si tiene terms_accepted_at → /swipe
+ * 5. Si tiene terms_accepted_at → redirigir a `next` (si existe y es seguro) o /swipe
+ *
+ * Story 1.6 fix M1: Lee el param `?next=` que signInWithGoogle codificó
+ * en la redirectTo URL. Usa getSafeNextPath() para sanitizarlo antes de usarlo.
  */
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
+import { getSafeNextPath } from "@/features/auth/lib/route-guard.lib";
 
 export async function GET(request: NextRequest) {
   const requestUrl = new URL(request.url);
   const code = requestUrl.searchParams.get("code");
   const origin = requestUrl.origin;
+
+  // Leer y sanitizar el next= que vino en la redirectTo URL (fix M1)
+  const rawNext = requestUrl.searchParams.get("next");
+  const safeNext = getSafeNextPath(rawNext ?? undefined);
 
   if (!code) {
     console.error("[auth/callback] No code received from Google OAuth");
@@ -76,6 +84,7 @@ export async function GET(request: NextRequest) {
       // sobre 0 filas y el usuario quedaría en estado corrupto (sin terms_accepted_at).
       return NextResponse.redirect(`${origin}/login?error=profile_creation_failed`);
     }
+    // Para nuevos usuarios → siempre T&C primero (next= se ignora hasta completar T&C)
     return NextResponse.redirect(`${origin}/terms`);
   }
 
@@ -84,6 +93,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(`${origin}/terms`);
   }
 
-  // Usuario existente con T&C aceptados → feed directo
-  return NextResponse.redirect(`${origin}/swipe`);
+  // Usuario existente con T&C aceptados → redirigir a next (si seguro) o /swipe
+  const destination = safeNext ? `${origin}${safeNext}` : `${origin}/swipe`;
+  return NextResponse.redirect(destination);
 }

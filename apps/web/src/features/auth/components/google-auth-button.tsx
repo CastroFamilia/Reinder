@@ -8,6 +8,9 @@
  *
  * Usa useFormStatus para gestionar el estado de carga mientras
  * la Server Action signInWithGoogle redirige al URL de Google OAuth.
+ *
+ * Story 1.6 fix M1: acepta prop `next` para redirect-back tras OAuth.
+ * El valor se envía como input hidden → lo recoge signInWithGoogle().
  */
 import { useFormStatus } from "react-dom";
 import { signInWithGoogle } from "@/features/auth/actions/oauth";
@@ -103,9 +106,16 @@ function GoogleButtonContent() {
   );
 }
 
-export function GoogleAuthButton() {
+interface GoogleAuthButtonProps {
+  /** URL destino tras OAuth exitoso — reenvía el ?next= del middleware (fix M1). */
+  next?: string;
+}
+
+export function GoogleAuthButton({ next }: GoogleAuthButtonProps = {}) {
   return (
     <form action={signInWithGoogle}>
+      {/* Input hidden para propagar next= al Server Action (fix M1) */}
+      {next && <input type="hidden" name="next" value={next} />}
       <GoogleButtonContent />
     </form>
   );

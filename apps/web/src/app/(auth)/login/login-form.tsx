@@ -6,11 +6,15 @@
  * Formulario de login — Client Component.
  * Incluye email + contraseña y botón "Continuar con Google".
  * Diseño Reinder: fondo #0D0D0D, acento naranja #FF6B00.
+ *
+ * Story 1.6: Acepta prop `initialNext` para redirigir de vuelta
+ * a la URL original tras login exitoso (redirect-back).
  */
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { loginUser } from "@/features/auth/actions/login";
 import { GoogleAuthButton } from "@/features/auth/components/google-auth-button";
+import { getSafeNextPath } from "@/features/auth/lib/route-guard.lib";
 
 const styles = {
   card: {
@@ -114,14 +118,32 @@ const styles = {
   fieldGroup: {
     marginBottom: "16px",
   } as React.CSSProperties,
+  contextBanner: {
+    background: "rgba(255,107,0,0.08)",
+    border: "1px solid rgba(255,107,0,0.25)",
+    borderRadius: "10px",
+    color: "#FF6B00",
+    fontSize: "13px",
+    padding: "10px 16px",
+    marginBottom: "16px",
+    textAlign: "center" as const,
+  } as React.CSSProperties,
 };
 
-export function LoginForm() {
+interface LoginFormProps {
+  /** URL original a la que se redirige tras login exitoso (viene del middleware ?next=). */
+  initialNext?: string;
+}
+
+export function LoginForm({ initialNext }: LoginFormProps = {}) {
   const router = useRouter();
   const [emailValue, setEmailValue] = useState("");
   const [passwordValue, setPasswordValue] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
+
+  // Fix L2: calcular una sola vez (banner + handler de submit comparten el mismo valor)
+  const safeNextFromProp = getSafeNextPath(initialNext);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -142,13 +164,15 @@ export function LoginForm() {
       if (result.error) {
         setServerError(result.error);
       } else {
-        // Login exitoso — refrescar la sesión y navegar al panel del rol.
-        // router.refresh() primero: invalida la caché del Server Component en
-        // el destino para que renderice con la sesión nueva (no la previa).
-        // La ruta viene del servidor (switch exhaustivo), pero validamos que
-        // sea un path interno por defensa en profundidad.
-        const rawPath = result.redirectTo ?? "/swipe";
-        const destination = rawPath.startsWith("/") ? rawPath : "/swipe";
+        // Login exitoso — refrescar la sesión y navegar al destino correcto.
+        // Prioridad:
+        //   1. `initialNext` — URL original donde intentaba ir el usuario
+        //      (solo si es un path seguro validado por getSafeNextPath)
+        //   2. `result.redirectTo` — panel del rol (del servidor)
+        //   3. "/swipe" — fallback definitivo
+        const rawRolePath = result.redirectTo ?? "/swipe";
+        const destination =
+          safeNextFromProp ?? (rawRolePath.startsWith("/") ? rawRolePath : "/swipe");
         router.refresh();
         router.push(destination);
       }
@@ -162,14 +186,22 @@ export function LoginForm() {
       <div style={styles.logo}>Reinder</div>
       <p style={styles.subtitle}>Bienvenido de vuelta</p>
 
+      {/* Banner contextual: solo visible cuando el usuario fue redirigido
+          desde una ruta protegida (?next= presente) — AC 1, Story 1.6 */}
+      {safeNextFromProp && (
+        <div style={styles.contextBanner} role="status">
+          Inicia sesión para continuar
+        </div>
+      )}
+
       {serverError && (
         <div style={styles.globalError} role="alert">
           {serverError}
         </div>
       )}
 
-      {/* Botón Google OAuth — Primary path para login rápido */}
-      <GoogleAuthButton />
+      {/* Botón Google OAuth — propaga next= para redirect-back (M1 fix) */}
+      <GoogleAuthButton next={safeNextFromProp ?? undefined} />
 
       {/* Separador visual */}
       <div style={styles.divider}>
