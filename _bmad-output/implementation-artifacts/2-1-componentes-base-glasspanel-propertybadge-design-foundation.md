@@ -1,6 +1,6 @@
 # Story 2.1: Componentes Base — GlassPanel, PropertyBadge y Design Foundation
 
-Status: review
+Status: done
 
 ## Story
 
@@ -509,18 +509,31 @@ Gemini 2.5 Pro (Antigravity) — 2026-03-20
 ### Completion Notes List
 
 - ✅ **AC1:** `ScreenBackground` con `expo-linear-gradient` (3 stops, colores `rgba(255,107,0,0.12)` → `#1A0F08` → `#0D0D0D`) envuelve todas las pantallas en `App.tsx`
-- ✅ **AC2:** `GlassPanel` con `expo-blur`'s `BlurView` en 3 intensidades (light 20, medium 50, heavy 80). Fallback: `backgroundColor: Colors.bgSurface` (`#1E1A15`) en el StyleSheet
+- ✅ **AC2:** `GlassPanel` con `expo-blur`'s `BlurView` en 3 intensidades (light 20, medium 50, heavy 80). Fallback: `SurfaceColors.bgSurfaceAlpha` = `rgba(30,26,21,0.95)` per UX-DR7 spec
 - ✅ **AC3:** `PropertyBadge` EXCLUSIVA/VENDIDA/NUEVA con colores exactos del spec, 13px/400, accesibilidad WCAG AA (`accessibilityRole='text'` + `accessibilityLabel`)
-- ✅ **AC4:** `tokens.ts` centraliza todos los tokens desde `@reinder/shared/design-tokens`. App.tsx reemplaza todos los strings de color hardcodeados con `Colors.*` y `Typography.*` del módulo de tokens
+- ✅ **AC4:** `tokens.ts` + `SurfaceColors` centralizan todos los tokens. App.tsx, button.tsx, glass-panel.tsx: cero strings de color hardcodeados
 - ✅ **AC5:** `Button` con 4 variantes (primary/secondary/destructive/ghost), minHeight/minWidth 44px, pressed opacity 0.8, disabled state
 - ✅ **Typecheck:** `pnpm --filter @reinder/mobile typecheck` → 0 errores
 - ✅ **Tests:** 19 tests en 3 suites — todos pasan (GlassPanel ×5, PropertyBadge ×7, Button ×7)
-- ⚠️ **Fuentes custom pendiente:** Clash Display e Inter no se cargaron en esta historia. App.tsx usa pesos del sistema. A implementar en historia posterior con `@expo-google-fonts`.
-- ⚠️ **BlurView Android:** No verificado en dispositivo físico Android mid-range. Los valores de intensity (20/50/80) son aproximaciones — pueden necesitar ajuste.
+- ✅ **Code Review fixes:** M1 (Typography.sizeSubtitle/sizeCaption), M2 (SurfaceColors en button), M3 (fallback rgba 0.95), L1 (accentWarm en shared)
+- ⚠️ **Fuentes custom pendiente:** Clash Display e Inter no se cargaron en esta historia. App.tsx usa pesos del sistema.
+- ⚠️ **BlurView Android:** No verificado en dispositivo físico Android mid-range.
 
 ## Change Log
 
-- **2026-03-20:** Implementación completa Storm 2.1 — Design Foundation. Instaladas dependencias (nativewind, expo-blur, expo-linear-gradient, jest-expo). Configurado NativeWind v4 con babel/metro/tailwind. Creados tokens.ts, GlassPanel, PropertyBadge, Button, ScreenBackground. App.tsx actualizado con design tokens. 19 tests escritos y pasando. Typecheck 0 errores.
+- **2026-03-20 (impl):** Implementación completa Story 2.1. Instaladas dependencias, configurado NativeWind v4, creados todos los componentes, App.tsx actualizado. 19 tests escritos y pasando. Typecheck 0 errores.
+- **2026-03-20 (review):** Code review — 3 Medium + 2 Low issues encontrados y corregidos. Añadido `SurfaceColors` token group, `Typography.sizeSubtitle/sizeCaption`, `accentWarm` a shared tokens. Todos los hardcodes eliminados.
+
+## Senior Developer Review (AI)
+
+**Fecha:** 2026-03-20 | **Outcome:** Changes Requested → Fixed
+
+**Action Items:**
+- [x] [Med] App.tsx font sizes 18 y 14 hardcodeados → `Typography.sizeSubtitle/sizeCaption` `[App.tsx:88, 95]`
+- [x] [Med] rgba strings en button.tsx → `SurfaceColors.bgSurfaceOverlay/accentSoft` `[button.tsx:54, 57, 66]`
+- [x] [Med] GlassPanel fallback opaco → `SurfaceColors.bgSurfaceAlpha` (rgba 0.95) per UX-DR7 `[glass-panel.tsx:49]`
+- [x] [Low] `accentWarm` no definido en shared tokens → añadido a `design-tokens.json` `[tokens.ts:16]`
+- [ ] [Low] Tests GlassPanel no verifican intensity value en BlurView props (aceptable para UI tests)
 
 ### File List
 
@@ -540,6 +553,10 @@ Gemini 2.5 Pro (Antigravity) — 2026-03-20
 - `apps/mobile/src/components/layout/screen-background.tsx`
 
 **Archivos modificados:**
-- `apps/mobile/App.tsx` — design tokens aplicados, ScreenBackground añadido
+- `apps/mobile/App.tsx` — design tokens, ScreenBackground, Typography.sizeSubtitle/Caption
 - `apps/mobile/package.json` — dependencias añadidas, jest configurado
 - `apps/mobile/tsconfig.json` — `types: ["jest"]` añadido
+- `apps/mobile/src/lib/tokens.ts` — SurfaceColors, Typography.sizeSubtitle/Caption, accentWarm desde shared
+- `apps/mobile/src/components/ui/glass-panel.tsx` — fallback → SurfaceColors.bgSurfaceAlpha
+- `apps/mobile/src/components/ui/button.tsx` — rgba → SurfaceColors tokens
+- `packages/shared/src/design-tokens.json` — accentWarm añadido

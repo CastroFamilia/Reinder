@@ -12,7 +12,7 @@
  */
 import { BlurView } from 'expo-blur';
 import { StyleSheet, type ViewStyle } from 'react-native';
-import { BlurIntensity, Colors, Radius, type GlassPanelIntensity } from '../../lib/tokens';
+import { BlurIntensity, Colors, Radius, SurfaceColors, type GlassPanelIntensity } from '../../lib/tokens';
 
 interface GlassPanelProps {
   intensity?: GlassPanelIntensity;
@@ -45,8 +45,8 @@ const styles = StyleSheet.create({
   container: {
     borderRadius: Radius.panel,
     overflow: 'hidden',
-    // Fallback background visible when BlurView isn't supported (Android, tests)
-    backgroundColor: Colors.bgSurface,
+    // Fallback: rgba(30,26,21,0.95) per UX-DR7 spec when BlurView isn't supported
+    backgroundColor: SurfaceColors.bgSurfaceAlpha,
     borderWidth: 1,
     borderColor: 'rgba(46, 40, 32, 0.6)',
   },

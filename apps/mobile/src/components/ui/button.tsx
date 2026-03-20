@@ -17,7 +17,7 @@ import {
   type ViewStyle,
   type TextStyle,
 } from 'react-native';
-import { Colors, Radius, Typography } from '../../lib/tokens';
+import { Colors, Radius, Typography, SurfaceColors } from '../../lib/tokens';
 
 export type ButtonVariant = 'primary' | 'secondary' | 'destructive' | 'ghost';
 
@@ -51,10 +51,10 @@ const VARIANTS: Record<ButtonVariant, VariantConfig> = {
   },
   secondary: {
     container: {
-      backgroundColor: 'rgba(30, 26, 21, 0.6)',
+      backgroundColor: SurfaceColors.bgSurfaceOverlay,
       borderRadius: Radius.btn,
       borderWidth: 1,
-      borderColor: 'rgba(255, 107, 0, 0.4)',
+      borderColor: SurfaceColors.accentSoft,
     },
     text: {
       color: Colors.textPrimary,
@@ -63,7 +63,7 @@ const VARIANTS: Record<ButtonVariant, VariantConfig> = {
   },
   destructive: {
     container: {
-      backgroundColor: 'rgba(30, 26, 21, 0.6)',
+      backgroundColor: SurfaceColors.bgSurfaceOverlay,
       borderRadius: Radius.btn,
       borderWidth: 1,
       borderColor: Colors.accentReject,

@@ -13,7 +13,7 @@ export const Colors = {
   bgPrimary: designTokens.colors.bgPrimary,       // '#0D0D0D'
   bgSurface: designTokens.colors.surface,         // '#1E1A15'
   accentPrimary: designTokens.colors.accentPrimary, // '#FF6B00'
-  accentWarm: '#FF8C00',                           // warm hover (not in JSON, added here)
+  accentWarm: designTokens.colors.accentWarm,       // '#FF8C00' (from shared)
   accentReject: designTokens.colors.accentReject,  // '#8B3A3A'
   accentSold: designTokens.colors.accentSold,      // '#6B4E00'
   textPrimary: designTokens.colors.textPrimary,    // '#F5F0E8'
@@ -28,6 +28,8 @@ export const Typography = {
   sizeH2: 20,
   sizeBody: 16,
   sizeSmall: designTokens.typography.badgeFontSize,    // 13
+  sizeSubtitle: 18,  // h-style subtitle text (AuthGateScreen message)
+  sizeCaption: 14,   // small hint/caption text (AuthGateScreen hint)
   weightBold: designTokens.typography.fontWeightBold as 700,        // 700
   weightMedium: designTokens.typography.fontWeightMedium as 500,    // 500
   weightRegular: designTokens.typography.fontWeightRegular as 400,  // 400
@@ -68,6 +70,19 @@ export const BlurIntensity = {
   light: 20,    // ~8px equivalent
   medium: 50,   // ~16px equivalent
   heavy: 80,    // ~24px equivalent
+} as const;
+
+/**
+ * Semi-transparent color variants for glass/overlay surfaces.
+ * These are not in design-tokens.json as they are derived values.
+ */
+export const SurfaceColors = {
+  // GlassPanel fallback: same as bgSurface but with 0.95 alpha (spec UX-DR7)
+  bgSurfaceAlpha: 'rgba(30, 26, 21, 0.95)',
+  // Glass overlay for button secondary/destructive backgrounds
+  bgSurfaceOverlay: 'rgba(30, 26, 21, 0.6)',
+  // Semi-transparent accent for button secondary border
+  accentSoft: 'rgba(255, 107, 0, 0.4)',
 } as const;
 
 export type GlassPanelIntensity = keyof typeof BlurIntensity;

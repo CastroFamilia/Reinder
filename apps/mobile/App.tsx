@@ -85,14 +85,14 @@ const styles = StyleSheet.create({
   },
   message: {
     color: Colors.textPrimary,
-    fontSize: 18,
+    fontSize: Typography.sizeSubtitle, // 18
     fontWeight: "600",
     marginBottom: Spacing.sm + Spacing.xs, // 12px
     textAlign: "center",
   },
   hint: {
     color: Colors.textMuted,
-    fontSize: 14,
+    fontSize: Typography.sizeCaption, // 14
     textAlign: "center",
     lineHeight: 20,
   },
