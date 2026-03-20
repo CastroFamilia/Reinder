@@ -9,47 +9,55 @@
  * - Si `session === null` → muestra AuthGateScreen (no autenticado)
  * - Si `session` activa → muestra el contenido protegido
  *
- * AC: 4 — "el root layout de Expo protege todas las tabs mobile
- *          y redirige al flujo de auth si no hay sesión activa"
+ * Story 2.1 — Design Foundation:
+ * - Usa design tokens de `tokens.ts` (sin colores hardcodeados)
+ * - Envuelve las pantallas con `ScreenBackground` (gradiente radial UX-DR13)
  */
 import { StatusBar } from "expo-status-bar";
 import { StyleSheet, Text, View, ActivityIndicator } from "react-native";
 import { useAuthSession } from "./src/hooks/useAuthSession";
+import { ScreenBackground } from "./src/components/layout/screen-background";
+import { Colors, Typography, Spacing } from "./src/lib/tokens";
 
 /** Pantalla de loading mientras se comprueba la sesión inicial */
 function LoadingScreen() {
   return (
-    <View style={styles.container}>
-      <ActivityIndicator size="large" color="#FF6B00" />
-    </View>
+    <ScreenBackground>
+      <View style={styles.container}>
+        <ActivityIndicator size="large" color={Colors.accentPrimary} />
+      </View>
+    </ScreenBackground>
   );
 }
 
 /**
  * Pantalla de autenticación requerida.
  * Placeholder hasta que se implemente el flujo de login nativo mobile (Epic 2+).
- * El usuario puede iniciar sesión desde la web y la sesión se compartirá.
  */
 function AuthGateScreen() {
   return (
-    <View style={styles.container}>
-      <Text style={styles.logo}>Reinder</Text>
-      <Text style={styles.message}>Inicia sesión para continuar</Text>
-      <Text style={styles.hint}>
-        Accede desde reinder.app en tu navegador para iniciar sesión.
-      </Text>
-    </View>
+    <ScreenBackground>
+      <View style={styles.container}>
+        <Text style={styles.logo}>Reinder</Text>
+        <Text style={styles.message}>Inicia sesión para continuar</Text>
+        <Text style={styles.hint}>
+          Accede desde reinder.app en tu navegador para iniciar sesión.
+        </Text>
+      </View>
+    </ScreenBackground>
   );
 }
 
 /** Contenido principal — solo visible cuando el usuario está autenticado */
 function ProtectedContent() {
   return (
-    <View style={styles.container}>
-      <Text style={styles.logo}>Reinder</Text>
-      <Text style={styles.message}>¡Bienvenido!</Text>
-      <StatusBar style="auto" />
-    </View>
+    <ScreenBackground>
+      <View style={styles.container}>
+        <Text style={styles.logo}>Reinder</Text>
+        <Text style={styles.message}>¡Bienvenido!</Text>
+        <StatusBar style="light" />
+      </View>
+    </ScreenBackground>
   );
 }
 
@@ -64,27 +72,26 @@ export default function App() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#0D0D0D",
     alignItems: "center",
     justifyContent: "center",
-    padding: 32,
+    padding: Spacing.xl,
   },
   logo: {
-    color: "#FF6B00",
-    fontSize: 32,
+    color: Colors.accentPrimary,
+    fontSize: Typography.sizeDisplay,
     fontWeight: "700",
-    marginBottom: 16,
+    marginBottom: Spacing.md,
     letterSpacing: -0.5,
   },
   message: {
-    color: "#F5F0E8",
+    color: Colors.textPrimary,
     fontSize: 18,
     fontWeight: "600",
-    marginBottom: 12,
+    marginBottom: Spacing.sm + Spacing.xs, // 12px
     textAlign: "center",
   },
   hint: {
-    color: "#9E9080",
+    color: Colors.textMuted,
     fontSize: 14,
     textAlign: "center",
     lineHeight: 20,
