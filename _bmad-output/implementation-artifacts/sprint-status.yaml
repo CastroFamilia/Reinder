@@ -1,5 +1,5 @@
 # generated: 2026-03-18T12:42:21+01:00
-# last_updated: 2026-03-18T16:20:51+01:00
+# last_updated: 2026-03-20T11:15:45+01:00
 # project: Reinder
 # project_key: NOKEY
 # tracking_system: file-system
@@ -35,7 +35,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: 2026-03-18T12:42:21+01:00
-last_updated: 2026-03-18T16:20:51+01:00
+last_updated: 2026-03-20T11:15:45+01:00
 project: Reinder
 project_key: NOKEY
 tracking_system: file-system
@@ -43,13 +43,13 @@ story_location: _bmad-output/implementation-artifacts
 
 development_status:
   # ─── Epic 1: Identidad y Acceso ────────────────────────────────────────────
-  epic-1: in-progress
+  epic-1: done
   1-1-inicializacion-monorepo-sistema-diseno: done
   1-2-configuracion-supabase-schema-inicial: done
   1-3-registro-comprador-email-tc: done
   1-4-registro-login-google-oauth: done
   1-5-login-agente-administrador-agencia: done
-  1-6-proteccion-rutas-redireccion-usuarios-no-autenticados: backlog
+  1-6-proteccion-rutas-redireccion-usuarios-no-autenticados: done
   epic-1-retrospective: optional
 
   # ─── Epic 2: Swipe Loop ────────────────────────────────────────────────────

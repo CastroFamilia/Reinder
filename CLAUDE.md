@@ -86,9 +86,9 @@ Reinder/
 | 1 — Análisis (Brief, Research) | ✅ Completo |
 | 2 — Planning (PRD + UX Design) | ✅ Completo |
 | 3 — Solutioning (Arquitectura, Epics) | ✅ Completo |
-| 4 — Implementation | 🚧 En curso — Epic 1 casi completo |
+| 4 — Implementation | 🚧 En curso — **Epic 1 ✅ completo**, arrancando Epic 2 |
 
-### 🏃 Sprint Actual — Epic 1: Identidad y Acceso
+### 🏃 Sprint Actual — Epic 2: Swipe Loop (próximo)
 
 | Story | Título | Estado |
 |---|---|---|
@@ -97,9 +97,10 @@ Reinder/
 | 1.3 | Registro Comprador Email + T&C | ✅ done |
 | 1.4 | Registro/Login Google OAuth | ✅ done |
 | 1.5 | Login Agente y Admin de Agencia | ✅ done |
-| 1.6 | Protección de Rutas + Redirección | 📋 backlog |
+| 1.6 | Protección de Rutas + Redirección | ✅ done |
+| **Epic 1** | **Identidad y Acceso** | ✅ **done** |
 
-**Próximo paso:** Crear e implementar Story 1.6 → luego arranca Epic 2 (Swipe Loop).
+**Próximo paso:** Crear stories del Epic 2 (Swipe Loop) — comenzar por Story 2.1.
 
 Ver tracking completo: [`sprint-status.yaml`](_bmad-output/implementation-artifacts/sprint-status.yaml)
 

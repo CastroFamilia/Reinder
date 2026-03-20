@@ -6,6 +6,34 @@
 
 ## 🟠 Phase 2 — Growth Features
 
+### Landing Page de Entrada — Swipe para Entrar
+
+**Concepto:** Al entrar a `reinder.com` (no autenticado), en lugar de una pantalla de login estándar, el usuario ve una pantalla limpia de pantalla completa con un mensaje de impacto y una instrucción gestual que enseña la mecánica del producto antes de usarlo.
+
+**Mensaje de portada (opciones a validar):**
+- _"Los compradores son infieles. ¿o no?"_ — provocador y directo
+- _"Swipe. Match. Move."_ — el tagline como único mensaje, elegante y suficiente
+
+**Mecánica instructiva:**
+> **Swipe right to log in. Swipe left to register.**
+
+El propio gesto de entrada enseña el vocabulario del producto. Los dos gestos de login/registro introducen la bifurcación del usuario (¿nuevo o existente?) de forma memorable y coherente con la experiencia core.
+
+**Valor:** El primer contacto con Reinder ya **es** Reinder. No hay pantalla de login genérica — hay una promesa de marca y una instrucción de uso embebida.
+
+**Consideraciones de implementación:**
+- Solo para web (reinder.com desde navegador) — en mobile el deep link o app store bypasean este flujo
+- Requiere gestión del caso `no JS` / crawler SEO — el gesto puede tener botones fallback visibles (accesibilidad)
+- La pantalla debe ser visualmente premium: gradiente radial de fondo, tipografía Clash Display, sin UI visible salvo el mensaje y los indicadores de swipe
+
+**Dónde surgió:** Sesión de trabajo 2026-03-20
+
+**Estado:** Fase 2 / post-MVP. El MVP tiene un flujo de auth convencional (formulario) pero esta landing puede implementarse como capa de entrada sin romper el flujo interno.
+
+---
+
+
+
 ### Búsqueda Conversacional en Lenguaje Natural
 
 **Concepto:** En lugar de filtros tradicionales, el comprador escribe qué está buscando ("piso en Madrid de 3 habitaciones con terraza, menos de 400k") y una IA interpreta la intención y configura su feed de swipe automáticamente.
