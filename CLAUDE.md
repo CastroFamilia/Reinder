@@ -134,6 +134,16 @@ Ver tracking completo: [`sprint-status.yaml`](_bmad-output/implementation-artifa
 
 ---
 
+## 🔧 Dev Temporals — Eliminar antes de producción
+
+> Elementos añadidos solo para facilitar el desarrollo/testing. **Deben eliminarse antes del primer release.**
+
+| Qué | Dónde | Por qué añadido |
+|-----|-------|-----------------|
+| Botón **"🔄 Reiniciar (dev)"** en empty state | `apps/mobile/src/features/swipe/screens/swipe-screen.tsx` + `use-swipe-store.ts` (`resetFeed`) | Permite volver a ver las propiedades en bucle durante testing de Epic 2 |
+
+---
+
 ## 🗂️ Protocolo de Ideas Futuras
 
 > **Regla para todos los agentes:** Toda idea, feature o concepto que surja durante el trabajo y quede fuera del scope actual **DEBE añadirse a `future-ideas.md`**, además de donde quede documentado en el artefacto de la sesión.

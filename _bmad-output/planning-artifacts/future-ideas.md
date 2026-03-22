@@ -6,6 +6,31 @@
 
 ## 🟠 Phase 2 — Growth Features
 
+### Búsquedas Múltiples por Comprador ("Nueva Búsqueda")
+
+**Concepto:** Cada comprador puede tener varias búsquedas activas, cada una con sus propios filtros y su propio feed de swipe. Al registro se crea la primera búsqueda con un wizard de preferencias. Desde el tab Swipe puede cambiar entre búsquedas o crear una nueva.
+
+**Ejemplo de uso:**
+- Búsqueda 1: Madrid Centro · hasta 400k · piso
+- Búsqueda 2: Chamberí o Malasaña · hasta 600k · cualquier tipo
+
+**Filtros propuestos:** zona/barrio, precio máximo, tipo de propiedad, habitaciones mínimas, características (terraza, garaje…)
+
+**Implicaciones de schema:**
+```sql
+buyer_searches (id, buyer_id FK, name, filters jsonb, is_active, created_at)
+```
+El feed API recibe `search_id` y filtra listings por JSONB. Los `swipe_events` necesitan `search_id` FK para atribuir el match a la búsqueda correcta.
+
+**Encaje en Epic 2 — Story 2.9 propuesta:**
+> Wizard de preferencias al completar el registro + selector de búsqueda en el tab Swipe + acción "Nueva Búsqueda".
+
+**Donde surgió:** Sesión 2026-03-22
+
+**Estado:** Fase 2. Priorizar después de Epic 5 (CRM), cuando el volumen de listings justifique el filtrado.
+
+---
+
 ### Landing Page de Entrada — Swipe para Entrar
 
 **Concepto:** Al entrar a `reinder.com` (no autenticado), en lugar de una pantalla de login estándar, el usuario ve una pantalla limpia de pantalla completa con un mensaje de impacto y una instrucción gestual que enseña la mecánica del producto antes de usarlo.
@@ -140,4 +165,4 @@ El propio gesto de entrada enseña el vocabulario del producto. Los dos gestos d
 
 ---
 
-*Última actualización: 2026-03-16 — Consolidación inicial desde PRD, UX Design Spec y sesiones de trabajo anteriores.*
+*Última actualización: 2026-03-22 — Añadida búsquedas múltiples por comprador (Story 2.9 propuesta).*
