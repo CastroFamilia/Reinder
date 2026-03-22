@@ -23,3 +23,22 @@ export const SOLD_LISTING_VISIBILITY_HOURS = 72 as const;
 
 /** Base API path for all Route Handlers in apps/web. */
 export const API_BASE_PATH = "/api/v1" as const;
+
+/**
+ * Minimum horizontal travel (px) to register a swipe gesture as match or reject.
+ * Story 2.3 — use-swipe-gesture.ts
+ */
+export const SWIPE_THRESHOLD = 50 as const;
+
+/**
+ * Duration (ms) of the MatchPayoff animation. Matches UX token --duration-payoff: 600ms.
+ * Story 2.3 — match-payoff.tsx
+ */
+export const PAYOFF_DURATION_MS = 600 as const;
+
+/**
+ * Time (ms) before MatchPayoff overlay auto-dismisses after appearing.
+ * Story 2.3 — match-payoff.tsx
+ */
+export const PAYOFF_AUTOHIDE_MS = 1500 as const;
+

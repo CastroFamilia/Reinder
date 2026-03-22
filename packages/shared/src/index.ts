@@ -8,6 +8,8 @@
 
 // Types
 export type { ApiResponse, ApiError } from "./types/api";
+export type { Listing, ListingStatus, ListingBadge, SwipeAction } from "./types/listing";
+export type { SwipeEvent, CreateSwipeEventPayload } from "./types/swipe-event";
 
 // Constants
 export {
@@ -18,4 +20,8 @@ export {
   MATCH_RECAP_MIN_COUNT,
   SOLD_LISTING_VISIBILITY_HOURS,
   API_BASE_PATH,
+  SWIPE_THRESHOLD,
+  PAYOFF_DURATION_MS,
+  PAYOFF_AUTOHIDE_MS,
 } from "./constants/index";
+

@@ -3,11 +3,22 @@
   "compilerOptions": {
     "strict": true,
     "resolveJsonModule": true,
-    "types": ["jest"],
+    "types": [
+      "jest"
+    ],
     "paths": {
-      "@reinder/shared": ["../../packages/shared/src/index.ts"],
-      "@reinder/shared/*": ["../../packages/shared/src/*"]
+      "@reinder/shared": [
+        "../../packages/shared/src/index.ts"
+      ],
+      "@reinder/shared/*": [
+        "../../packages/shared/src/*"
+      ]
     }
   },
-  "include": ["**/*.ts", "**/*.tsx", "../../packages/shared/src/**/*.ts"]
+  "include": [
+    "**/*.ts",
+    "**/*.tsx",
+    "../../packages/shared/src/**/*.ts",
+    "nativewind-env.d.ts"
+  ]
 }

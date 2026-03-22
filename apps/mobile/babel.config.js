@@ -11,11 +11,13 @@ module.exports = function (api) {
         ? 'babel-preset-expo'
         // In dev/production: NativeWind JSX transform
         : ['babel-preset-expo', { jsxImportSource: 'nativewind' }],
+      // nativewind/babel returns { plugins: [...] } — it's a Babel preset, not a plugin.
+      // Must be in presets[] (not plugins[]) to pass Babel's strict validation.
+      ...(!isTest ? ['nativewind/babel'] : []),
     ],
     plugins: [
-      // Only add nativewind/babel in non-test environments
-      // (it's `react-native-css-interop/babel` under the hood and incompatible with jest)
-      ...(!isTest ? ['nativewind/babel'] : []),
+      // Reanimated plugin MUST be last — transforms worklets for UI thread execution (NFR2: 60fps)
+      'react-native-reanimated/plugin',
     ],
   };
 };
