@@ -53,6 +53,11 @@ jest.mock('../lib/api/listings', () => ({
   ],
 }));
 
+// Mock del cliente API de swipe-events para tests de recordMatchEvent / recordRejectEvent
+jest.mock('../lib/api/swipe-events', () => ({
+  postSwipeEvent: jest.fn(),
+}));
+
 const mockListings: Listing[] = [
   {
     id: 'listing-a',
@@ -122,7 +127,7 @@ describe('useSwipeStore', () => {
       expect(state.prefetchQueue[0]?.id).toBe('listing-c');
     });
 
-    it('set currentCard a null cuando el prefetchQueue está vacío', () => {
+    it('cae al fallback de mock cuando el prefetchQueue está vacío (dev behavior)', () => {
       useSwipeStore.setState({
         currentCard: mockListings[0]!,
         prefetchQueue: [],
@@ -132,7 +137,12 @@ describe('useSwipeStore', () => {
         useSwipeStore.getState().advanceCard('mock-token');
       });
 
-      expect(useSwipeStore.getState().currentCard).toBeNull();
+      // En desarrollo, advanceCard usa MOCK_LISTINGS como fallback cuando el queue está vacío
+      // (evita que el feed quede en blanco durante el desarrollo sin backend).
+      // El currentCard se rellena con el primer mock en lugar de quedar null.
+      const state = useSwipeStore.getState();
+      expect(state.currentCard).not.toBeNull();
+      expect(state.currentCard?.id).toBe('test-1');
     });
 
     it('mantiene el orden del prefetchQueue al avanzar', () => {
@@ -159,6 +169,66 @@ describe('useSwipeStore', () => {
       expect(state.isLoading).toBe(false);
       expect(state.isFetching).toBe(false);
       expect(state.error).toBeNull();
+    });
+  });
+
+  describe('recordRejectEvent', () => {
+    beforeEach(() => {
+      // Limpiar pendingEvents entre tests
+      useSwipeStore.setState({ pendingEvents: [] });
+    });
+
+    it('no modifica el estado si el servidor responde correctamente', async () => {
+      // Mock: postSwipeEvent retorna éxito
+      const { postSwipeEvent } = jest.requireMock('../lib/api/swipe-events') as {
+        postSwipeEvent: jest.Mock;
+      };
+      postSwipeEvent.mockResolvedValueOnce({ data: { id: 'evt-1', action: 'reject', listingId: 'listing-1', buyerId: 'buyer-1', createdAt: '2026-03-22T21:00:00Z' }, error: null });
+
+      await act(async () => {
+        await useSwipeStore.getState().recordRejectEvent('listing-1', 'mock-token');
+      });
+
+      const { pendingEvents } = useSwipeStore.getState();
+      expect(pendingEvents).toHaveLength(0);
+    });
+
+    it('encola el evento en pendingEvents si falla la red', async () => {
+      const { postSwipeEvent } = jest.requireMock('../lib/api/swipe-events') as {
+        postSwipeEvent: jest.Mock;
+      };
+      postSwipeEvent.mockResolvedValueOnce({
+        data: null,
+        error: { code: 'NETWORK_ERROR', message: 'Sin conexión' },
+      });
+
+      await act(async () => {
+        await useSwipeStore.getState().recordRejectEvent('listing-1', 'mock-token');
+      });
+
+      const { pendingEvents } = useSwipeStore.getState();
+      expect(pendingEvents).toHaveLength(1);
+      expect(pendingEvents[0]!.action).toBe('reject');
+      expect(pendingEvents[0]!.listingId).toBe('listing-1');
+    });
+
+    it('encola múltiples eventos de reject offline', async () => {
+      const { postSwipeEvent } = jest.requireMock('../lib/api/swipe-events') as {
+        postSwipeEvent: jest.Mock;
+      };
+      postSwipeEvent
+        .mockResolvedValueOnce({ data: null, error: { code: 'NETWORK_ERROR', message: 'Sin conexión' } })
+        .mockResolvedValueOnce({ data: null, error: { code: 'NETWORK_ERROR', message: 'Sin conexión' } });
+
+      await act(async () => {
+        await useSwipeStore.getState().recordRejectEvent('listing-1', 'mock-token');
+        await useSwipeStore.getState().recordRejectEvent('listing-2', 'mock-token');
+      });
+
+      const { pendingEvents } = useSwipeStore.getState();
+      expect(pendingEvents).toHaveLength(2);
+      expect(pendingEvents[0]!.action).toBe('reject');
+      expect(pendingEvents[1]!.action).toBe('reject');
     });
   });
 });
