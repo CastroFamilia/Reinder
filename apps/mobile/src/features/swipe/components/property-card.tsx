@@ -10,11 +10,12 @@
  * Source: UX-DR2, epics.md#Story-2.2 AC1-AC3
  */
 import React from 'react';
-import { Image, StyleSheet, Text, View, type ViewStyle } from 'react-native';
+import { ImageBackground, StyleSheet, Text, View, type ViewStyle } from 'react-native';
 import { GlassPanel } from '../../../components/ui/glass-panel';
 import { PropertyBadge } from '../../../components/ui/property-badge';
 import { Colors, Radius, Spacing, Typography } from '../../../lib/tokens';
 import type { Listing } from '@reinder/shared';
+import { MOCK_IMAGES } from '../../../lib/mock-images';
 
 interface PropertyCardProps {
   listing: Listing;
@@ -63,22 +64,16 @@ export function PropertyCard({ listing, style, testID }: PropertyCardProps) {
   const accessibleLabel = `${listing.title} en ${listing.location}, ${formatPrice(listing.price)}`;
 
   return (
-    <View
+    <ImageBackground
+      source={MOCK_IMAGES[listing.id] ?? { uri: listing.imageUrl }}
       style={[styles.container, style]}
+      imageStyle={styles.heroImage}
+      resizeMode="cover"
       testID={testID}
       accessible
       accessibilityRole="none"
       accessibilityLabel={accessibleLabel}
     >
-      {/* Hero image — ocupa el 100% del fondo */}
-      <Image
-        source={{ uri: listing.imageUrl }}
-        style={styles.heroImage}
-        resizeMode="cover"
-        accessibilityLabel={listing.imageAlt ?? `${listing.title} en ${listing.location}`}
-        testID={testID ? `${testID}-image` : undefined}
-      />
-
       {/* Overlay semitransparente para listings vendidos */}
       {isSold && <View style={styles.soldOverlay} />}
 
@@ -121,7 +116,7 @@ export function PropertyCard({ listing, style, testID }: PropertyCardProps) {
           {formatMeta(listing)}
         </Text>
       </GlassPanel>
-    </View>
+    </ImageBackground>
   );
 }
 
@@ -134,7 +129,8 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.bgSurface, // Fallback si imagen no carga
   },
   heroImage: {
-    ...StyleSheet.absoluteFillObject,
+    width: '100%',
+    height: '100%',
   },
   soldOverlay: {
     ...StyleSheet.absoluteFillObject,

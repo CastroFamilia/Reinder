@@ -40,5 +40,5 @@ export const PAYOFF_DURATION_MS = 600 as const;
  * Time (ms) before MatchPayoff overlay auto-dismisses after appearing.
  * Story 2.3 — match-payoff.tsx
  */
-export const PAYOFF_AUTOHIDE_MS = 1500 as const;
+export const PAYOFF_AUTOHIDE_MS = 450 as const;
 

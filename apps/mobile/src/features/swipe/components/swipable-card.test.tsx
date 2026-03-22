@@ -56,13 +56,14 @@ describe('SwipableCard', () => {
   });
 
   it('renderiza la ubicación del listing', () => {
-    const { getByText } = render(
+    const { getAllByText } = render(
       <SwipableCard
         listing={mockListing}
         onMatch={mockOnMatch}
         onReject={mockOnReject}
       />,
     );
-    expect(getByText(/Chamberí/)).toBeTruthy();
+    // Puede haber múltiples instancias del texto (PropertyCard renderiza varios elementos con la ubicación)
+    expect(getAllByText(/Chamberí/).length).toBeGreaterThan(0);
   });
 });

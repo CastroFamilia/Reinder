@@ -45,12 +45,14 @@
   "jest": {
     "preset": "jest-expo",
     "transformIgnorePatterns": [
-      "node_modules/(?!.pnpm|react-native|@react-native|expo|@expo|nativewind|tailwindcss|@testing-library)"
+      "node_modules/(?!.pnpm|react-native|@react-native|expo|@expo|nativewind|tailwindcss|@testing-library|react-native-gesture-handler)"
     ],
     "moduleNameMapper": {
+      "^react-native-reanimated$": "<rootDir>/__mocks__/react-native-reanimated.js",
       "^@reinder/shared/(.*)$": "<rootDir>/../../packages/shared/src/$1",
       "^@reinder/shared$": "<rootDir>/../../packages/shared/src/index.ts"
     }
   },
   "private": true
 }
+

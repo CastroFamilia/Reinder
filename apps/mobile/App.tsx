@@ -60,5 +60,10 @@ const styles = StyleSheet.create({
   gestureRoot: {
     flex: 1,
   },
-
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
 });
+
