@@ -134,7 +134,55 @@ Ver tracking completo: [`sprint-status.yaml`](_bmad-output/implementation-artifa
 
 ---
 
+## 🔒 Dependencias Locales — Cambiar antes de producción
+
+> Todos estos puntos hacen que Reinder funcione **solo en la máquina de SantiCas**. Deben configurarse correctamente antes de cualquier deploy o sesión de testing con terceros.
+
+### Variables de entorno (no versionadas en Git)
+
+| Variable | App | Valor actual | Qué hacer para deploy |
+|---|---|---|---|
+| `NEXT_PUBLIC_SUPABASE_URL` | `apps/web` | URL proyecto Supabase personal | Crear proyecto Supabase de producción separado |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | `apps/web` | Clave anon del proyecto personal | Idem — obtener del nuevo proyecto |
+| `SUPABASE_SERVICE_ROLE_KEY` | `apps/web` | Service role key personal | Idem — **NUNCA exponer en cliente** |
+| `NEXT_PUBLIC_APP_URL` | `apps/web` | `http://localhost:3000` | Cambiar a `https://reinder.app` (o dominio Vercel) |
+| `EXPO_PUBLIC_SUPABASE_URL` | `apps/mobile` | URL proyecto Supabase personal | Idem que web |
+| `EXPO_PUBLIC_SUPABASE_ANON_KEY` | `apps/mobile` | Clave anon personal | Idem que web |
+| `EXPO_PUBLIC_API_URL` | `apps/mobile` | `http://localhost:3000` (default) | Cambiar a la URL de producción de `apps/web` en Vercel |
+
+**Archivos de referencia:** `apps/web/.env.local.example` documenta todas las variables necesarias.
+
+### URLs hardcodeadas como fallback en código
+
+| Archivo | Línea | Valor | Afecta |
+|---|---|---|---|
+| `apps/mobile/src/lib/api/listings.ts` | L18 | `http://localhost:3000` | Mobile no puede llamar a la API web en producción si `EXPO_PUBLIC_API_URL` no está definida |
+| `apps/mobile/src/lib/api/swipe-events.ts` | L13 | `http://localhost:3000` | Idem — registros de swipe/match fallarían silenciosamente |
+| `apps/web/src/features/auth/actions/oauth.ts` | L21 | `http://localhost:3000` | El redirect de OAuth volvería a localhost en lugar del dominio real |
+
+> ⚠️ El fallback a `localhost:3000` hace que **en producción sin la env var**, los swipes/matches no se registren y el OAuth no redirija correctamente.
+
+### Dependencias de cuenta personal (no transferibles directamente)
+
+| Servicio | Qué está vinculado | Para transferir |
+|---|---|---|
+| **Supabase** | Proyecto en cuenta personal de SantiCas | Crear organización Supabase y transferir proyecto, o crear proyecto nuevo de producción |
+| **Vercel** | Deploy ligado a la cuenta de GitHub de SantiCas | Conectar el repo a la cuenta Vercel del equipo/empresa |
+| **Expo / EAS** | Builds y credenciales de firma iOS/Android en cuenta Expo de SantiCas | Crear cuenta de organización en Expo y transferir el proyecto |
+| **GitHub** | Repo en cuenta personal `SantiCas/Reinder` | Transferir a una organización GitHub si hay equipo |
+
+### Checklist para compartir con un tester (mínimo viable)
+
+- [ ] Deploy `apps/web` en Vercel con las env vars correctas → genera URL pública
+- [ ] Actualizar `EXPO_PUBLIC_API_URL` en `apps/mobile/.env.local` con esa URL de Vercel
+- [ ] Actualizar `NEXT_PUBLIC_APP_URL` con el dominio de Vercel (para OAuth redirect)
+- [ ] Configurar Supabase Auth → añadir el dominio de Vercel en "Redirect URLs"
+- [ ] Añadir datos de prueba (seed) en Supabase para que el tester tenga propiedades en el feed
+
+---
+
 ## 🔧 Dev Temporals — Eliminar antes de producción
+
 
 > Elementos añadidos solo para facilitar el desarrollo/testing. **Deben eliminarse antes del primer release.**
 

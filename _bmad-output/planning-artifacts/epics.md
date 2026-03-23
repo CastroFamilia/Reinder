@@ -480,6 +480,26 @@ para que pueda acceder a Swipe, Matches y Perfil con un solo tap.
 
 ---
 
+### Story 2.9: Filtros de Búsqueda del Comprador — Onboarding y Edición
+
+Como comprador,
+quiero configurar mis preferencias de búsqueda al entrar a la app por primera vez (y poder editarlas después),
+para que el feed de swipe solo me muestre propiedades relevantes a lo que realmente busco.
+
+**Acceptance Criteria:**
+
+**Given** un comprador que completa el registro o login por primera vez
+**When** accede al swipe feed
+**Then** aparece un modal de onboarding "¿Qué estás buscando?" con campos: zona(s), precio máximo, habitaciones mínimas y m² mínimos (zona obligatoria, resto opcionales)
+**And** al guardar, las preferencias se persisten en Supabase `user_profiles.search_preferences` y el comprador accede al feed filtrado inmediatamente
+**And** el feed `GET /api/v1/listings` aplica los filtros activos como query params — el comprador nunca ve propiedades fuera de sus criterios
+**And** en la tab de Swipe hay un botón ⚙️ para editar los filtros en cualquier momento sin perder el historial de swipes
+**And** si el comprador pulsa "Saltar", el feed muestra todas las propiedades activas (comportamiento actual)
+**And** los filtros persisten entre sesiones — al reabrir la app el feed aplica los filtros sin re-mostrar el onboarding
+**And** al modificar un filtro, el feed se reinicia (cursor a null) con los nuevos criterios
+
+---
+
 ## Epic 3: Vínculo Comprador–Agente Representante
 
 El agente puede generar links de referral únicos. El comprador puede aceptar/rechazar el vínculo, reconfirmarlo periódicamente y desvincularse en cualquier momento. Una vez vinculado, el agente representante reemplaza al listing agent en la UI.
