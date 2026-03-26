@@ -2,13 +2,19 @@
  * apps/mobile/src/stores/use-swipe-store.test.ts
  *
  * Tests unitarios para useSwipeStore.
- * Verifica: advanceCard popula currentCard correctamente desde el prefetchQueue.
+ * Verifica: advanceCard, recordRejectEvent, y lógica de Match Recap (Story 2.6).
  *
  * Source: epics.md#Story-2.2 AC7, architecture.md#Structure Patterns (tests co-located)
  */
 import { renderHook, act } from '@testing-library/react-native';
 import { useSwipeStore } from './use-swipe-store';
 import type { Listing } from '@reinder/shared';
+
+// Mock persist middleware para evitar AsyncStorage en tests
+jest.mock('zustand/middleware', () => ({
+  persist: (fn: unknown) => fn,
+  createJSONStorage: () => ({}),
+}));
 
 // Mock del módulo API para no hacer fetch reales en tests
 jest.mock('../lib/api/listings', () => ({
@@ -53,9 +59,22 @@ jest.mock('../lib/api/listings', () => ({
   ],
 }));
 
-// Mock del cliente API de swipe-events para tests de recordMatchEvent / recordRejectEvent
+// Mock del cliente API de swipe-events
 jest.mock('../lib/api/swipe-events', () => ({
   postSwipeEvent: jest.fn(),
+}));
+
+// Mock del cliente API de matches (Story 2.6)
+jest.mock('../lib/api/matches', () => ({
+  confirmMatch: jest.fn(),
+  discardMatch: jest.fn(),
+}));
+
+// Mock AsyncStorage
+jest.mock('@react-native-async-storage/async-storage', () => ({
+  getItem: jest.fn(() => Promise.resolve(null)),
+  setItem: jest.fn(() => Promise.resolve()),
+  removeItem: jest.fn(() => Promise.resolve()),
 }));
 
 const mockListings: Listing[] = [
@@ -107,6 +126,11 @@ describe('useSwipeStore', () => {
       isFetching: false,
       error: null,
       cursor: undefined,
+      pendingEvents: [],
+      consecutiveMatchCount: 0,
+      pendingRecapIds: [],
+      recapMatchIds: [],
+      isRecapVisible: false,
     });
   });
 
@@ -138,8 +162,6 @@ describe('useSwipeStore', () => {
       });
 
       // En desarrollo, advanceCard usa MOCK_LISTINGS como fallback cuando el queue está vacío
-      // (evita que el feed quede en blanco durante el desarrollo sin backend).
-      // El currentCard se rellena con el primer mock en lugar de quedar null.
       const state = useSwipeStore.getState();
       expect(state.currentCard).not.toBeNull();
       expect(state.currentCard?.id).toBe('test-1');
@@ -170,16 +192,22 @@ describe('useSwipeStore', () => {
       expect(state.isFetching).toBe(false);
       expect(state.error).toBeNull();
     });
+
+    it('inicia el estado de recap en cero', () => {
+      const state = useSwipeStore.getState();
+      expect(state.consecutiveMatchCount).toBe(0);
+      expect(state.pendingRecapIds).toHaveLength(0);
+      expect(state.recapMatchIds).toHaveLength(0);
+      expect(state.isRecapVisible).toBe(false);
+    });
   });
 
   describe('recordRejectEvent', () => {
     beforeEach(() => {
-      // Limpiar pendingEvents entre tests
       useSwipeStore.setState({ pendingEvents: [] });
     });
 
     it('no modifica el estado si el servidor responde correctamente', async () => {
-      // Mock: postSwipeEvent retorna éxito
       const { postSwipeEvent } = jest.requireMock('../lib/api/swipe-events') as {
         postSwipeEvent: jest.Mock;
       };
@@ -229,6 +257,180 @@ describe('useSwipeStore', () => {
       expect(pendingEvents).toHaveLength(2);
       expect(pendingEvents[0]!.action).toBe('reject');
       expect(pendingEvents[1]!.action).toBe('reject');
+    });
+  });
+
+  // ─── Match Recap Tests (Story 2.6) ────────────────────────────────────────
+
+  describe('checkAndTriggerRecap', () => {
+    it('incrementa el contador sin disparar recap antes del umbral (2 matches)', () => {
+      act(() => {
+        useSwipeStore.getState().checkAndTriggerRecap('listing-a');
+        useSwipeStore.getState().checkAndTriggerRecap('listing-b');
+      });
+
+      const state = useSwipeStore.getState();
+      expect(state.consecutiveMatchCount).toBe(2);
+      expect(state.isRecapVisible).toBe(false);
+      expect(state.pendingRecapIds).toEqual(['listing-a', 'listing-b']);
+    });
+
+    it('dispara el recap en el 3er match consecutivo (MATCH_RECAP_MIN_COUNT=3)', () => {
+      act(() => {
+        useSwipeStore.getState().checkAndTriggerRecap('listing-a');
+        useSwipeStore.getState().checkAndTriggerRecap('listing-b');
+        useSwipeStore.getState().checkAndTriggerRecap('listing-c');
+      });
+
+      const state = useSwipeStore.getState();
+      expect(state.isRecapVisible).toBe(true);
+      expect(state.recapMatchIds).toEqual(['listing-a', 'listing-b', 'listing-c']);
+      expect(state.consecutiveMatchCount).toBe(0); // Reiniciado tras el trigger
+    });
+
+    it('resetea el contador a 0 tras disparar el recap', () => {
+      act(() => {
+        useSwipeStore.getState().checkAndTriggerRecap('listing-a');
+        useSwipeStore.getState().checkAndTriggerRecap('listing-b');
+        useSwipeStore.getState().checkAndTriggerRecap('listing-c');
+      });
+
+      expect(useSwipeStore.getState().consecutiveMatchCount).toBe(0);
+    });
+  });
+
+  describe('dismissRecap', () => {
+    it('limpia todo el estado de recap al llamar dismissRecap', () => {
+      useSwipeStore.setState({
+        isRecapVisible: true,
+        recapMatchIds: ['listing-a', 'listing-b'],
+        pendingRecapIds: ['listing-a', 'listing-b'],
+        consecutiveMatchCount: 0,
+      });
+
+      act(() => {
+        useSwipeStore.getState().dismissRecap();
+      });
+
+      const state = useSwipeStore.getState();
+      expect(state.isRecapVisible).toBe(false);
+      expect(state.recapMatchIds).toHaveLength(0);
+      expect(state.pendingRecapIds).toHaveLength(0);
+      expect(state.consecutiveMatchCount).toBe(0);
+    });
+  });
+
+  describe('confirmRecapMatch', () => {
+    beforeEach(() => {
+      useSwipeStore.setState({
+        recapMatchIds: ['match-a', 'match-b'],
+        pendingRecapIds: ['match-a', 'match-b'],
+        isRecapVisible: true,
+      });
+    });
+
+    it('elimina el matchId de recapMatchIds tras confirmar', async () => {
+      const { confirmMatch } = jest.requireMock('../lib/api/matches') as {
+        confirmMatch: jest.Mock;
+      };
+      confirmMatch.mockResolvedValueOnce({ data: { confirmed: true }, error: null });
+
+      await act(async () => {
+        await useSwipeStore.getState().confirmRecapMatch('match-a', 'mock-token');
+      });
+
+      const state = useSwipeStore.getState();
+      expect(state.recapMatchIds).toEqual(['match-b']);
+    });
+
+    it('llama a confirmMatch con el matchId y token correctos', async () => {
+      const { confirmMatch } = jest.requireMock('../lib/api/matches') as {
+        confirmMatch: jest.Mock;
+      };
+      confirmMatch.mockResolvedValueOnce({ data: { confirmed: true }, error: null });
+
+      await act(async () => {
+        await useSwipeStore.getState().confirmRecapMatch('match-a', 'my-token');
+      });
+
+      expect(confirmMatch).toHaveBeenCalledWith('match-a', 'my-token');
+    });
+
+    // L3 / H1 fix: error path — matchId debe permanecer si la API falla
+    it('NO elimina el matchId si confirmMatch devuelve error (H1 fix)', async () => {
+      const { confirmMatch } = jest.requireMock('../lib/api/matches') as {
+        confirmMatch: jest.Mock;
+      };
+      confirmMatch.mockResolvedValueOnce({
+        data: null,
+        error: { code: 'NETWORK_ERROR', message: 'Sin conexión' },
+      });
+
+      await act(async () => {
+        await useSwipeStore.getState().confirmRecapMatch('match-a', 'mock-token');
+      });
+
+      const state = useSwipeStore.getState();
+      // matchId debe seguir en recapMatchIds para que el usuario pueda reintentar
+      expect(state.recapMatchIds).toEqual(['match-a', 'match-b']);
+    });
+  });
+
+  describe('discardRecapMatch', () => {
+    beforeEach(() => {
+      useSwipeStore.setState({
+        recapMatchIds: ['match-a', 'match-b'],
+        pendingRecapIds: ['match-a', 'match-b'],
+        isRecapVisible: true,
+      });
+    });
+
+    it('elimina el matchId de recapMatchIds y pendingRecapIds tras descartar', async () => {
+      const { discardMatch } = jest.requireMock('../lib/api/matches') as {
+        discardMatch: jest.Mock;
+      };
+      discardMatch.mockResolvedValueOnce({ data: { deleted: true }, error: null });
+
+      await act(async () => {
+        await useSwipeStore.getState().discardRecapMatch('match-b', 'mock-token');
+      });
+
+      const state = useSwipeStore.getState();
+      expect(state.recapMatchIds).toEqual(['match-a']);
+      expect(state.pendingRecapIds).toEqual(['match-a']);
+    });
+
+    it('llama a discardMatch con el matchId y token correctos', async () => {
+      const { discardMatch } = jest.requireMock('../lib/api/matches') as {
+        discardMatch: jest.Mock;
+      };
+      discardMatch.mockResolvedValueOnce({ data: { deleted: true }, error: null });
+
+      await act(async () => {
+        await useSwipeStore.getState().discardRecapMatch('match-b', 'my-token');
+      });
+
+      expect(discardMatch).toHaveBeenCalledWith('match-b', 'my-token');
+    });
+
+    // L3 / H1 fix: error path — matchId debe permanecer si la API falla
+    it('NO elimina el matchId si discardMatch devuelve error (H1 fix)', async () => {
+      const { discardMatch } = jest.requireMock('../lib/api/matches') as {
+        discardMatch: jest.Mock;
+      };
+      discardMatch.mockResolvedValueOnce({
+        data: null,
+        error: { code: 'NETWORK_ERROR', message: 'Sin conexión' },
+      });
+
+      await act(async () => {
+        await useSwipeStore.getState().discardRecapMatch('match-b', 'mock-token');
+      });
+
+      const state = useSwipeStore.getState();
+      // matchId debe seguir en recapMatchIds y pendingRecapIds para reintentar
+      expect(state.recapMatchIds).toEqual(['match-a', 'match-b']);
+      expect(state.pendingRecapIds).toEqual(['match-a', 'match-b']);
     });
   });
 });
