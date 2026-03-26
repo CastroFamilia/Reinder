@@ -12,12 +12,58 @@
  */
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import type { Listing, SwipeEvent } from '@reinder/shared';
 import { MAX_SWIPE_PREFETCH, MATCH_RECAP_MIN_COUNT } from '@reinder/shared';
 import { fetchListings, MOCK_LISTINGS } from '../lib/api/listings';
 import { postSwipeEvent } from '../lib/api/swipe-events';
 import { confirmMatch, discardMatch } from '../lib/api/matches';
+
+/**
+ * Safe AsyncStorage wrapper — falls back to in-memory storage if the native module
+ * is not available (e.g. Expo Go without a dev build, or web).
+ * Prevents the "Native module is null" crash from blocking the entire store.
+ */
+function safeAsyncStorage() {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const AS = require('@react-native-async-storage/async-storage').default as {
+    getItem: (key: string) => Promise<string | null>;
+    setItem: (key: string, value: string) => Promise<void>;
+    removeItem: (key: string) => Promise<void>;
+  };
+  const memoryStore: Record<string, string> = {};
+  const wrap = <T>(fn: () => Promise<T>, fallback: T): Promise<T> =>
+    fn().catch(() => fallback);
+  return {
+    getItem: (key: string) => wrap(() => AS.getItem(key), memoryStore[key] ?? null),
+    setItem: (key: string, value: string) => {
+      memoryStore[key] = value;
+      return wrap(() => AS.setItem(key, value), undefined as void);
+    },
+    removeItem: (key: string) => {
+      delete memoryStore[key];
+      return wrap(() => AS.removeItem(key), undefined as void);
+    },
+  };
+}
+
+/**
+ * Crea un array de mocks con IDs únicos para el feed de desarrollo.
+ * Evita el error "duplicate key" de React cuando se ciclan los mocks.
+ * [DEV ONLY]
+ */
+function makeCycledMocks(count: number): Listing[] {
+  const result: Listing[] = [];
+  for (let i = 0; i < count; i++) {
+    const base = MOCK_LISTINGS[i % MOCK_LISTINGS.length]!;
+    const cycle = Math.floor(i / MOCK_LISTINGS.length);
+    result.push(
+      cycle === 0
+        ? base
+        : { ...base, id: `${base.id}-c${cycle}` },
+    );
+  }
+  return result;
+}
 
 /**
  * Estado e interfaz del SwipeStore.
@@ -139,8 +185,7 @@ export const useSwipeStore = create<SwipeStore>()(
 
           if (result.error) {
             // Fallback a mock data si el backend no está disponible
-            // [DEV] Los mocks se repiten para que el feed sea infinito durante el desarrollo
-            const mocks = [...MOCK_LISTINGS, ...MOCK_LISTINGS].slice(0, MAX_SWIPE_PREFETCH);
+            const mocks = makeCycledMocks(MAX_SWIPE_PREFETCH);
             set({
               currentCard: mocks[0] ?? null,
               prefetchQueue: mocks.slice(1),
@@ -159,9 +204,7 @@ export const useSwipeStore = create<SwipeStore>()(
             error: null,
           });
         } catch {
-          // Fallback a mock data en caso de cualquier error
-          // [DEV] Los mocks se repiten para que el feed sea infinito durante el desarrollo
-          const mocks = [...MOCK_LISTINGS, ...MOCK_LISTINGS].slice(0, MAX_SWIPE_PREFETCH);
+          const mocks = makeCycledMocks(MAX_SWIPE_PREFETCH);
           set({
             currentCard: mocks[0] ?? null,
             prefetchQueue: mocks.slice(1),
@@ -176,9 +219,9 @@ export const useSwipeStore = create<SwipeStore>()(
         const { prefetchQueue, loadMore } = get();
         const [next, ...rest] = prefetchQueue;
 
-        // [DEV] Si el buffer se agota y no hay backend, rellenar con mocks ciclados
+        // [DEV] Si el buffer se agota y no hay backend, rellenar con mocks únicos
         if (!next && rest.length === 0) {
-          const mocks = [...MOCK_LISTINGS, ...MOCK_LISTINGS];
+          const mocks = makeCycledMocks(MAX_SWIPE_PREFETCH * 2);
           set({
             currentCard: mocks[0] ?? null,
             prefetchQueue: mocks.slice(1),
@@ -298,29 +341,29 @@ export const useSwipeStore = create<SwipeStore>()(
       },
 
       confirmRecapMatch: async (matchId: string, token: string) => {
-        const result = await confirmMatch(matchId, token);
-        if (result.error) {
-          // No eliminar del recap — el usuario puede reintentar (H1 fix: CR Story 2.6)
-          // TODO (Epic 3): encolar para reintentar cuando la conexión se recupere
-          return;
-        }
-        // Solo eliminar si el servidor confirmó correctamente
+        // Optimistic: eliminar de UI inmediatamente para respuesta instantánea.
+        // La llamada API es fire-and-forget — en Epic 3 se implementará retry/rollback real.
         set((state) => ({
           recapMatchIds: state.recapMatchIds.filter((id) => id !== matchId),
         }));
+        const result = await confirmMatch(matchId, token);
+        if (result.error) {
+          // TODO (Epic 3): rollback optimistic update y mostrar toast de error al usuario
+          console.warn('[recap] confirmMatch failed:', result.error.message);
+        }
       },
 
       discardRecapMatch: async (matchId: string, token: string) => {
-        const result = await discardMatch(matchId, token);
-        if (result.error) {
-          // No eliminar del recap — el usuario puede reintentar (H1 fix: CR Story 2.6)
-          return;
-        }
-        // Solo eliminar si el servidor confirmó el descarte
+        // Optimistic: eliminar de UI inmediatamente para respuesta instantánea.
         set((state) => ({
           recapMatchIds: state.recapMatchIds.filter((id) => id !== matchId),
           pendingRecapIds: state.pendingRecapIds.filter((id) => id !== matchId),
         }));
+        const result = await discardMatch(matchId, token);
+        if (result.error) {
+          // TODO (Epic 3): rollback optimistic update y mostrar toast de error al usuario
+          console.warn('[recap] discardMatch failed:', result.error.message);
+        }
       },
 
       // [DEV ONLY] — Eliminar antes de producción (ver CLAUDE.md#Dev Temporals)
@@ -331,7 +374,8 @@ export const useSwipeStore = create<SwipeStore>()(
     }),
     {
       name: 'swipe-store',
-      storage: createJSONStorage(() => AsyncStorage),
+      // safeAsyncStorage: falls back to in-memory if native module unavailable (Expo Go)
+      storage: createJSONStorage(() => safeAsyncStorage()),
       // Solo persistir el estado de recap — el feed se recarga desde el servidor
       partialize: (state) => ({
         consecutiveMatchCount: state.consecutiveMatchCount,

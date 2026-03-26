@@ -356,8 +356,8 @@ describe('useSwipeStore', () => {
       expect(confirmMatch).toHaveBeenCalledWith('match-a', 'my-token');
     });
 
-    // L3 / H1 fix: error path — matchId debe permanecer si la API falla
-    it('NO elimina el matchId si confirmMatch devuelve error (H1 fix)', async () => {
+    // Optimistic UI: matchId se elimina de recapMatchIds INCLUSO si la API falla
+    it('elimina el matchId optimisticamente aunque confirmMatch devuelva error', async () => {
       const { confirmMatch } = jest.requireMock('../lib/api/matches') as {
         confirmMatch: jest.Mock;
       };
@@ -371,8 +371,8 @@ describe('useSwipeStore', () => {
       });
 
       const state = useSwipeStore.getState();
-      // matchId debe seguir en recapMatchIds para que el usuario pueda reintentar
-      expect(state.recapMatchIds).toEqual(['match-a', 'match-b']);
+      // Optimistic: se elimina de UI aunque el servidor falle (Epic 3 añadirá rollback)
+      expect(state.recapMatchIds).toEqual(['match-b']);
     });
   });
 
@@ -413,8 +413,8 @@ describe('useSwipeStore', () => {
       expect(discardMatch).toHaveBeenCalledWith('match-b', 'my-token');
     });
 
-    // L3 / H1 fix: error path — matchId debe permanecer si la API falla
-    it('NO elimina el matchId si discardMatch devuelve error (H1 fix)', async () => {
+    // Optimistic UI: matchId se elimina de recapMatchIds INCLUSO si la API falla
+    it('elimina el matchId optimisticamente aunque discardMatch devuelva error', async () => {
       const { discardMatch } = jest.requireMock('../lib/api/matches') as {
         discardMatch: jest.Mock;
       };
@@ -428,9 +428,9 @@ describe('useSwipeStore', () => {
       });
 
       const state = useSwipeStore.getState();
-      // matchId debe seguir en recapMatchIds y pendingRecapIds para reintentar
-      expect(state.recapMatchIds).toEqual(['match-a', 'match-b']);
-      expect(state.pendingRecapIds).toEqual(['match-a', 'match-b']);
+      // Optimistic: se elimina de UI aunque el servidor falle (Epic 3 añadirá rollback)
+      expect(state.recapMatchIds).toEqual(['match-a']);
+      expect(state.pendingRecapIds).toEqual(['match-a']);
     });
   });
 });
