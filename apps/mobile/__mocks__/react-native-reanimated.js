@@ -117,6 +117,30 @@ const Animated = {
   createAnimatedComponent: (Component) => Component,
 };
 
+// Layout animations (FadeIn, FadeOut, etc.) — stubs for Jest
+// Each returns a fluent builder that produces a no-op layout animation config.
+function createLayoutAnimationMock() {
+  const self = {
+    duration: () => self,
+    delay: () => self,
+    springify: () => self,
+    damping: () => self,
+    stiffness: () => self,
+    easing: () => self,
+    build: () => null,
+  };
+  return self;
+}
+
+const FadeIn = createLayoutAnimationMock();
+const FadeOut = createLayoutAnimationMock();
+const SlideInDown = createLayoutAnimationMock();
+const SlideOutDown = createLayoutAnimationMock();
+const ZoomIn = createLayoutAnimationMock();
+const ZoomOut = createLayoutAnimationMock();
+const BounceIn = createLayoutAnimationMock();
+const Layout = createLayoutAnimationMock();
+
 module.exports = {
   default: Animated,
   ...Animated,
@@ -141,6 +165,15 @@ module.exports = {
   useEvent,
   useHandler,
   Easing,
+  // Layout animations
+  FadeIn,
+  FadeOut,
+  SlideInDown,
+  SlideOutDown,
+  ZoomIn,
+  ZoomOut,
+  BounceIn,
+  Layout,
   // Constantes de extrapolación
   Extrapolate: { CLAMP: 'clamp', EXTEND: 'extend', IDENTITY: 'identity' },
 };
