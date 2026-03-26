@@ -165,4 +165,18 @@ El propio gesto de entrada enseña el vocabulario del producto. Los dos gestos d
 
 ---
 
-*Última actualización: 2026-03-22 — Añadida búsquedas múltiples por comprador (Story 2.9 propuesta).*
+---
+
+## 🟡 UX Feedback — Pendiente de Evaluar
+
+### Umbral del Match Recap Screen (Historia 2.6)
+
+**Feedback (test humano 2026-03-26):** El resumen de recap aparece "demasiado rápido" tras solo 3 matches consecutivos (`MATCH_RECAP_MIN_COUNT = 3` en `packages/shared/src/constants/index.ts`).
+
+**Decisión pendiente:** Evaluar si subir el umbral a 5 o ajustar dinámicamente según el ritmo de swipe del usuario. Requiere datos de sesiones reales para decidir.
+
+**Dónde surgió:** Test de la sesión 2026-03-26.
+
+---
+
+*Última actualización: 2026-03-26 — Añadido feedback UX sobre umbral del Match Recap (Story 2.6).*
