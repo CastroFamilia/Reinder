@@ -24,6 +24,7 @@ export type ButtonVariant = 'primary' | 'secondary' | 'destructive' | 'ghost';
 interface ButtonProps extends Omit<PressableProps, 'style'> {
   variant?: ButtonVariant;
   children: React.ReactNode;
+  style?: ViewStyle;
   testID?: string;
 }
 
@@ -89,6 +90,7 @@ export function Button({
   children,
   testID,
   disabled,
+  style,
   ...rest
 }: ButtonProps) {
   const config = VARIANTS[variant];
@@ -101,6 +103,7 @@ export function Button({
       style={({ pressed }) => [
         styles.base,
         config.container,
+        style,
         pressed && styles.pressed,
         disabled === true && styles.disabled,
       ]}
@@ -109,6 +112,7 @@ export function Button({
     </Pressable>
   );
 }
+
 
 const styles = StyleSheet.create({
   base: {

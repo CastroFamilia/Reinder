@@ -2,19 +2,21 @@
  * apps/mobile/src/features/swipe/screens/swipe-screen.tsx
  *
  * Pantalla principal del swipe feed.
- * Integra: useSwipeStore, SwipableCard, PropertyCard (stack), SwipeActions, MatchPayoff.
+ * Integra: useSwipeStore, SwipableCard, PropertyCard (stack), SwipeActions, MatchPayoff,
+ * y el MatchRecapScreen Modal (Story 2.6).
  *
  * - Si isLoading → PropertyCardSkeleton (AC4 Story 2.2)
  * - Si currentCard → SwipableCard con gesto + SwipeActions + MatchPayoff (AC1, AC2, AC3 Story 2.3)
  * - Efecto stack: tarjeta siguiente visible detrás de la activa (AC7 Story 2.3)
  * - Si feed vacío → empty state (UX-DR12)
  * - Prefetch buffer gestionado por useSwipeStore (AC7, NFR1)
+ * - MatchRecapScreen Modal: aparece tras MatchPayoff dismiss si isRecapVisible (AC1 Story 2.6)
  *
- * Source: epics.md#Story-2.3
+ * Source: epics.md#Story-2.3, epics.md#Story-2.6
  * Source: ux-design-specification.md#Defining-Core-Experience
  */
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Modal, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { ScreenBackground } from '../../../components/layout/screen-background';
 import { useSwipeStore } from '../../../stores/use-swipe-store';
 import { useAuthSession } from '../../../hooks/useAuthSession';
@@ -23,6 +25,7 @@ import { PropertyCardSkeleton } from '../components/property-card-skeleton';
 import { SwipableCard } from '../components/swipable-card';
 import { SwipeActions } from '../components/swipe-actions';
 import { MatchPayoff } from '../components/match-payoff';
+import { MatchRecapScreen } from './match-recap-screen';
 import { Colors, Spacing, Typography } from '../../../lib/tokens';
 import { supabase } from '../../../lib/supabase';
 
@@ -37,6 +40,10 @@ export function SwipeScreen({ testID }: { testID?: string }) {
     recordMatchEvent,
     recordRejectEvent,
     resetFeed,
+    checkAndTriggerRecap,
+    isRecapVisible,
+    recapMatchIds,
+    dismissRecap,
   } = useSwipeStore();
 
   const [isMatchPayoffVisible, setIsMatchPayoffVisible] = useState(false);
@@ -74,8 +81,9 @@ export function SwipeScreen({ testID }: { testID?: string }) {
   /**
    * Handler de match — compartido por gesto de swipe Y botón de match.
    * 1. Registra el evento en el servidor (fire-and-forget, con offline queue)
-   * 2. Muestra el overlay MatchPayoff
-   * El MatchPayoff se auto-cierra en 1.5s y llama a handleMatchDismiss.
+   * 2. Comprueba si se debe disparar el recap (Story 2.6)
+   * 3. Muestra el overlay MatchPayoff
+   * El MatchPayoff se auto-cierra y llama a handleMatchDismiss.
    */
   const handleMatch = useCallback(() => {
     // Guard: si ya hay un match en curso (gesture + botón simultáneos), ignorar
@@ -83,21 +91,29 @@ export function SwipeScreen({ testID }: { testID?: string }) {
     isMatchInFlight.current = true;
 
     const token = session?.access_token ?? '';
-    if (currentCard) {
+    const matchedId = currentCard?.id;
+
+    if (currentCard && matchedId) {
       void recordMatchEvent(currentCard.id, token);
+      // Actualizar contador de recap ANTES de mostrar el MatchPayoff (Story 2.6 AC1)
+      checkAndTriggerRecap(matchedId);
     }
+
     setIsMatchPayoffVisible(true);
-  }, [currentCard, session?.access_token, recordMatchEvent]);
+  }, [currentCard, session?.access_token, recordMatchEvent, checkAndTriggerRecap]);
 
   /**
    * Llamado cuando MatchPayoff termina su animación de cierre.
-   * Avanza a la siguiente tarjeta.
+   * Avanza a la siguiente tarjeta, luego muestra el recap si isRecapVisible.
+   * Story 2.6: el recap aparece DESPUÉS del MatchPayoff dismiss (no durante).
    */
   const handleMatchDismiss = useCallback(() => {
     setIsMatchPayoffVisible(false);
     isMatchInFlight.current = false; // Liberar el guard para el próximo match
     const token = session?.access_token ?? '';
     advanceCard(token);
+    // isRecapVisible en el store controla el Modal — si ya era true, el Modal se abre en el
+    // siguiente render automáticamente (sin setTimeout frágil).
   }, [advanceCard, session?.access_token]);
 
   /**
@@ -134,6 +150,12 @@ export function SwipeScreen({ testID }: { testID?: string }) {
   const handleDevLogout = useCallback(() => {
     void supabase.auth.signOut();
   }, []);
+
+  // Reconstruir los listings del recap desde el prefetchQueue + currentCard combo
+  // (usa los listings ya en memoria para construir la lista del recap sin fetch adicional)
+  const recapListings = [...(currentCard ? [currentCard] : []), ...prefetchQueue].filter((l) =>
+    recapMatchIds.includes(l.id),
+  );
 
   return (
     <ScreenBackground>
@@ -199,7 +221,7 @@ export function SwipeScreen({ testID }: { testID?: string }) {
           </View>
         )}
 
-        {/* [DEV ONLY] Panel flotante — accesible siempre, esquina superior derecha */}
+        {/* [DEV ONLY] Panel flotante — accesible siempre, esquina inferior izquierda */}
         {!isLoading && currentCard && (
           <View style={styles.devFloating}>
             <TouchableOpacity style={styles.devButtonSmall} onPress={handleDevReset}>
@@ -218,6 +240,20 @@ export function SwipeScreen({ testID }: { testID?: string }) {
         onDismiss={handleMatchDismiss}
         testID="match-payoff"
       />
+
+      {/* MatchRecapScreen Modal — aparece tras el MatchPayoff dismiss si isRecapVisible (Story 2.6) */}
+      <Modal
+        visible={isRecapVisible && !isMatchPayoffVisible}
+        animationType="fade"
+        transparent={false}
+        onRequestClose={dismissRecap}
+        testID="match-recap-modal"
+      >
+        <MatchRecapScreen
+          listings={recapListings}
+          testID="match-recap-screen"
+        />
+      </Modal>
     </ScreenBackground>
   );
 }
