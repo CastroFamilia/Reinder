@@ -1,20 +1,22 @@
 /**
  * apps/mobile/src/lib/api/matches.ts
  *
- * Cliente API para operaciones sobre matches desde el MatchRecapScreen.
- * Llama a PATCH /api/v1/matches/{id}/confirm y DELETE /api/v1/matches/{id}.
+ * Cliente API para operaciones sobre matches.
+ * - PATCH /api/v1/matches/{id}/confirm — confirmar match desde recap
+ * - DELETE /api/v1/matches/{id} — descartar match desde recap
+ * - GET /api/v1/matches — historial completo de matches del comprador
  *
  * Source: architecture.md#API & Communication Patterns
  * Source: story 2-6-match-recap-screen.md (Tasks 5, 6)
+ * Source: story 2-7-historial-matches-badge-nuevas-propiedades.md (Task 2)
  */
-import type { ApiResponse } from '@reinder/shared';
+import type { ApiResponse, MatchHistoryItem } from '@reinder/shared';
 
 const API_BASE_URL =
   (process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:3000') + '/api/v1';
 
 /**
  * Confirma un match desde el recap.
- * Marca el match como reforzado y notifica al agente representante (si existe vínculo).
  */
 export async function confirmMatch(
   matchId: string,
@@ -52,7 +54,7 @@ export async function confirmMatch(
 }
 
 /**
- * Descarta un match desde el recap, eliminándolo del historial del comprador.
+ * Descarta un match desde el recap.
  */
 export async function discardMatch(
   matchId: string,
@@ -83,6 +85,43 @@ export async function discardMatch(
       error: {
         code: 'NETWORK_ERROR',
         message: 'Sin conexión — no se pudo descartar el match',
+      },
+    };
+  }
+}
+
+/**
+ * Obtiene el historial completo de matches del comprador autenticado.
+ * Los matches vienen ordenados por fecha descendente (más recientes primero).
+ */
+export async function getMatches(
+  token: string,
+): Promise<ApiResponse<MatchHistoryItem[]>> {
+  try {
+    const response = await fetch(`${API_BASE_URL}/matches`, {
+      method: 'GET',
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      return {
+        data: null,
+        error: {
+          code: `HTTP_${response.status}`,
+          message: `Error al cargar historial de matches: ${response.statusText}`,
+        },
+      };
+    }
+
+    return (await response.json()) as ApiResponse<MatchHistoryItem[]>;
+  } catch {
+    return {
+      data: null,
+      error: {
+        code: 'NETWORK_ERROR',
+        message: 'Sin conexión — no se pudo cargar el historial',
       },
     };
   }

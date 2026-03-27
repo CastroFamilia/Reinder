@@ -1,10 +1,10 @@
 /**
  * apps/mobile/src/lib/api/matches.test.ts
  *
- * Tests for the matches API client (confirmMatch, discardMatch).
- * Story 2.6 — Task 6.
+ * Tests for the matches API client (confirmMatch, discardMatch, getMatches).
+ * Story 2.6 — Task 6 | Story 2.7 — Task 2
  */
-import { confirmMatch, discardMatch } from './matches';
+import { confirmMatch, discardMatch, getMatches } from './matches';
 
 // Mock global fetch for this test module
 const mockFetch = jest.fn();
@@ -100,6 +100,63 @@ describe('matches API client', () => {
       mockFetch.mockRejectedValueOnce(new Error('Network failure'));
 
       const result = await discardMatch('match-2', 'mock-token');
+
+      expect(result.data).toBeNull();
+      expect(result.error?.code).toBe('NETWORK_ERROR');
+    });
+  });
+
+  describe('getMatches', () => {
+    it('retorna array de MatchHistoryItem si el servidor responde 200', async () => {
+      const mockMatches = [
+        {
+          matchId: 'match-1',
+          listingId: 'listing-1',
+          imageUrl: 'https://example.com/photo.jpg',
+          price: 250000,
+          address: 'Calle Gran Vía 1, Madrid',
+          listingStatus: 'active',
+          matchedAt: '2026-03-25T10:00:00Z',
+          confirmed: true,
+        },
+      ];
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ data: mockMatches, error: null }),
+      });
+
+      const result = await getMatches('mock-token');
+
+      expect(result.error).toBeNull();
+      expect(result.data).toEqual(mockMatches);
+      expect(mockFetch).toHaveBeenCalledWith(
+        expect.stringContaining('/api/v1/matches'),
+        expect.objectContaining({
+          method: 'GET',
+          headers: expect.objectContaining({
+            Authorization: 'Bearer mock-token',
+          }),
+        }),
+      );
+    });
+
+    it('retorna error si el servidor responde 401', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: false,
+        status: 401,
+        statusText: 'Unauthorized',
+      });
+
+      const result = await getMatches('bad-token');
+
+      expect(result.data).toBeNull();
+      expect(result.error?.code).toBe('HTTP_401');
+    });
+
+    it('retorna NETWORK_ERROR si fetch lanza excepción', async () => {
+      mockFetch.mockRejectedValueOnce(new Error('Network failure'));
+
+      const result = await getMatches('mock-token');
 
       expect(result.data).toBeNull();
       expect(result.error?.code).toBe('NETWORK_ERROR');
