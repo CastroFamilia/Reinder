@@ -118,6 +118,7 @@ Ver tracking completo: [`sprint-status.yaml`](_bmad-output/implementation-artifa
 - **AgentReferralBanner** (para compradores sin agente en el feed): pospuesto a Phase 2
 - **CRM sync:** NUNCA en el request path del comprador — siempre desacoplado via Edge Function + pg_cron
 - **RLS:** Política de denegación por defecto en todas las tablas, desde el día 1
+- **Migraciones DB:** NUNCA dar SQL crudo al usuario para ejecutar manualmente. SIEMPRE usar Drizzle Kit (`npx drizzle-kit generate` → `npx drizzle-kit migrate`). Los cambios de schema se hacen en `packages/shared/src/db/schema.ts` y se aplican via migraciones
 - **Referral tokens:** Single-use + expiración configurable (`REFERRAL_TOKEN_TTL_DAYS` = 30 días)
 - **Swipe events:** Almacenados encriptados en reposo (NFR7); durabilidad garantizada ante fallos (NFR16)
 
