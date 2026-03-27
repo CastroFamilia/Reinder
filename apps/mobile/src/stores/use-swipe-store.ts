@@ -368,7 +368,16 @@ export const useSwipeStore = create<SwipeStore>()(
 
       // [DEV ONLY] — Eliminar antes de producción (ver CLAUDE.md#Dev Temporals)
       resetFeed: async (token: string) => {
-        set({ currentCard: null, prefetchQueue: [], cursor: undefined });
+        set({
+          currentCard: null,
+          prefetchQueue: [],
+          cursor: undefined,
+          // Limpia también el caché de recap para empezar desde cero
+          consecutiveMatchCount: 0,
+          pendingRecapIds: [],
+          recapMatchIds: [],
+          isRecapVisible: false,
+        });
         await get().loadFeed(token);
       },
     }),
