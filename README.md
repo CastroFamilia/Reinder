@@ -24,7 +24,7 @@ Fase opcional de investigación y descubrimiento del producto.
 | 1 | 🧠 Brainstorm Project | 📊 Mary (Business Analyst) | `bmad-brainstorming` | ❌ Opcional | ✅ Completado |
 | 2 | 📈 Market Research | 📊 Mary (Business Analyst) | `bmad-bmm-market-research` | ❌ Opcional | ⬜ No ejecutado |
 | 3 | 🔍 Domain Research | 📊 Mary (Business Analyst) | `bmad-bmm-domain-research` | ❌ Opcional | ⬜ No ejecutado |
-| 4 | 🛠️ Technical Research | 📊 Mary (Business Analyst) | `bmad-bmm-technical-research` | ❌ Opcional | ⬜ No ejecutado |
+| 4 | 🛠️ Technical Research | 📊 Mary (Business Analyst) | `bmad-bmm-technical-research` | ❌ Opcional | ✅ Completado |
 | 5 | 📝 Create Brief | 📊 Mary (Business Analyst) | `bmad-bmm-create-product-brief` | ❌ Opcional | ✅ Completado |
 
 ---
@@ -193,6 +193,7 @@ Estas herramientas se pueden usar en cualquier momento, en cualquier fase.
 | Sprint Status | [`_bmad-output/implementation-artifacts/sprint-status.yaml`](_bmad-output/implementation-artifacts/sprint-status.yaml) |
 | Future Ideas | [`_bmad-output/planning-artifacts/future-ideas.md`](_bmad-output/planning-artifacts/future-ideas.md) |
 | Roadmap | [`_bmad-output/planning-artifacts/roadmap.md`](_bmad-output/planning-artifacts/roadmap.md) |
+| Technical Research | [`_bmad-output/planning-artifacts/research/technical-validacion-stack-reinder-2026-03-27.md`](_bmad-output/planning-artifacts/research/technical-validacion-stack-reinder-2026-03-27.md) |
 
 ---
 
