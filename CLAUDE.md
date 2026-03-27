@@ -86,23 +86,27 @@ Reinder/
 | 1 — Análisis (Brief, Research) | ✅ Completo |
 | 2 — Planning (PRD + UX Design) | ✅ Completo |
 | 3 — Solutioning (Arquitectura, Epics) | ✅ Completo |
-| 4 — Implementation | 🚧 En curso — **Epic 1 ✅ completo**, arrancando Epic 2 |
+| 4 — Implementation | 🚧 En curso — Epic 1 ✅, Epic 2 en progreso (7/9 done) |
 
-### 🏃 Sprint Actual — Epic 2: Swipe Loop (próximo)
+### 🏃 Sprint Actual — Epic 2: Swipe Loop
 
 | Story | Título | Estado |
 |---|---|---|
-| 1.1 | Inicialización Monorepo + Design System | ✅ done |
-| 1.2 | Supabase + Schema de Base de Datos | ✅ done |
-| 1.3 | Registro Comprador Email + T&C | ✅ done |
-| 1.4 | Registro/Login Google OAuth | ✅ done |
-| 1.5 | Login Agente y Admin de Agencia | ✅ done |
-| 1.6 | Protección de Rutas + Redirección | ✅ done |
-| **Epic 1** | **Identidad y Acceso** | ✅ **done** |
+| 2.1 | GlassPanel + Design Foundation | ✅ done |
+| 2.2 | PropertyCard + SwipeActions | ✅ done |
+| 2.3 | Swipe Gesture + MatchPayoff Animation | ✅ done |
+| 2.4 | Gesto de Descarte | ✅ done |
+| 2.5 | Vista Detalle Propiedad (Bottom Sheet) | ✅ done |
+| 2.6 | Match Recap Screen | ✅ done *(pendiente test humano)* |
+| 2.7 | Historial de Matches + Badge Nuevas Propiedades | ✅ done |
+| 2.8 | TabBar Comprador Rol-Based | 📋 backlog |
+| 2.9 | Filtros de Búsqueda + Buyer Onboarding *(nueva)* | 🔧 ready-for-dev |
 
-**Próximo paso:** Crear stories del Epic 2 (Swipe Loop) — comenzar por Story 2.1.
+**Próximo paso:** Story 2.8 (TabBar) o 2.9 (Filtros).
 
 Ver tracking completo: [`sprint-status.yaml`](_bmad-output/implementation-artifacts/sprint-status.yaml)
+
+
 
 ---
 

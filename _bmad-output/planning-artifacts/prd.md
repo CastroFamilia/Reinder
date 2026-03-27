@@ -359,6 +359,11 @@ Existen precedentes de swipe en propiedades (Doorsteps Swipe de Zillow ~2014, ap
 - FR32: El administrador puede revisar y resolver listings marcados como duplicados
 - FR33: El administrador puede monitorear métricas globales de la plataforma
 
+### Panel del Agente Representante (Ampliación)
+
+- FR34: El agente puede archivar un match gestionado para mantener su panel organizado
+
+
 ---
 
 ## Non-Functional Requirements

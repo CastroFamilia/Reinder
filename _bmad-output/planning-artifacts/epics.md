@@ -49,6 +49,7 @@ FR30: Los usuarios no autenticados ven una preview del listing con prompt de reg
 FR31: El administrador puede activar y desactivar agencias integradas
 FR32: El administrador puede revisar y resolver listings marcados como duplicados
 FR33: El administrador puede monitorear métricas globales de la plataforma
+FR34: El agente puede archivar un match gestionado para mantener su panel organizado
 
 ### NonFunctional Requirements
 
@@ -136,6 +137,7 @@ FR30: Epic 6 — Preview de listing para no autenticados con prompt de registro
 FR31: Epic 7 — Activación/desactivación de agencias por el admin
 FR32: Epic 7 — Revisión y resolución de listings duplicados por el admin
 FR33: Epic 7 — Monitoreo de métricas globales de plataforma
+FR34: Epic 4 — Archivado de match gestionado por el agente
 
 ## Epic List
 
@@ -176,7 +178,7 @@ Un agente puede generar un link de referral único para invitar a su cliente com
 
 Un agente autenticado con rol `agent` puede ver la lista de todos sus clientes compradores vinculados, recibir notificaciones push inmediatas cuando un cliente hace match (≤5s), ver el historial de matches y rechazos de cada cliente, y acceder directamente al detalle del match desde la notificación sin pasos intermedios. El panel es la superficie de inteligencia en tiempo real que diferencia a Reinder de cualquier herramienta existente.
 
-**FRs cubiertos:** FR18, FR19, FR20, FR21
+**FRs cubiertos:** FR18, FR19, FR20, FR21, FR34
 **NFRs aplicados:** NFR3 (notificación ≤5 segundos)
 **Requisitos de Arquitectura:** `features/agent-panel/` en web, Supabase Realtime WebSocket subscriptions (`match.created` event), Expo Push Notifications → APNS + FCM, tabla `push_tokens`, hook `use-realtime-matches.ts`, Zustand `useAgentStore`
 **Requisitos UX:** UX-DR8 (TabBar agente: Clientes / Notificaciones), UX-DR9 (AgentClientCard), UX-DR14 (deep link notificación → detalle match), UX-DR11 (jerarquía de botones en acciones del panel)
@@ -386,6 +388,7 @@ para que el match se sienta gratificante desde el primer gesto.
 **And** el evento de match se registra via `POST /api/v1/swipe-events` con `action: 'match'` en `match_events`
 **And** si no hay conexión, el evento se encola localmente y se sincroniza cuando vuelve la conexión
 **And** todo el procesamiento de animación ocurre en el UI thread sin pasar por el JS bridge
+**And** los registros en `match_events` se almacenan encriptados en reposo en Supabase (NFR7) — verificable mediante Supabase Dashboard > Encryption at Rest
 
 ---
 
@@ -404,6 +407,7 @@ para que la app no vuelva a mostrarla.
 **And** el evento de descarte se registra via `POST /api/v1/swipe-events` con `action: 'reject'` en `swipe_events`
 **And** la propiedad descartada no vuelve a aparecer en el feed de ese comprador
 **And** el gesto de back desde el borde izquierdo NO activa el descarte — está reservado para navegación del sistema
+**And** los registros en `swipe_events` se almacenan encriptados en reposo en Supabase (NFR7) — misma garantía que `match_events`
 
 ---
 
@@ -480,11 +484,11 @@ para que pueda acceder a Swipe, Matches y Perfil con un solo tap.
 
 ---
 
-### Story 2.9: Filtros de Búsqueda del Comprador — Onboarding y Edición
+### Story 2.9a: Filtros de Búsqueda — Onboarding de Preferencias
 
 Como comprador,
-quiero configurar mis preferencias de búsqueda al entrar a la app por primera vez (y poder editarlas después),
-para que el feed de swipe solo me muestre propiedades relevantes a lo que realmente busco.
+quiero configurar mis preferencias de búsqueda al entrar a la app por primera vez,
+para que el feed de swipe solo me muestre propiedades relevantes a lo que realmente busco desde el primer momento.
 
 **Acceptance Criteria:**
 
@@ -493,10 +497,26 @@ para que el feed de swipe solo me muestre propiedades relevantes a lo que realme
 **Then** aparece un modal de onboarding "¿Qué estás buscando?" con campos: zona(s), precio máximo, habitaciones mínimas y m² mínimos (zona obligatoria, resto opcionales)
 **And** al guardar, las preferencias se persisten en Supabase `user_profiles.search_preferences` y el comprador accede al feed filtrado inmediatamente
 **And** el feed `GET /api/v1/listings` aplica los filtros activos como query params — el comprador nunca ve propiedades fuera de sus criterios
-**And** en la tab de Swipe hay un botón ⚙️ para editar los filtros en cualquier momento sin perder el historial de swipes
-**And** si el comprador pulsa "Saltar", el feed muestra todas las propiedades activas (comportamiento actual)
+**And** si el comprador pulsa "Saltar", el feed muestra todas las propiedades activas y `search_preferences` queda como `null`
 **And** los filtros persisten entre sesiones — al reabrir la app el feed aplica los filtros sin re-mostrar el onboarding
-**And** al modificar un filtro, el feed se reinicia (cursor a null) con los nuevos criterios
+
+---
+
+### Story 2.9b: Filtros de Búsqueda — Edición en Sesión
+
+Como comprador,
+quiero poder editar mis preferencias de búsqueda en cualquier momento desde la tab de Swipe,
+para que el feed refleje mis criterios actualizados sin perder mi historial de swipes.
+
+**Acceptance Criteria:**
+
+**Given** un comprador autenticado en la tab de Swipe
+**When** pulsa el botón ⚙️ de filtros
+**Then** se abre un sheet con los filtros actuales (zona, precio, habitaciones, m²) pre-cargados desde `user_profiles.search_preferences`
+**And** al guardar los cambios, las preferencias se actualizan en Supabase y el feed se reinicia (cursor a `null`) aplicando los nuevos criterios
+**And** el historial de swipes previo (matches y rechazos) no se elimina al cambiar filtros
+**And** si el comprador cierra el sheet sin guardar, los filtros anteriores permanecen activos
+**And** si el comprador borra todos los filtros y guarda, el feed vuelve a mostrar todas las propiedades activas
 
 ---
 
@@ -647,7 +667,8 @@ para que pueda actuar en segundos sin perder tiempo navegando por la app.
 **Then** se abre directamente la vista de detalle de la propiedad matcheada con datos del cliente (nombre, fecha del match) — sin pasar por el panel principal (UX-DR14)
 **And** el deep link funciona tanto si la app estaba cerrada (cold start) como en background
 **And** desde esa vista hay acceso al contacto del agente que publicó el listing (para coordinar visita)
-**And** hay un botón "Marcar como gestionado" que archiva el match en el panel del agente
+**And** hay un botón "Marcar como gestionado" que archiva el match en el panel del agente (FR34)
+**And** los matches archivados quedan en un apartado "Gestionados" separado del feed principal de matches sin resolver
 
 ---
 

@@ -91,14 +91,15 @@ Create Story → [Validate Story] → Dev Story → [QA Automation] → [Code Re
 | Epic | Nombre | Stories | Estado |
 |------|--------|---------|--------|
 | **Epic 1** | Identidad y Acceso | 6/6 done | ✅ **Completado** |
-| **Epic 2** | Swipe Loop | 5/9 done, 1 ready-for-dev, 3 backlog | 🚧 **En Progreso** |
+| **Epic 2** | Swipe Loop | 7/9 done, 1 ready-for-dev, 1 backlog | 🚧 **En Progreso** |
 | **Epic 3** | Vínculo Comprador–Agente | 0/4 | ⬜ Backlog |
 | **Epic 4** | Panel del Agente Representante | 0/4 | ⬜ Backlog |
 | **Epic 5** | Gestión de Listings e Integración CRM | 0/4 | ⬜ Backlog |
 | **Epic 6** | Descubrimiento Orgánico y SEO | 0/3 | ⬜ Backlog |
 | **Epic 7** | Administración de Plataforma | 0/4 | ⬜ Backlog |
 
-**Siguiente Story:** `2-9-filtros-busqueda-buyer-onboarding` (ready-for-dev)
+**Siguiente Story:** `2-8-tabbar-comprador-navegacion-rol-based` (backlog) o `2-9-filtros-busqueda-buyer-onboarding` (ready-for-dev)
+
 
 ---
 
