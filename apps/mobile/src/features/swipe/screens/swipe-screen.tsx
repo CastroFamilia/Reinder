@@ -3,7 +3,8 @@
  *
  * Pantalla principal del swipe feed.
  * Integra: useSwipeStore, SwipableCard, PropertyCard (stack), SwipeActions, MatchPayoff,
- * y el MatchRecapScreen Modal (Story 2.6).
+ * el MatchRecapScreen Modal (Story 2.6), el badge de nuevas propiedades (Story 2.7),
+ * y el PropertyDetailSheet (Story 2.5).
  *
  * - Si isLoading → PropertyCardSkeleton (AC4 Story 2.2)
  * - Si currentCard → SwipableCard con gesto + SwipeActions + MatchPayoff (AC1, AC2, AC3 Story 2.3)
@@ -11,14 +12,17 @@
  * - Si feed vacío → empty state (UX-DR12)
  * - Prefetch buffer gestionado por useSwipeStore (AC7, NFR1)
  * - MatchRecapScreen Modal: aparece tras MatchPayoff dismiss si isRecapVisible (AC1 Story 2.6)
+ * - NewPropertiesBadge: visible si newMatchesSinceLastVisit > 0 (Story 2.7 AC4)
+ * - PropertyDetailSheet: bottom sheet de detalle abierto por botón ⓘ o tap en tarjeta (Story 2.5)
  *
- * Source: epics.md#Story-2.3, epics.md#Story-2.6
+ * Source: epics.md#Story-2.3, epics.md#Story-2.5, epics.md#Story-2.6, epics.md#Story-2.7
  * Source: ux-design-specification.md#Defining-Core-Experience
  */
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Modal, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { ScreenBackground } from '../../../components/layout/screen-background';
 import { useSwipeStore } from '../../../stores/use-swipe-store';
+import { useMatchHistoryStore } from '../../../stores/use-match-history-store';
 import { useAuthSession } from '../../../hooks/useAuthSession';
 import { PropertyCard } from '../components/property-card';
 import { PropertyCardSkeleton } from '../components/property-card-skeleton';
@@ -26,11 +30,26 @@ import { SwipableCard } from '../components/swipable-card';
 import { SwipeActions } from '../components/swipe-actions';
 import { MatchPayoff } from '../components/match-payoff';
 import { MatchRecapScreen } from './match-recap-screen';
+import { NewPropertiesBadge } from '../components/new-properties-badge';
+import { PropertyDetailSheet } from '../components/property-detail-sheet';
 import { Colors, Spacing, Typography } from '../../../lib/tokens';
 import { supabase } from '../../../lib/supabase';
 
-export function SwipeScreen({ testID }: { testID?: string }) {
+export function SwipeScreen({
+  testID,
+  onNavigateToMatches,
+}: {
+  testID?: string;
+  /** Callback para ir a la tab de Matches desde el badge (Story 2.7) */
+  onNavigateToMatches?: () => void;
+}) {
   const { session } = useAuthSession();
+  const newMatchesSinceLastVisit = useMatchHistoryStore(
+    (s) => s.newMatchesSinceLastVisit,
+  );
+  // M1 fix: dismiss state lives in store (survives SwipeScreen re-mounts across tab navigation)
+  const isBadgeDismissed = useMatchHistoryStore((s) => s.isBadgeDismissed);
+  const dismissBadge = useMatchHistoryStore((s) => s.dismissBadge);
   const {
     currentCard,
     prefetchQueue,
@@ -47,6 +66,11 @@ export function SwipeScreen({ testID }: { testID?: string }) {
   } = useSwipeStore();
 
   const [isMatchPayoffVisible, setIsMatchPayoffVisible] = useState(false);
+  /**
+   * Estado del bottom sheet de detalle de propiedad (Story 2.5).
+   * Se abre al pulsar el botón ⓘ o al hacer tap en la tarjeta.
+   */
+  const [isDetailSheetVisible, setIsDetailSheetVisible] = useState(false);
   /**
    * Guard contra double-advance en match (H1 code review Story 2.3):
    * Si el gesto y el botón se activan simultáneamente, sólo el primero debe ejecutar el match.
@@ -79,6 +103,17 @@ export function SwipeScreen({ testID }: { testID?: string }) {
   }, [currentCard?.id]);
 
   /**
+   * Cierra el detail sheet si la tarjeta activa desaparece mientras el sheet está abierto.
+   * Ocurre cuando advanceCard se activa (ej. desde un gesto de swipe rápido con el sheet abierto).
+   * CR Story 2.5 M1 fix.
+   */
+  useEffect(() => {
+    if (!currentCard) {
+      setIsDetailSheetVisible(false);
+    }
+  }, [currentCard]);
+
+  /**
    * Handler de match — compartido por gesto de swipe Y botón de match.
    * 1. Registra el evento en el servidor (fire-and-forget, con offline queue)
    * 2. Comprueba si se debe disparar el recap (Story 2.6)
@@ -86,7 +121,6 @@ export function SwipeScreen({ testID }: { testID?: string }) {
    * El MatchPayoff se auto-cierra y llama a handleMatchDismiss.
    */
   const handleMatch = useCallback(() => {
-    // Guard: si ya hay un match en curso (gesture + botón simultáneos), ignorar
     if (isMatchInFlight.current) return;
     isMatchInFlight.current = true;
 
@@ -95,12 +129,13 @@ export function SwipeScreen({ testID }: { testID?: string }) {
 
     if (currentCard && matchedId) {
       void recordMatchEvent(currentCard.id, token);
-      // Actualizar contador de recap ANTES de mostrar el MatchPayoff (Story 2.6 AC1)
       checkAndTriggerRecap(matchedId);
     }
 
+    // Descartar badge al hacer swipe (Story 2.7 AC4)
+    dismissBadge();
     setIsMatchPayoffVisible(true);
-  }, [currentCard, session?.access_token, recordMatchEvent, checkAndTriggerRecap]);
+  }, [currentCard, session?.access_token, recordMatchEvent, checkAndTriggerRecap, dismissBadge]);
 
   /**
    * Llamado cuando MatchPayoff termina su animación de cierre.
@@ -122,23 +157,47 @@ export function SwipeScreen({ testID }: { testID?: string }) {
    * Story 2.4 — AC1, AC2, AC3, AC4.
    */
   const handleReject = useCallback(() => {
-    // Guard: evitar double-advance por swipe + botón simultáneos.
-    // El guard se resetea en el useEffect de currentCard?.id (no aquí).
     if (isRejectInFlight.current) return;
     isRejectInFlight.current = true;
+
+    // Descartar badge al hacer swipe (Story 2.7 AC4)
+    dismissBadge();
 
     const token = session?.access_token ?? '';
     if (currentCard) {
       void recordRejectEvent(currentCard.id, token);
     }
-    // El reject avanza inmediatamente — sin MatchPayoff ni setTimeout.
-    // isRejectInFlight se resetea en el siguiente render (useEffect currentCard?.id).
     advanceCard(token);
-  }, [currentCard, session?.access_token, recordRejectEvent, advanceCard]);
+  }, [currentCard, session?.access_token, recordRejectEvent, advanceCard, dismissBadge]);
 
-  const handleInfo = () => {
-    // Story 2.5: abrirá el bottom sheet de detalle
-  };
+  const handleInfo = useCallback(() => {
+    // CR Story 2.5 M2: no abrir el sheet mientras MatchPayoff está animando
+    if (isMatchPayoffVisible) return;
+    setIsDetailSheetVisible(true);
+  }, [isMatchPayoffVisible]);
+
+  /** Cierra el detail sheet sin registrar ninguna acción (AC4). */
+  const handleDetailClose = useCallback(() => {
+    setIsDetailSheetVisible(false);
+  }, []);
+
+  /**
+   * Match desde dentro del detail sheet:
+   * Cierra el sheet y reutiliza el handler existente (con guards, badge dismiss, recap).
+   */
+  const handleDetailMatch = useCallback(() => {
+    setIsDetailSheetVisible(false);
+    handleMatch();
+  }, [handleMatch]);
+
+  /**
+   * Reject desde dentro del detail sheet:
+   * Cierra el sheet y reutiliza el handler existente (con guard isRejectInFlight).
+   */
+  const handleDetailReject = useCallback(() => {
+    setIsDetailSheetVisible(false);
+    handleReject();
+  }, [handleReject]);
 
   // [DEV ONLY] Resetea el feed para volver a ver las tarjetas
   const handleDevReset = useCallback(() => {
@@ -160,6 +219,19 @@ export function SwipeScreen({ testID }: { testID?: string }) {
   return (
     <ScreenBackground>
       <View style={styles.container} testID={testID}>
+        {/* Badge de nuevas propiedades (Story 2.7 AC4 / UX-DR15) */}
+        {!isBadgeDismissed && newMatchesSinceLastVisit > 0 && (
+          <NewPropertiesBadge
+            count={newMatchesSinceLastVisit}
+            onPress={() => {
+              dismissBadge();
+              onNavigateToMatches?.();
+            }}
+            onDismiss={dismissBadge}
+            testID="new-properties-badge"
+          />
+        )}
+
         {/* Estado de carga: skeleton glassmorphism */}
         {isLoading && (
           <View style={styles.deckContainer}>
@@ -186,6 +258,7 @@ export function SwipeScreen({ testID }: { testID?: string }) {
                 listing={currentCard}
                 onMatch={handleMatch}
                 onReject={handleReject}
+                onInfo={handleInfo}
                 testID="swipe-card"
               />
             </View>
@@ -254,6 +327,16 @@ export function SwipeScreen({ testID }: { testID?: string }) {
           testID="match-recap-screen"
         />
       </Modal>
+
+      {/* PropertyDetailSheet — bottom sheet de detalle (Story 2.5) */}
+      <PropertyDetailSheet
+        visible={isDetailSheetVisible}
+        listing={currentCard ?? null}
+        onClose={handleDetailClose}
+        onMatch={handleDetailMatch}
+        onReject={handleDetailReject}
+        testID="property-detail-sheet"
+      />
     </ScreenBackground>
   );
 }

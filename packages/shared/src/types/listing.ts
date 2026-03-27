@@ -35,4 +35,9 @@ export interface Listing {
   badge?: ListingBadge;   // Badge superpuesto en la tarjeta
   agencyId: string;
   createdAt: string;      // ISO 8601 (arch.md: siempre ISO 8601, nunca Unix timestamp)
+  // Campos para vista de detalle (Story 2.5) — todos opcionales para compatibilidad
+  description?: string;   // Descripción larga del listing (viene del CRM)
+  garage?: boolean;       // ¿Tiene garaje incluido?
+  imageUrls?: string[];   // Galería de fotos adicionales (primera es hero si se usa)
 }
+

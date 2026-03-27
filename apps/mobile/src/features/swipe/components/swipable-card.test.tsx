@@ -1,10 +1,11 @@
 /**
  * apps/mobile/src/features/swipe/components/swipable-card.test.tsx
  *
- * Tests básicos para SwipableCard — verifica render sin crash y estructura.
+ * Tests básicos para SwipableCard — verifica render sin crash, estructura,
+ * y comportamiento del prop onInfo (Story 2.5).
  */
 import React from 'react';
-import { render } from '@testing-library/react-native';
+import { render, fireEvent } from '@testing-library/react-native';
 import { SwipableCard } from './swipable-card';
 import type { Listing } from '@reinder/shared';
 
@@ -65,5 +66,51 @@ describe('SwipableCard', () => {
     );
     // Puede haber múltiples instancias del texto (PropertyCard renderiza varios elementos con la ubicación)
     expect(getAllByText(/Chamberí/).length).toBeGreaterThan(0);
+  });
+
+  it('renderiza sin onInfo prop (compatibilidad hacia atrás)', () => {
+    // No debe crashear si onInfo no se proporciona
+    expect(() =>
+      render(
+        <SwipableCard
+          listing={mockListing}
+          onMatch={mockOnMatch}
+          onReject={mockOnReject}
+          testID="swipable-card"
+        />,
+      ),
+    ).not.toThrow();
+  });
+
+  it('acepta onInfo prop sin crashear', () => {
+    const mockOnInfo = jest.fn();
+    expect(() =>
+      render(
+        <SwipableCard
+          listing={mockListing}
+          onMatch={mockOnMatch}
+          onReject={mockOnReject}
+          onInfo={mockOnInfo}
+          testID="swipable-card"
+        />,
+      ),
+    ).not.toThrow();
+  });
+
+  it('el tap gesture no llama a onMatch ni onReject', () => {
+    const mockOnInfo = jest.fn();
+    const { getByTestId } = render(
+      <SwipableCard
+        listing={mockListing}
+        onMatch={mockOnMatch}
+        onReject={mockOnReject}
+        onInfo={mockOnInfo}
+        testID="swipable-card"
+      />,
+    );
+    // Presionar sobre la tarjeta no debe activar match ni reject
+    fireEvent.press(getByTestId('swipable-card'));
+    expect(mockOnMatch).not.toHaveBeenCalled();
+    expect(mockOnReject).not.toHaveBeenCalled();
   });
 });

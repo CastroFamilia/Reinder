@@ -12,3 +12,20 @@ export type ApiError = {
   code: string;
   message: string;
 };
+
+/**
+ * Un ítem del historial de matches del comprador.
+ * Retornado por GET /api/v1/matches
+ *
+ * Source: story 2-7-historial-matches-badge-nuevas-propiedades.md (Task 1)
+ */
+export type MatchHistoryItem = {
+  matchId: string;
+  listingId: string;
+  imageUrl: string;
+  price: number;
+  address: string;
+  listingStatus: 'active' | 'sold' | 'withdrawn';
+  matchedAt: string; // ISO 8601
+  confirmed: boolean;
+};
