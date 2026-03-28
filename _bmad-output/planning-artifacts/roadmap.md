@@ -41,9 +41,9 @@
 | **2.2** | Feed de Propiedades — PropertyCard y SwipeActions | 3 | — | ✅ done |
 | **2.3** | Gesto de Swipe con Match y MatchPayoff Animation | 4 | — | ✅ done |
 | **2.4** | Gesto de Descarte | 2 | — | ✅ done |
-| **2.5** | Vista de Detalle de Propiedad (Bottom Sheet) | 3 | — | 🔵 backlog |
-| **2.6** | Match Recap Screen | 3 | — | 🔵 backlog |
-| **2.7** | Historial de Matches y Badge "Nuevas Propiedades" | 3 | — | 🔵 backlog |
+| **2.5** | Vista de Detalle de Propiedad (Bottom Sheet) | 3 | — | ✅ done |
+| **2.6** | Match Recap Screen | 3 | — | ✅ done *(pendiente test humano)* |
+| **2.7** | Historial de Matches y Badge "Nuevas Propiedades" | 3 | — | ✅ done |
 | **2.8** | TabBar de Comprador con Navegación Rol-Based | 2 | — | 🔵 backlog |
 | **2.9** | Filtros de Búsqueda del Comprador — Onboarding y Edición | 4 | ☝️ Migración SQL en Supabase: columna `search_preferences` | 🟡 ready-for-dev |
 | **3.1** | Generación de Link de Referral por el Agente | 2 | — | 🔵 backlog |
@@ -105,4 +105,4 @@
 
 ---
 
-*Última actualización: 2026-03-23 — Recreado desde sesión 2026-03-22. Story 2.9 añadida.*
+*Última actualización: 2026-03-28 — Stories 2.5, 2.6 y 2.7 completadas. Epic 2: 7/9 done.*
