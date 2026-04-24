@@ -82,6 +82,33 @@
 
 ---
 
+## Fase 4 — Intelligence Platform · Buyer Analytics y Optimización de Contenido
+
+> Épicas derivadas del brainstorm estratégico 2026-04-24. Secuencia obligatoria: Epic 8 → Epic 9 → Epic 10.
+
+| Story | Título | Complejidad | Acción humana | Estado |
+|---|---|:---:|---|---|
+| **8.1** | Schema de Engagement Events e Instrumentación Base | 3 | ☝️ Migración SQL en Supabase: tabla `listing_engagement_events` | 🔵 backlog |
+| **8.2** | Instrumentación de PropertyCard — Tiempo por Foto | 3 | — | 🔵 backlog |
+| **8.3** | Instrumentación de PropertyDetailSheet — Scroll Depth | 2 | — | 🔵 backlog |
+| **8.4** | Tracking de Match Reaffirm desde Match Recap Screen | 3 | — | 🔵 backlog |
+| **8.5** | Dashboard de Analytics por Listing para Agencias | 4 | ☝️ Activar `pg_cron` jobs de aggregation en Supabase | 🔵 backlog |
+| **8.6** | Buyer Intent Score en Panel del Agente | 3 | — | 🔵 backlog |
+| **8.7** | Aggregation Jobs para Read Models de Analytics | 3 | — | 🔵 backlog |
+| **9.1** | Schema de Experimentos y Motor de Asignación de Variantes | 4 | ☝️ Migración SQL: tablas `listing_experiments`, `experiment_assignments` | 🔵 backlog |
+| **9.2** | UI de Creación de Experimento para Agencias (Portada A/B) | 3 | — | 🔵 backlog |
+| **9.3** | Medición de Impacto y Dashboard de Resultados del Experimento | 3 | — | 🔵 backlog |
+| **9.4** | Auto-promoción de Variante Ganadora al Alcanzar Significancia | 4 | — | 🔵 backlog |
+| **9.5** | Recomendaciones Proactivas de Experimentos para Listings Underperforming | 2 | — | 🔵 backlog |
+| **9.6** | Generación de Variantes de Título y Descripción con IA (Human-in-the-loop) | 5 | ☝️ Integración OpenAI GPT-4o: API key + prompt engineering + UI de aprobación | 🔵 backlog |
+| **10.1** | Buyer Preference Vector — Generación y Persistencia | 5 | ☝️ Migración SQL: tabla `buyer_preference_vectors` + evaluación legal GDPR | 🔵 backlog |
+| **10.2** | Listing Fit Score — Cálculo de Afinidad Listing × Comprador | 4 | — | 🔵 backlog |
+| **10.3** | Personalización de Foto de Portada en Swipe Feed | 4 | — | 🔵 backlog |
+| **10.4** | Adaptación de Highlights de Descripción por Perfil | 3 | — | 🔵 backlog |
+| **10.5** | Control de Privacidad — Desactivación de Personalización desde Perfil | 2 | ☝️ Revisión legal GDPR del modelo de personalización completada | 🔵 backlog |
+
+---
+
 ## Resumen por Fase
 
 | Fase | Stories | Complejidad total | Media | Con acción humana |
@@ -89,7 +116,8 @@
 | Fase 1 — MVP | 23 | 65 | 2.8 | 6 |
 | Fase 2 — CRM | 4 | 16 | 4.0 | 2 |
 | Fase 3 — SEO + Admin | 7 | 19 | 2.7 | 2 |
-| **Total** | **34** | **100** | **2.9** | **10** |
+| Fase 4 — Intelligence Platform | 18 | 59 | 3.3 | 6 |
+| **Total** | **52** | **159** | **3.1** | **16** |
 
 ---
 
@@ -105,4 +133,4 @@
 
 ---
 
-*Última actualización: 2026-03-28 — Stories 2.5, 2.6 y 2.7 completadas. Epic 2: 7/9 done.*
+*Última actualización: 2026-04-24 — Epics 8, 9 y 10 añadidas al roadmap tras brainstorm estratégico sobre evolución a plataforma de inteligencia de comprador.*

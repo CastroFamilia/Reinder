@@ -196,7 +196,225 @@ Una agencia puede conectar su CRM (Inmovilla) para importar sus exclusivas activ
 
 ---
 
-### Epic 6: Descubrimiento Orgánico y SEO — Cualquier persona puede descubrir Reinder desde buscadores y convertirse en usuario
+### Epic 8: Engagement Intelligence — La plataforma captura micro-comportamiento y lo convierte en inteligencia accionable para agentes y agencias
+
+Reinder instrumenta el comportamiento granular del comprador dentro del swipe loop (tiempo por foto, scroll depth en descripción, reafirmaciones de match desde el Recap Screen) y agrega esos datos en un dashboard de analytics para agencias y en un `buyer_intent_score` para el panel del agente. Esta epic convierte los datos pasivos que Reinder captura de forma única e irreplicable en la ventaja competitiva más poderosa del sector: inteligencia de intención de compra en tiempo real.
+
+**FRs cubiertos:** (nuevos, derivados del brainstorm estratégico 2026-04-24)
+- FR-E8-1: El sistema captura el tiempo de visualización por foto en la PropertyCard
+- FR-E8-2: El sistema captura el scroll depth del comprador en el PropertyDetailSheet
+- FR-E8-3: El sistema captura las reafirmaciones de match desde el Match Recap Screen como señal de intención cualificada alta
+- FR-E8-4: La agencia puede ver métricas de engagement por listing (avg view time, photo engagement heatmap, match rate, reaffirm rate)
+- FR-E8-5: El agente puede ver el `buyer_intent_score` de cada cliente, con highlight diferenciado para matches reafirmados
+- FR-E8-6: El agente recibe notificación urgente diferenciada cuando un cliente reafirma un match (prioridad máxima vs. match ordinario)
+
+**NFRs aplicados:** NFR11 (dashboards sobre read models agregados, nunca sobre raw events en tiempo real — desacoplado del swipe feed), NFR8 (datos de comportamiento individual no expuestos a agencias sin consentimiento — solo agregados por listing)
+
+**Requisitos de Arquitectura:**
+- Nueva tabla `listing_engagement_events` (append-only): `event_type` ('photo_view', 'photo_swipe', 'scroll_depth', 'detail_open', 'match_reaffirm'), `payload jsonb`, `session_id`, `buyer_id`, `listing_id`
+- Hook `useEngagementTracker()` en mobile — instrumentación en `PropertyCard` y `PropertyDetailSheet`
+- `pg_cron` aggregation jobs para pre-calcular métricas en tablas de read model (`listing_analytics`, `buyer_intent_scores`) — zero queries analíticas en raw events
+- Módulo `features/intelligence/` en `apps/web` — dashboard de agencia + panel enriquecido del agente
+- Tipo de notificación `match_reaffirm_urgent` en Edge Function push-notifications con payload diferenciado
+
+---
+
+### Story 8.1: Schema de Engagement Events e Instrumentación Base
+
+Como desarrollador del equipo Reinder,
+quiero definir el schema de `listing_engagement_events` e implementar el hook `useEngagementTracker()`,
+para que la app pueda capturar micro-comportamiento del comprador de forma desacoplada del swipe loop principal.
+
+**Acceptance Criteria:**
+
+**Given** la app mobile con Epic 2 completada
+**When** se ejecuta la migración y se actualiza el código mobile
+**Then** existe la tabla `listing_engagement_events` con campos: `id`, `buyer_id`, `listing_id`, `session_id`, `event_type`, `payload jsonb`, `created_at`
+**And** el hook `useEngagementTracker()` existe en `packages/shared` y acepta `listingId` + `sessionId` como parámetros
+**And** el hook expone callbacks: `trackPhotoView(photoIndex, durationMs)`, `trackScrollDepth(maxDepthPct)`, `trackDetailOpen()`, `trackDetailClose(durationMs)`, `trackMatchReaffirm()`
+**And** los eventos se encolan localmente y se envían en batch (no por evento individual) para no impactar el rendimiento de la UI (NFR2)
+**And** RLS restringe la escritura a `buyer` autenticado y la lectura a `platform_admin` únicamente — las agencias nunca ven datos individuales de compradores (NFR8)
+
+---
+
+### Story 8.2: Instrumentación de PropertyCard — Tiempo por Foto
+
+Como sistema Reinder,
+quiero registrar cuánto tiempo pasa el comprador en cada foto de una propiedad,
+para que las agencias puedan identificar qué fotos generan más atención.
+
+**Acceptance Criteria:**
+
+**Given** un comprador viendo una PropertyCard con galería de fotos
+**When** navega entre fotos o abandona la tarjeta
+**Then** se registra un evento `photo_view` con `{ photo_index: N, duration_ms: M }` por cada foto vista más de 500ms
+**And** la instrumentación usa `useEngagementTracker()` y no añade re-renders al componente `PropertyCard`
+**And** al hacer swipe (match o reject) se cierra automáticamente el tracker de la foto activa con el tiempo acumulado
+
+---
+
+### Story 8.3: Instrumentación de PropertyDetailSheet — Scroll Depth
+
+Como sistema Reinder,
+quiero registrar qué porcentaje de la descripción lee el comprador en el detail sheet,
+para que las agencias sepan si sus descripiones se leen o se ignoran.
+
+**Acceptance Criteria:**
+
+**Given** un comprador que abre el PropertyDetailSheet
+**When** scrollea la descripción y cierra el sheet
+**Then** se registra un evento `scroll_depth` con `{ max_depth_pct: N }` (0-100) al cerrar el sheet
+**And** se registra un evento `detail_open` al abrir y `detail_close` con `{ duration_ms: M }` al cerrar
+**And** si el comprador hace match o reject desde el sheet, esos eventos se registran antes del cierre
+
+---
+
+### Story 8.4: Tracking de Match Reaffirm desde Match Recap Screen
+
+Como sistema Reinder,
+quiero registrar cuando un comprador reafirma un match desde el Match Recap Screen,
+para que el agente sepa que esa propiedad tiene intención cualificada alta y actúe con urgencia.
+
+**Acceptance Criteria:**
+
+**Given** un comprador en el Match Recap Screen que confirma un match
+**When** pulsa "Confirmar" sobre una propiedad
+**Then** se registra un evento `match_reaffirm` vinculado al `match_event` original
+**And** se emite el evento Realtime `match.reaffirmed` al agente representante vinculado
+**And** la Edge Function push-notifications envía notificación de tipo `urgent` al agente: "⚡ {nombre} ha reconfirmado su interés en {propiedad} — actúa ahora"
+**And** en el panel del agente, estos matches aparecen con badge "⚡ Reconfirmado" diferenciado visualmente de los matches ordinarios
+
+---
+
+### Story 8.5: Dashboard de Analytics por Listing para Agencias
+
+Como administrador de agencia,
+quiero ver métricas de engagement de mis listings,
+para que pueda tomar decisiones de contenido basadas en comportamiento real de compradores.
+
+**Acceptance Criteria:**
+
+**Given** una agencia con listings activos y al menos 50 eventos de engagement acumulados
+**When** el admin de agencia accede al panel "Analytics" de un listing
+**Then** ve: tiempo medio de visualización por foto (ranking de fotos), scroll depth medio en descripción, ratio match/reject, ratio reaffirm/match, evolución temporal (últimos 7/30 días)
+**And** las métricas se calculan sobre read models agregados, nunca sobre raw events (NFR11)
+**And** los datos son anónimos y agregados — ningún dato identifica a un comprador individual (NFR8)
+**And** listings con menos de 10 visualizaciones muestran "Datos insuficientes — necesita más exposición"
+**And** un indicador de alerta aparece cuando el tiempo medio de visualización está >30% por debajo del promedio de la plataforma: "Tu portada está underperforming — considera cambiarla"
+
+---
+
+### Story 8.6: Buyer Intent Score en Panel del Agente
+
+Como agente representante,
+quiero ver un indicador de intención de compra para cada cliente y cada propiedad matcheada,
+para que pueda priorizar mis llamadas y actuar primero en las oportunidades con mayor probabilidad de cierre.
+
+**Acceptance Criteria:**
+
+**Given** un agente con clientes vinculados y datos de engagement acumulados
+**When** accede al perfil de un cliente
+**Then** ve el `buyer_intent_score` del cliente (0-100) calculado a partir de: número de matches, ratio de reafirmaciones, tiempo medio de visualización vs. promedio global, consistencia de preferencias inferidas
+**And** cada propiedad matcheada muestra un indicador de intensidad: 🔥 Alta (reaffirmed), ⭐ Media (match ordinario + tiempo alto), · Normal (match rápido)
+**And** el panel destaca las propiedades con señal 🔥 en la parte superior con CTA: "Llama hoy"
+**And** el score se actualiza en tiempo real via Supabase Realtime cuando hay nueva actividad del cliente
+
+---
+
+### Story 8.7: Aggregation Jobs para Read Models de Analytics
+
+Como sistema Reinder,
+quiero procesar los raw engagement events en read models pre-agregados,
+para que los dashboards de agencia y agente funcionen con latencia mínima sin impactar el swipe feed.
+
+**Acceptance Criteria:**
+
+**Given** eventos acumulados en `listing_engagement_events`
+**When** el job `pg_cron` de analytics se ejecuta (cada hora)
+**Then** actualiza las tablas de read model: `listing_analytics_hourly` (metrics por listing) y `buyer_intent_scores` (score por comprador)
+**And** los dashboards consumen únicamente los read models — zero queries sobre `listing_engagement_events` en requests de usuario
+**And** si el job falla, los read models mantienen los valores de la última ejecución exitosa (datos ligeramente desactualizados, nunca error en UI)
+**And** el admin recibe alerta si el job lleva más de 3 horas sin ejecutarse
+
+---
+
+## Epic 9: Content Optimization & A/B Testing — Las agencias pueden experimentar con contenido y Reinder optimiza automáticamente el rendimiento de los listings
+
+La plataforma ofrece a las agencias un motor de A/B testing para sus portadas, títulos y descripciones. Reinder asigna variantes aleatoriamente entre compradores, mide el impacto en métricas de engagement (view time, match rate, reaffirm rate), y auto-promueve la variante ganadora al alcanzar significancia estadística. En la fase avanzada, Reinder genera variantes alternativas con IA para que la agencia elija y apruebe antes de publicar.
+
+**FRs cubiertos:** (nuevos, derivados del brainstorm estratégico 2026-04-24)
+- FR-E9-1: La agencia puede crear un experimento A/B para un listing (portada, título y/o descripción)
+- FR-E9-2: El sistema asigna variante A o B a cada comprador de forma aleatoria y consistente (mismo comprador siempre ve la misma variante)
+- FR-E9-3: El sistema mide el impacto de cada variante en view time, match rate y reaffirm rate
+- FR-E9-4: El sistema declara variante ganadora automáticamente al alcanzar significancia estadística (n mínimo configurable, p-value ≤ 0.05)
+- FR-E9-5: El sistema auto-promueve la variante ganadora como contenido principal del listing
+- FR-E9-6: Reinder genera variantes alternativas de título y descripción con IA — la agencia aprueba antes de publicar
+- FR-E9-7: El sistema detecta proactivamente listings underperforming y recomienda crear un experimento
+
+**NFRs aplicados:** NFR11 (asignación de variante en request del swipe feed — debe ser <10ms, pre-computada en tabla de asignaciones), NFR8 (los experimentos no exponen datos de compradores individuales a agencias)
+
+**Requisitos de Arquitectura:**
+- Tablas: `listing_experiments` (config de variantes A/B), `experiment_assignments` (qué variante ve cada comprador — pre-asignada), `experiment_results` (métricas por variante)
+- Motor de asignación: hash determinístico `buyer_id + experiment_id` → variante (sin DB lookup en hot path)
+- Integración LLM (Phase 9.6): OpenAI GPT-4o o equivalente para generación de variantes — human-in-the-loop con aprobación de agencia antes de publicar
+- Pipeline de significancia estadística: t-test de Welch para métricas continuas (view time), test de proporciones de z para tasas (match rate)
+
+---
+
+### Story 9.1: Schema de Experimentos y Motor de Asignación de Variantes
+
+### Story 9.2: UI de Creación de Experimento para Agencias (Portada A/B)
+
+### Story 9.3: Medición de Impacto y Dashboard de Resultados del Experimento
+
+### Story 9.4: Auto-promoción de Variante Ganadora al Alcanzar Significancia
+
+### Story 9.5: Recomendaciones Proactivas de Experimentos para Listings Underperforming
+
+### Story 9.6: Generación de Variantes de Título y Descripción con IA (Human-in-the-loop)
+
+> 📝 *Stories 9.1–9.6 pendientes de desarrollo completo de Acceptance Criteria — ejecutar `create story [id]` cuando la Epic 8 esté completada al 80%.*
+
+---
+
+## Epic 10: Personalized Content Layer — Cada comprador ve la versión del listing más relevante para su perfil implícito
+
+Reinder utiliza el `buyer_preference_vector` inferido del historial de swipes para seleccionar automáticamente qué foto de portada y qué parte de la descripción mostrar primero a cada comprador, sin reescribir el contenido original. Esta personalización es completamente transparente para el comprador, basada en comportamiento interno de la plataforma (no cookies cross-site), y cubierta por el consentimiento GDPR del onboarding. La Epic 10 es la realización completa de la ventaja competitiva de Reinder: el mismo listing presentado de forma diferente a cada comprador según lo que datos reales indican que valora.
+
+**FRs cubiertos:** (nuevos, derivados del brainstorm estratégico 2026-04-24)
+- FR-E10-1: El sistema genera un `buyer_preference_vector` por comprador basado en su historial de swipe_events y engagement_events
+- FR-E10-2: El sistema calcula un `listing_fit_score` entre el preference_vector del comprador y las características del listing
+- FR-E10-3: La foto de portada mostrada al comprador se selecciona automáticamente según su preference_vector (sin intervención de la agencia)
+- FR-E10-4: El orden de los párrafos destacados en la descripción se adapta al perfil del comprador
+- FR-E10-5: La personalización respeta el consentimiento GDPR capturado en onboarding y puede desactivarse desde Perfil
+
+**NFRs aplicados:** NFR8 (personalización basada exclusivamente en datos internos de la plataforma — sin cookies cross-site ni datos de terceros), NFR2 (la selección de variante personalizada debe resolverse en <5ms para no impactar animaciones de swipe)
+
+**Pre-requisitos:** Epic 8 completa (preference_vector requiere masa crítica de engagement_events), revisión legal GDPR explícita del modelo de personalización.
+
+**Requisitos de Arquitectura:**
+- `buyer_preference_vectors` table: vector de embeddings generado por aggregation job (no en tiempo real)
+- `listing_fit_scores` pre-calculado por `pg_cron` para listings activos × compradores activos del último mes
+- Foto de portada personalizada: lookup en `listing_fit_scores` → selección de `photo_index` óptimo al servir el feed
+- Fallback: si no hay preference_vector (usuario nuevo), portada por defecto de la agencia
+
+---
+
+### Story 10.1: Buyer Preference Vector — Generación y Persistencia
+
+### Story 10.2: Listing Fit Score — Cálculo de Afinidad Listing × Comprador
+
+### Story 10.3: Personalización de Foto de Portada en Swipe Feed
+
+### Story 10.4: Adaptación de Highlights de Descripción por Perfil
+
+### Story 10.5: Control de Privacidad — Desactivación de Personalización desde Perfil
+
+> 📝 *Stories 10.1–10.5 pendientes de desarrollo completo de Acceptance Criteria — ejecutar `create story [id]` cuando Epic 9 esté en producción y se haya completado la revisión legal GDPR.*
+
+---
+
+## Epic 6: Descubrimiento Orgánico y SEO — Cualquier persona puede descubrir Reinder desde buscadores y convertirse en usuario
 
 El sistema genera páginas de listing indexables por motores de búsqueda con datos estructurados schema.org, renderizadas en servidor (SSR) en el dominio web (Next.js 15). Un usuario no autenticado que llega desde Google ve una preview del listing de calidad más un prompt claro de registro/login antes de acceder al contenido completo. Este gated content SEO actúa como el principal canal de adquisición orgánica de compradores para Reinder.
 

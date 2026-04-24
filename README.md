@@ -96,6 +96,9 @@ Create Story → [Validate Story] → Dev Story → [QA Automation] → [Code Re
 | **Epic 5** | Gestión de Listings e Integración CRM | 0/4 | ⬜ Backlog |
 | **Epic 6** | Descubrimiento Orgánico y SEO | 0/3 | ⬜ Backlog |
 | **Epic 7** | Administración de Plataforma | 0/4 | ⬜ Backlog |
+| **Epic 8** | Engagement Intelligence | 0/7 | ⬜ Backlog |
+| **Epic 9** | Content Optimization & A/B Testing | 0/6 | ⬜ Backlog |
+| **Epic 10** | Personalized Content Layer | 0/5 | ⬜ Backlog |
 
 **Siguiente Story:** `2-8-tabbar-comprador-navegacion-rol-based` (backlog) o `2-9-filtros-busqueda-buyer-onboarding` (ready-for-dev)
 

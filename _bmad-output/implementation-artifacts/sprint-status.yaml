@@ -1,5 +1,5 @@
 # generated: 2026-03-18T12:42:21+01:00
-# last_updated: 2026-03-28T17:56:20+01:00
+# last_updated: 2026-04-24T23:51:00+02:00
 # project: Reinder
 # project_key: NOKEY
 # tracking_system: file-system
@@ -35,7 +35,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: 2026-03-18T12:42:21+01:00
-last_updated: 2026-03-28T17:56:20+01:00
+last_updated: 2026-04-24T23:51:00+02:00
 project: Reinder
 project_key: NOKEY
 tracking_system: file-system
@@ -103,3 +103,33 @@ development_status:
   7-3-resolucion-listings-duplicados: backlog
   7-4-dashboard-metricas-globales-plataforma: backlog
   epic-7-retrospective: optional
+
+  # ─── Epic 8: Engagement Intelligence ─────────────────────────────────────
+  epic-8: backlog
+  8-1-schema-engagement-events-instrumentacion-base: backlog
+  8-2-instrumentacion-propertycard-tiempo-por-foto: backlog
+  8-3-instrumentacion-propertydetailsheet-scroll-depth: backlog
+  8-4-tracking-match-reaffirm-recap-screen: backlog
+  8-5-dashboard-analytics-listing-agencias: backlog
+  8-6-buyer-intent-score-panel-agente: backlog
+  8-7-aggregation-jobs-read-models-analytics: backlog
+  epic-8-retrospective: optional
+
+  # ─── Epic 9: Content Optimization & A/B Testing ───────────────────────────
+  epic-9: backlog
+  9-1-schema-experimentos-motor-asignacion-variantes: backlog
+  9-2-ui-creacion-experimento-agencias-portada-ab: backlog
+  9-3-medicion-impacto-dashboard-resultados-experimento: backlog
+  9-4-auto-promocion-variante-ganadora-significancia: backlog
+  9-5-recomendaciones-proactivas-experimentos-underperforming: backlog
+  9-6-generacion-variantes-titulo-descripcion-ia: backlog
+  epic-9-retrospective: optional
+
+  # ─── Epic 10: Personalized Content Layer ──────────────────────────────────
+  epic-10: backlog
+  10-1-buyer-preference-vector-generacion-persistencia: backlog
+  10-2-listing-fit-score-calculo-afinidad: backlog
+  10-3-personalizacion-foto-portada-swipe-feed: backlog
+  10-4-adaptacion-highlights-descripcion-perfil: backlog
+  10-5-control-privacidad-desactivacion-personalizacion: backlog
+  epic-10-retrospective: optional
