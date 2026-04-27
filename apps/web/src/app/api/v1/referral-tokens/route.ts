@@ -13,11 +13,13 @@
  */
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
+import { randomUUID } from 'crypto';
 import { createClient } from '@/lib/supabase/server';
 import { db } from '@/lib/supabase/db';
 import { referralTokens, userProfiles } from '@reinder/shared/db/schema';
 import { REFERRAL_TOKEN_TTL_DAYS } from '@reinder/shared/constants';
 import { eq, desc } from 'drizzle-orm';
+import { buildReferralUrl } from '@/features/agent-link/lib/referral-url';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -41,11 +43,6 @@ function computeStatus(used: boolean, expiresAt: Date): TokenStatus {
   if (used) return 'accepted';
   if (expiresAt < new Date()) return 'expired';
   return 'pending';
-}
-
-function buildReferralUrl(token: string): string {
-  const base = process.env.NEXT_PUBLIC_APP_URL ?? 'https://reinder.app';
-  return `${base}/referral/${token}`;
 }
 
 /**
@@ -86,8 +83,7 @@ export async function POST(_req: NextRequest) {
   // Calculate expiry: now + REFERRAL_TOKEN_TTL_DAYS
   const expiresAt = new Date(Date.now() + REFERRAL_TOKEN_TTL_DAYS * 24 * 60 * 60 * 1000);
 
-  // Generate a unique token using Node.js crypto
-  const { randomUUID } = await import('crypto');
+  // Generate a unique token using Node.js crypto (top-level import)
   const token = randomUUID();
 
   const [inserted] = await db

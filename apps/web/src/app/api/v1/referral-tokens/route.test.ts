@@ -17,7 +17,6 @@ import { NextRequest } from 'next/server';
 // ─── Mocks ──────────────────────────────────────────────────────────────────
 
 const MOCK_AGENT_ID = 'agent-uuid-001';
-const MOCK_TOKEN = '550e8400-e29b-41d4-a716-446655440000';
 
 // Mock Supabase server client
 vi.mock('@/lib/supabase/server', () => ({
@@ -32,6 +31,11 @@ vi.mock('@/lib/supabase/db', () => ({
   },
 }));
 
+// Mock local lib to avoid env var dependency in tests
+vi.mock('@/features/agent-link/lib/referral-url', () => ({
+  buildReferralUrl: (token: string) => `https://reinder.app/referral/${token}`,
+}));
+
 // Mock schema (Vitest resolves imports - return plain strings)
 vi.mock('@reinder/shared/db/schema', () => ({
   referralTokens: 'referral_tokens',
@@ -41,11 +45,6 @@ vi.mock('@reinder/shared/db/schema', () => ({
 vi.mock('drizzle-orm', () => ({
   eq: vi.fn((a: unknown, b: unknown) => ({ type: 'eq', a, b })),
   desc: vi.fn((col: unknown) => ({ type: 'desc', col })),
-}));
-
-// Mock crypto.randomUUID to return a deterministic value
-vi.mock('crypto', () => ({
-  randomUUID: vi.fn().mockReturnValue(MOCK_TOKEN),
 }));
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -100,7 +99,7 @@ describe('POST /api/v1/referral-tokens', () => {
         {
           id: 'token-id-1',
           agentId: MOCK_AGENT_ID,
-          token: MOCK_TOKEN,
+          token: 'generated-uuid',
           used: false,
           expiresAt,
           createdAt: new Date(),
@@ -115,7 +114,8 @@ describe('POST /api/v1/referral-tokens', () => {
 
     expect(res.status).toBe(201);
     expect(body.error).toBeNull();
-    expect(body.data.token).toBeDefined();
+    expect(typeof body.data.token).toBe('string');
+    expect(body.data.token.length).toBeGreaterThan(0);
     expect(body.data.used).toBe(false);
 
     // TTL ≈ 30 days
@@ -124,13 +124,14 @@ describe('POST /api/v1/referral-tokens', () => {
   });
 
   it('AC2 — response includes referralUrl containing the token', async () => {
+    const generatedToken = 'generated-uuid-for-test';
     const mockInsertChain = {
       values: vi.fn().mockReturnThis(),
       returning: vi.fn().mockResolvedValue([
         {
           id: 'token-id-2',
           agentId: MOCK_AGENT_ID,
-          token: MOCK_TOKEN,
+          token: generatedToken,
           used: false,
           expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
           createdAt: new Date(),
@@ -145,7 +146,7 @@ describe('POST /api/v1/referral-tokens', () => {
 
     expect(body.data.referralUrl).toBeDefined();
     expect(body.data.referralUrl).toContain('/referral/');
-    expect(body.data.referralUrl).toContain(MOCK_TOKEN);
+    expect(body.data.referralUrl).toContain(generatedToken);
   });
 
   it('AC3 — returns 401 when not authenticated', async () => {

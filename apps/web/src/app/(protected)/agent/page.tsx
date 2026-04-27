@@ -15,6 +15,7 @@ import { referralTokens, userProfiles } from '@reinder/shared/db/schema';
 import { eq, desc } from 'drizzle-orm';
 import type { Metadata } from 'next';
 import { ReferralLinkGenerator } from '@/features/agent-link/components/referral-link-generator';
+import { buildReferralUrl } from '@/features/agent-link/lib/referral-url';
 import type { ReferralTokenWithStatus } from '@/app/api/v1/referral-tokens/route';
 
 export const metadata: Metadata = {
@@ -30,11 +31,6 @@ function computeStatus(used: boolean, expiresAt: Date): TokenStatus {
   if (used) return 'accepted';
   if (expiresAt < new Date()) return 'expired';
   return 'pending';
-}
-
-function buildReferralUrl(token: string): string {
-  const base = process.env.NEXT_PUBLIC_APP_URL ?? 'https://reinder.app';
-  return `${base}/referral/${token}`;
 }
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
