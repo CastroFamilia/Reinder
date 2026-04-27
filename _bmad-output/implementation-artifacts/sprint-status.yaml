@@ -68,9 +68,9 @@ development_status:
   # ─── Epic 3: Vínculo Comprador–Agente Representante ───────────────────────
   epic-3: in-progress
   3-1-generacion-link-referral-por-agente: done
-  3-2-aceptacion-vinculo-comprador-via-referral-link: ready-for-dev
-  3-3-reconfirmacion-periodica-desvinculacion-voluntaria: backlog
-  3-4-sobreescritura-listing-agent-ui: backlog
+  3-2-aceptacion-vinculo-comprador-via-referral-link: done
+  3-3-reconfirmacion-periodica-desvinculacion-voluntaria: ready-for-dev
+  3-4-sobreescritura-listing-agent-ui: ready-for-dev
   epic-3-retrospective: optional
 
   # ─── Epic 4: Panel del Agente Representante ────────────────────────────────
