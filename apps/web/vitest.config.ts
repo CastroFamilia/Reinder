@@ -11,15 +11,39 @@ export default defineConfig({
     exclude: ["node_modules", ".next"],
   },
   resolve: {
-    alias: {
-      "@": path.resolve(__dirname, "./src"),
+    alias: [
+      {
+        find: "@",
+        replacement: path.resolve(__dirname, "./src"),
+      },
       // Mock server-only imports — not available in test env
-      "server-only": path.resolve(__dirname, "./src/__mocks__/server-only.ts"),
-      // Resolve workspace package
-      "@reinder/shared": path.resolve(
-        __dirname,
-        "../../packages/shared/src/index.ts"
-      ),
-    },
+      {
+        find: "server-only",
+        replacement: path.resolve(__dirname, "./src/__mocks__/server-only.ts"),
+      },
+      // Resolve workspace package subpaths BEFORE barrel (order matters)
+      {
+        find: "@reinder/shared/db/schema",
+        replacement: path.resolve(
+          __dirname,
+          "../../packages/shared/src/db/schema.ts"
+        ),
+      },
+      {
+        find: "@reinder/shared/constants",
+        replacement: path.resolve(
+          __dirname,
+          "../../packages/shared/src/constants/index.ts"
+        ),
+      },
+      // Barrel export (must come AFTER subpaths)
+      {
+        find: "@reinder/shared",
+        replacement: path.resolve(
+          __dirname,
+          "../../packages/shared/src/index.ts"
+        ),
+      },
+    ],
   },
 });

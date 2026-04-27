@@ -194,6 +194,7 @@ export const matchEvents = pgTable("match_events", {
 // ---------------------------------------------------------------------------
 // Tabla: referral_tokens
 // Tokens de invitación agente→comprador.
+// RLS: ver packages/shared/src/db/rls-referral-tokens-policies.sql (Story 3.1)
 // ---------------------------------------------------------------------------
 
 export const referralTokens = pgTable(
