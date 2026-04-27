@@ -4,8 +4,13 @@
  * Pantalla principal del swipe feed.
  * Integra: useSwipeStore, SwipableCard, PropertyCard (stack), SwipeActions, MatchPayoff,
  * el MatchRecapScreen Modal (Story 2.6), el badge de nuevas propiedades (Story 2.7),
- * y el PropertyDetailSheet (Story 2.5).
+ * el PropertyDetailSheet (Story 2.5),
+ * y el SearchOnboardingModal + SearchFiltersModal (Story 2.9).
  *
+ * Story 2.9:
+ * - SearchOnboardingModal: aparece la primera vez (AC1)
+ * - Botón ⚙️ en header: abre SearchFiltersModal para editar filtros (AC4)
+ * - loadFeed se llama con las preferencias del store (AC3)
  * - Si isLoading → PropertyCardSkeleton (AC4 Story 2.2)
  * - Si currentCard → SwipableCard con gesto + SwipeActions + MatchPayoff (AC1, AC2, AC3 Story 2.3)
  * - Efecto stack: tarjeta siguiente visible detrás de la activa (AC7 Story 2.3)
@@ -34,6 +39,10 @@ import { NewPropertiesBadge } from '../components/new-properties-badge';
 import { PropertyDetailSheet } from '../components/property-detail-sheet';
 import { Colors, Spacing, Typography } from '../../../lib/tokens';
 import { supabase } from '../../../lib/supabase';
+import { useSearchStore } from '../../../stores/use-search-store';
+import { SearchOnboardingModal } from '../../search/components/search-onboarding-modal';
+import { SearchFiltersModal } from '../../search/components/search-filters-modal';
+import type { SearchPreferences } from '@reinder/shared';
 
 export function SwipeScreen({
   testID,
@@ -65,6 +74,10 @@ export function SwipeScreen({
     dismissRecap,
   } = useSwipeStore();
 
+  // Story 2.9: search preferences store
+  const { preferences, hasCompletedOnboarding, setPreferences, markOnboardingDone } = useSearchStore();
+  const [isFiltersModalVisible, setIsFiltersModalVisible] = useState(false);
+
   const [isMatchPayoffVisible, setIsMatchPayoffVisible] = useState(false);
   /**
    * Estado del bottom sheet de detalle de propiedad (Story 2.5).
@@ -86,10 +99,11 @@ export function SwipeScreen({
   const isRejectInFlight = useRef(false);
 
   // Carga el feed al montar la pantalla — usa el token de sesión de Supabase
+  // Story 2.9: pasa los filtros activos al loadFeed (AC3)
   useEffect(() => {
     const token = session?.access_token ?? '';
-    loadFeed(token);
-  }, [loadFeed, session?.access_token]);
+    loadFeed(token, preferences ?? undefined);
+  }, [loadFeed, session?.access_token, preferences]);
 
   /**
    * Libera el guard de reject cuando cambia la tarjeta actual.
@@ -199,11 +213,25 @@ export function SwipeScreen({
     handleReject();
   }, [handleReject]);
 
+  // Story 2.9: guardar preferencias desde onboarding o filtros
+  const handleSavePreferences = useCallback(
+    async (prefs: SearchPreferences) => {
+      const token = session?.access_token ?? '';
+      await setPreferences(prefs, token);
+      setIsFiltersModalVisible(false);
+    },
+    [setPreferences, session?.access_token],
+  );
+
+  const handleSkipOnboarding = useCallback(() => {
+    markOnboardingDone();
+  }, [markOnboardingDone]);
+
   // [DEV ONLY] Resetea el feed para volver a ver las tarjetas
   const handleDevReset = useCallback(() => {
     const token = session?.access_token ?? '';
-    void resetFeed(token);
-  }, [resetFeed, session?.access_token]);
+    void resetFeed(token, preferences ?? undefined);
+  }, [resetFeed, session?.access_token, preferences]);
 
   // [DEV ONLY] Cierra sesión
   const handleDevLogout = useCallback(() => {
@@ -219,6 +247,18 @@ export function SwipeScreen({
   return (
     <ScreenBackground>
       <View style={styles.container} testID={testID}>
+
+        {/* Story 2.9: botón ⚙️ para editar filtros (AC4) */}
+        <View style={styles.headerRow}>
+          <TouchableOpacity
+            onPress={() => setIsFiltersModalVisible(true)}
+            style={styles.filterBtn}
+            testID="filter-settings-btn"
+          >
+            <Text style={styles.filterBtnText}>⚙️</Text>
+          </TouchableOpacity>
+        </View>
+
         {/* Badge de nuevas propiedades (Story 2.7 AC4 / UX-DR15) */}
         {!isBadgeDismissed && newMatchesSinceLastVisit > 0 && (
           <NewPropertiesBadge
@@ -337,6 +377,21 @@ export function SwipeScreen({
         onReject={handleDetailReject}
         testID="property-detail-sheet"
       />
+
+      {/* Story 2.9: Onboarding modal — primera vez del comprador (AC1, AC5) */}
+      <SearchOnboardingModal
+        visible={!hasCompletedOnboarding}
+        onSave={handleSavePreferences}
+        onSkip={handleSkipOnboarding}
+      />
+
+      {/* Story 2.9: Filtros modal — edición de preferencias (AC4) */}
+      <SearchFiltersModal
+        visible={isFiltersModalVisible}
+        currentPreferences={preferences}
+        onSave={handleSavePreferences}
+        onClose={() => setIsFiltersModalVisible(false)}
+      />
     </ScreenBackground>
   );
 }
@@ -344,6 +399,23 @@ export function SwipeScreen({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  headerRow: {
+    position: 'absolute',
+    top: 48,
+    right: Spacing.md,
+    zIndex: 10,
+  },
+  filterBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: 'rgba(0,0,0,0.35)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  filterBtnText: {
+    fontSize: 18,
   },
   deckContainer: {
     flex: 1,

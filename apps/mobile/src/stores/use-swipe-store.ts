@@ -12,7 +12,7 @@
  */
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import type { Listing, SwipeEvent } from '@reinder/shared';
+import type { Listing, SwipeEvent, SearchPreferences } from '@reinder/shared';
 import { MAX_SWIPE_PREFETCH, MATCH_RECAP_MIN_COUNT } from '@reinder/shared';
 import { fetchListings, MOCK_LISTINGS } from '../lib/api/listings';
 import { postSwipeEvent } from '../lib/api/swipe-events';
@@ -114,7 +114,7 @@ interface SwipeStore {
   isRecapVisible: boolean;
 
   /** Carga el feed inicial con el token de sesión del usuario */
-  loadFeed: (token: string) => Promise<void>;
+  loadFeed: (token: string, filters?: SearchPreferences) => Promise<void>;
   /** Avanza a la siguiente tarjeta del buffer */
   advanceCard: (token: string) => void;
   /** Fetch de más listings para mantener el buffer (no bloquea UI) */
@@ -156,8 +156,8 @@ interface SwipeStore {
    */
   discardRecapMatch: (matchId: string, token: string) => Promise<void>;
 
-  /** [DEV ONLY] Resetea el feed al estado inicial para volver a ver las tarjetas */
-  resetFeed: (token: string) => Promise<void>;
+  /** Resetea el feed al estado inicial y recarga con los nuevos filtros (AC7 Story 2.9) */
+  resetFeed: (token: string, filters?: SearchPreferences) => Promise<void>;
 }
 
 export const useSwipeStore = create<SwipeStore>()(
@@ -177,11 +177,11 @@ export const useSwipeStore = create<SwipeStore>()(
       recapMatchIds: [],
       isRecapVisible: false,
 
-      loadFeed: async (token: string) => {
+      loadFeed: async (token: string, filters?: SearchPreferences) => {
         set({ isLoading: true, error: null });
 
         try {
-          const result = await fetchListings(token);
+          const result = await fetchListings(token, undefined, filters);
 
           if (result.error) {
             // Fallback a mock data si el backend no está disponible
@@ -366,19 +366,18 @@ export const useSwipeStore = create<SwipeStore>()(
         }
       },
 
-      // [DEV ONLY] — Eliminar antes de producción (ver CLAUDE.md#Dev Temporals)
-      resetFeed: async (token: string) => {
+      // Story 2.9 AC7: reset del feed con nuevos filtros + DEV ONLY
+      resetFeed: async (token: string, filters?: SearchPreferences) => {
         set({
           currentCard: null,
           prefetchQueue: [],
           cursor: undefined,
-          // Limpia también el caché de recap para empezar desde cero
           consecutiveMatchCount: 0,
           pendingRecapIds: [],
           recapMatchIds: [],
           isRecapVisible: false,
         });
-        await get().loadFeed(token);
+        await get().loadFeed(token, filters);
       },
     }),
     {

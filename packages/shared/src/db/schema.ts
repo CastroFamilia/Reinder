@@ -56,6 +56,13 @@ export const userProfiles = pgTable("user_profiles", {
   fullName: text("full_name"),
   avatarUrl: text("avatar_url"),
   termsAcceptedAt: timestamp("terms_accepted_at", { withTimezone: true }),
+  /** SearchPreferences jsonb — Story 2.9 */
+  searchPreferences: jsonb("search_preferences").$type<{
+    zones: string[];
+    maxPrice?: number;
+    minRooms?: number;
+    minSqm?: number;
+  }>(),
   createdAt: timestamp("created_at", { withTimezone: true })
     .defaultNow()
     .notNull(),

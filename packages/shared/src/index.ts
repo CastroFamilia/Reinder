@@ -10,6 +10,7 @@
 export type { ApiResponse, ApiError, MatchHistoryItem } from "./types/api";
 export type { Listing, ListingStatus, ListingBadge, SwipeAction } from "./types/listing";
 export type { SwipeEvent, CreateSwipeEventPayload } from "./types/swipe-event";
+export type { SearchPreferences } from "./types/search-preferences";
 
 // Constants
 export {
