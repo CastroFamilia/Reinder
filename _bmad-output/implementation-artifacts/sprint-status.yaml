@@ -66,8 +66,8 @@ development_status:
   epic-2-retrospective: optional
 
   # ─── Epic 3: Vínculo Comprador–Agente Representante ───────────────────────
-  epic-3: backlog
-  3-1-generacion-link-referral-por-agente: backlog
+  epic-3: in-progress
+  3-1-generacion-link-referral-por-agente: ready-for-dev
   3-2-aceptacion-vinculo-comprador-via-referral-link: backlog
   3-3-reconfirmacion-periodica-desvinculacion-voluntaria: backlog
   3-4-sobreescritura-listing-agent-ui: backlog
