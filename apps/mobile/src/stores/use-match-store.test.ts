@@ -21,22 +21,22 @@ describe('useMatchStore', () => {
   });
 
   it('unreadMatchCount es 0 por defecto', () => {
-    const { useMatchStore } = require('./use-match-store');
-    const { unreadMatchCount } = useMatchStore.getState();
+    const { getMatchStoreState } = require('./use-match-store');
+    const { unreadMatchCount } = getMatchStoreState();
     expect(unreadMatchCount).toBe(0);
   });
 
   it('unreadMatchCount refleja newMatchesSinceLastVisit del store subyacente', () => {
     useMatchHistoryStore.setState({ newMatchesSinceLastVisit: 3 });
-    const { useMatchStore } = require('./use-match-store');
-    const { unreadMatchCount } = useMatchStore.getState();
+    const { getMatchStoreState } = require('./use-match-store');
+    const { unreadMatchCount } = getMatchStoreState();
     expect(unreadMatchCount).toBe(3);
   });
 
   it('markAllAsRead resetea el contador a 0', () => {
     useMatchHistoryStore.setState({ newMatchesSinceLastVisit: 5 });
-    const { useMatchStore } = require('./use-match-store');
-    const { markAllAsRead } = useMatchStore.getState();
+    const { getMatchStoreState } = require('./use-match-store');
+    const { markAllAsRead } = getMatchStoreState();
     markAllAsRead();
     expect(useMatchHistoryStore.getState().newMatchesSinceLastVisit).toBe(0);
   });

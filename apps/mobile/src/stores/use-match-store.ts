@@ -26,10 +26,12 @@ export function useMatchStore() {
 }
 
 /**
- * Versión con getState() para tests que necesitan acceder al store directamente.
- * Compatible con el patrón de tests ATDD que usan `useMatchStore.getState()`.
+ * Acceso directo al estado del match store (para tests y utils fuera de componentes).
+ * Usa getState() del store subyacente para evitar asignar propiedades a la función.
  */
-useMatchStore.getState = () => ({
-  unreadMatchCount: useMatchHistoryStore.getState().newMatchesSinceLastVisit,
-  markAllAsRead: useMatchHistoryStore.getState().markVisited,
-});
+export function getMatchStoreState() {
+  return {
+    unreadMatchCount: useMatchHistoryStore.getState().newMatchesSinceLastVisit,
+    markAllAsRead: useMatchHistoryStore.getState().markVisited,
+  };
+}
