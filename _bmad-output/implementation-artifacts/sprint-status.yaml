@@ -1,5 +1,5 @@
 # generated: 2026-03-18T12:42:21+01:00
-# last_updated: 2026-04-27T12:30:00+02:00
+# last_updated: 2026-04-27T23:09:00+02:00
 # project: Reinder
 # project_key: NOKEY
 # tracking_system: file-system
@@ -22,6 +22,7 @@
 #   - in-progress: Developer actively working on implementation
 #   - review: Ready for code review (via Dev's code-review workflow)
 #   - done: Story completed
+#   - bad-to-check: Story implemented by BAD pipeline — needs human verification
 #
 # Retrospective Status:
 #   - optional: Can be completed but not required
@@ -35,7 +36,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: 2026-03-18T12:42:21+01:00
-last_updated: 2026-04-27T12:30:00+02:00
+last_updated: 2026-04-27T23:09:00+02:00
 project: Reinder
 project_key: NOKEY
 tracking_system: file-system
@@ -61,16 +62,16 @@ development_status:
   2-5-vista-detalle-propiedad-bottom-sheet: done
   2-6-match-recap-screen: done  # Not tested by human
   2-7-historial-matches-badge-nuevas-propiedades: done
-  2-8-tabbar-comprador-navegacion-rol-based: done
-  2-9-filtros-busqueda-buyer-onboarding: done
+  2-8-tabbar-comprador-navegacion-rol-based: bad-to-check  # Implemented by BAD — needs human verification
+  2-9-filtros-busqueda-buyer-onboarding: bad-to-check      # Implemented by BAD — needs human verification
   epic-2-retrospective: optional
 
   # ─── Epic 3: Vínculo Comprador–Agente Representante ───────────────────────
   epic-3: done
-  3-1-generacion-link-referral-por-agente: done
-  3-2-aceptacion-vinculo-comprador-via-referral-link: done
-  3-3-reconfirmacion-periodica-desvinculacion-voluntaria: done
-  3-4-sobreescritura-listing-agent-ui: done
+  3-1-generacion-link-referral-por-agente: bad-to-check      # Implemented by BAD — needs human verification
+  3-2-aceptacion-vinculo-comprador-via-referral-link: bad-to-check  # Implemented by BAD — needs human verification
+  3-3-reconfirmacion-periodica-desvinculacion-voluntaria: bad-to-check  # Implemented by BAD — needs human verification
+  3-4-sobreescritura-listing-agent-ui: bad-to-check          # Implemented by BAD — needs human verification
   epic-3-retrospective: optional
 
   # ─── Epic 4: Panel del Agente Representante ────────────────────────────────

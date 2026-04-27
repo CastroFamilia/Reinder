@@ -44,12 +44,12 @@
 | **2.5** | Vista de Detalle de Propiedad (Bottom Sheet) | 3 | — | ✅ done |
 | **2.6** | Match Recap Screen | 3 | — | ✅ done *(pendiente test humano)* |
 | **2.7** | Historial de Matches y Badge "Nuevas Propiedades" | 3 | — | ✅ done |
-| **2.8** | TabBar de Comprador con Navegación Rol-Based | 2 | — | 🔵 backlog |
-| **2.9** | Filtros de Búsqueda del Comprador — Onboarding y Edición | 4 | ☝️ Migración SQL en Supabase: columna `search_preferences` | 🟡 ready-for-dev |
-| **3.1** | Generación de Link de Referral por el Agente | 2 | — | 🔵 backlog |
-| **3.2** | Aceptación del Vínculo por el Comprador vía Referral Link | 3 | — | 🔵 backlog |
-| **3.3** | Reconfirmación Periódica y Desvinculación Voluntaria | 3 | — | 🔵 backlog |
-| **3.4** | Sobreescritura del Listing Agent en la UI | 2 | — | 🔵 backlog |
+| **2.8** | TabBar de Comprador con Navegación Rol-Based | 2 | — | 🤖 bad-to-check |
+| **2.9** | Filtros de Búsqueda del Comprador — Onboarding y Edición | 4 | ☝️ Migración SQL en Supabase: columna `search_preferences` | 🤖 bad-to-check |
+| **3.1** | Generación de Link de Referral por el Agente | 2 | — | 🤖 bad-to-check |
+| **3.2** | Aceptación del Vínculo por el Comprador vía Referral Link | 3 | — | 🤖 bad-to-check |
+| **3.3** | Reconfirmación Periódica y Desvinculación Voluntaria | 3 | — | 🤖 bad-to-check |
+| **3.4** | Sobreescritura del Listing Agent en la UI | 2 | — | 🤖 bad-to-check |
 | **4.1** | Lista de Clientes Vinculados en el Panel del Agente | 2 | — | 🔵 backlog |
 | **4.2** | Notificación en Tiempo Real de Match de Cliente | 4 | ☝️ Configurar Expo Push Notifications (APNS cert iOS + FCM key Android) | 🔵 backlog |
 | **4.3** | Historial de Matches y Rechazos por Cliente | 2 | — | 🔵 backlog |
@@ -126,6 +126,7 @@
 | Símbolo | Significado |
 |---|---|
 | ✅ | done — completada e integrada |
+| 🤖 | bad-to-check — implementada por el pipeline BAD, pendiente verificación humana |
 | 🟡 | ready-for-dev — story escrita, pendiente de implementar |
 | 🔵 | backlog — definida, sin story file aún |
 | ☝️ | Requiere acción humana (Supabase, Vercel, App Store, credenciales externas…) |
@@ -133,4 +134,4 @@
 
 ---
 
-*Última actualización: 2026-04-24 — Epics 8, 9 y 10 añadidas al roadmap tras brainstorm estratégico sobre evolución a plataforma de inteligencia de comprador.*
+*Última actualización: 2026-04-27 — Epic 3 (Stories 3.1–3.4) implementada por pipeline BAD. Stories 2.8 y 2.9 también completadas por BAD. Todas marcadas `bad-to-check` pendientes de verificación humana.*
