@@ -241,3 +241,39 @@ export const pushTokens = pgTable(
     idxPushTokensUserId: index("idx_push_tokens_user_id").on(table.userId),
   })
 );
+
+// ---------------------------------------------------------------------------
+// Tabla: agent_buyer_bonds
+// Vínculo activo entre un agente representante y un comprador.
+// Creado cuando el comprador acepta el referral link del agente.
+// RLS: ver packages/shared/src/db/rls-agent-buyer-bonds-policies.sql (Story 3.2)
+// ---------------------------------------------------------------------------
+
+export const agentBuyerBonds = pgTable(
+  "agent_buyer_bonds",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    agentId: uuid("agent_id").notNull(),   // Referencia a auth.users.id del agente
+    buyerId: uuid("buyer_id").notNull(),   // Referencia a auth.users.id del comprador
+    referralTokenId: uuid("referral_token_id")
+      .notNull()
+      .references(() => referralTokens.id),
+    // active | expired | revoked
+    status: text("status").notNull().default("active"),
+    // Bond TTL — same as the referral token expiry, renewable in Story 3.3
+    expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => ({
+    // A buyer can only have one active bond per agent
+    uniqueAgentBuyer: unique("agent_buyer_bonds_unique").on(
+      table.agentId,
+      table.buyerId
+    ),
+    idxBuyerId: index("idx_agent_buyer_bonds_buyer_id").on(table.buyerId),
+    idxAgentId: index("idx_agent_buyer_bonds_agent_id").on(table.agentId),
+  })
+);
+
