@@ -5,10 +5,9 @@
  * Devuelve el feed de listings activos para el comprador autenticado.
  *
  * Story 2.2: implementación stub con datos mock para desarrollo.
- * Production: se reemplazará con consulta Drizzle a Supabase con RLS aplicado.
+ * Story 2.9: filtrado por query params (zone, max_price, min_rooms, min_sqm)
  *
  * Formato respuesta: ApiResponse<Listing[]> — wrapper obligatorio (arch.md)
- * Source: architecture.md#Format Patterns, architecture.md#Naming Patterns
  */
 import { NextResponse } from 'next/server';
 import type { Listing } from '@reinder/shared';
@@ -95,17 +94,34 @@ const MOCK_LISTINGS: Listing[] = [
 /**
  * GET /api/v1/listings
  * Devuelve listings activos para el feed del comprador.
- *
- * TODO (production): validar JWT de sesión Supabase + consulta Drizzle con RLS
+ * Story 2.9: acepta query params de filtrado (AC3)
+ *   ?zone=Malasaña&zone=Chamberí → filtra por location
+ *   ?max_price=400000            → filtra por price
+ *   ?min_rooms=2                 → filtra por rooms
+ *   ?min_sqm=60                  → filtra por squareMeters
  */
-export async function GET() {
-  // TODO: extraer y validar JWT desde Authorization header
-  // const authHeader = request.headers.get('Authorization');
-  // const token = authHeader?.replace('Bearer ', '');
-  // ...supabase auth check...
+export async function GET(request: Request) {
+  const { searchParams } = new URL(request.url);
+  const zones = searchParams.getAll('zone');
+  const maxPrice = searchParams.get('max_price') ? Number(searchParams.get('max_price')) : null;
+  const minRooms = searchParams.get('min_rooms') ? Number(searchParams.get('min_rooms')) : null;
+  const minSqm = searchParams.get('min_sqm') ? Number(searchParams.get('min_sqm')) : null;
 
-  return NextResponse.json(
-    { data: MOCK_LISTINGS, error: null },
-    { status: 200 },
-  );
+  let result: Listing[] = MOCK_LISTINGS;
+
+  // Aplicar filtros (AC3)
+  if (zones.length > 0) {
+    result = result.filter((l) => zones.some((z) => l.location.toLowerCase().includes(z.toLowerCase())));
+  }
+  if (maxPrice != null) {
+    result = result.filter((l) => (l.price ?? Infinity) <= maxPrice);
+  }
+  if (minRooms != null) {
+    result = result.filter((l) => (l.rooms ?? 0) >= minRooms);
+  }
+  if (minSqm != null) {
+    result = result.filter((l) => (l.squareMeters ?? 0) >= minSqm);
+  }
+
+  return NextResponse.json({ data: result, error: null }, { status: 200 });
 }

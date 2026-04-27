@@ -7,7 +7,7 @@
  * En desarrollo local: usa EXPO_PUBLIC_API_URL (default: http://localhost:3000)
  * Source: architecture.md#API & Communication Patterns
  */
-import type { ApiResponse, Listing } from '@reinder/shared';
+import type { ApiResponse, Listing, SearchPreferences } from '@reinder/shared';
 
 /**
  * URL base de la API web.
@@ -20,16 +20,25 @@ const API_BASE_URL =
 /**
  * Fetch de listings del feed para el comprador autenticado.
  * @param token - JWT de sesión Supabase
- * @param cursor - cursor de paginación (opcional, para cargar más)
+ * @param cursor - cursor de paginación (opcional)
+ * @param filters - preferencias de búsqueda activas (opcional, Story 2.9)
  */
 export async function fetchListings(
   token: string,
   cursor?: string,
+  filters?: SearchPreferences,
 ): Promise<ApiResponse<Listing[]>> {
   try {
     const url = new URL(`${API_BASE_URL}/listings`);
     if (cursor) {
       url.searchParams.set('cursor', cursor);
+    }
+    // Story 2.9: añadir filtros como query params
+    if (filters) {
+      filters.zones.forEach((z) => url.searchParams.append('zone', z));
+      if (filters.maxPrice != null) url.searchParams.set('max_price', String(filters.maxPrice));
+      if (filters.minRooms != null) url.searchParams.set('min_rooms', String(filters.minRooms));
+      if (filters.minSqm != null) url.searchParams.set('min_sqm', String(filters.minSqm));
     }
 
     const response = await fetch(url.toString(), {
@@ -57,6 +66,47 @@ export async function fetchListings(
       error: {
         code: 'NETWORK_ERROR',
         message: 'Sin conexión — guardando para cuando vuelvas',
+      },
+    };
+  }
+}
+
+/**
+ * Guarda/actualiza las preferencias de búsqueda del comprador en Supabase.
+ * PATCH /api/v1/buyer/preferences
+ * Story 2.9 — Task 5 (AC: 2)
+ */
+export async function saveSearchPreferences(
+  prefs: SearchPreferences,
+  token: string,
+): Promise<ApiResponse<SearchPreferences>> {
+  try {
+    const response = await fetch(`${API_BASE_URL}/buyer/preferences`, {
+      method: 'PATCH',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(prefs),
+    });
+
+    if (!response.ok) {
+      return {
+        data: null,
+        error: {
+          code: `HTTP_${response.status}`,
+          message: `Error al guardar preferencias: ${response.statusText}`,
+        },
+      };
+    }
+
+    return (await response.json()) as ApiResponse<SearchPreferences>;
+  } catch {
+    return {
+      data: null,
+      error: {
+        code: 'NETWORK_ERROR',
+        message: 'Sin conexión al guardar preferencias',
       },
     };
   }
