@@ -130,7 +130,7 @@ export async function GET(_req: NextRequest) {
     )
     .orderBy(
       // Most recently active clients first; NULLS LAST for clients with no matches
-      sql`${max(matchEvents.createdAt)} DESC NULLS LAST`,
+      sql`MAX(${matchEvents.createdAt}) DESC NULLS LAST`,
       desc(agentBuyerBonds.createdAt)
     );
 

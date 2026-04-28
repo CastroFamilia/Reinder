@@ -47,11 +47,12 @@ function computeStatus(used: boolean, expiresAt: Date): TokenStatus {
   return "pending";
 }
 
-// ─── Client card wrapper (Client Component needed for navigation) ──────────────
+import Link from "next/link";
 
 /**
- * Inline Client Component wrapper so we can use Next.js router from a Server Component page.
- * The AgentClientCard itself is a Client Component.
+ * Renders the list of bonded clients or an empty state.
+ * Uses Next.js Link for proper client-side navigation with prefetch.
+ * AgentClientCard handles visual rendering; Link handles navigation.
  */
 function ClientsSection({ clients }: { clients: AgentClient[] }) {
   if (clients.length === 0) {
@@ -61,14 +62,16 @@ function ClientsSection({ clients }: { clients: AgentClient[] }) {
   return (
     <div className="w-full max-w-2xl flex flex-col gap-3">
       {clients.map((client) => (
-        <AgentClientCard
+        <Link
           key={client.bondId}
-          client={client}
-          onPress={() => {
-            // Navigation handled via anchor — server component limitation
-            window.location.href = `/agent/clients/${client.buyerId}`;
-          }}
-        />
+          href={`/agent/clients/${client.buyerId}`}
+          className="no-underline"
+        >
+          <AgentClientCard
+            client={client}
+            onPress={() => {/* handled by Link wrapper */}}
+          />
+        </Link>
       ))}
     </div>
   );
@@ -148,7 +151,7 @@ export default async function AgentDashboardPage() {
       userProfiles.avatarUrl
     )
     .orderBy(
-      sql`${max(matchEvents.createdAt)} DESC NULLS LAST`,
+      sql`MAX(${matchEvents.createdAt}) DESC NULLS LAST`,
       desc(agentBuyerBonds.createdAt)
     );
 
