@@ -1,15 +1,17 @@
 /**
  * apps/web/src/app/(protected)/agent/page.tsx
  *
- * Panel del Agente — Stories 3.1 + 4.1
+ * Panel del Agente — Stories 3.1 + 4.1 + 4.2
  *
- * Story 3.1: Referral link generation (existing)
- * Story 4.1: Client list with match activity (new section)
+ * Story 3.1: Referral link generation
+ * Story 4.1: Client list (SSR)
+ * Story 4.2: Realtime badge updates via AgentDashboard Client Component
  *
  * Server Component: loads tokens + clients via Drizzle (SSR).
  * Guard: only `agent` role can access — redirects otherwise.
+ * Client boundary: AgentDashboard handles Supabase Realtime WebSocket.
  *
- * Source: story 4-1-lista-clientes-vinculados-panel-agente.md (Task 4)
+ * Source: story 4-2-notificacion-tiempo-real-match-cliente.md (Task 5)
  */
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
@@ -25,10 +27,7 @@ import type { Metadata } from "next";
 import { ReferralLinkGenerator } from "@/features/agent-link/components/referral-link-generator";
 import { buildReferralUrl } from "@/features/agent-link/lib/referral-url";
 import type { ReferralTokenWithStatus } from "@/app/api/v1/referral-tokens/route";
-import {
-  AgentClientCard,
-  AgentClientsEmptyState,
-} from "@/features/agent-panel/components/AgentClientCard";
+import { AgentDashboard } from "@/features/agent-panel/components/AgentDashboard";
 import type { AgentClient } from "@reinder/shared/types/agent";
 
 export const metadata: Metadata = {
@@ -37,7 +36,7 @@ export const metadata: Metadata = {
     "Panel de gestión de clientes y links de referral del agente representante.",
 };
 
-// ─── Status helper (same logic as API route) ──────────────────────────────────
+// ─── Status helper ──────────────────────────────────────────────────────────────
 
 type TokenStatus = "pending" | "accepted" | "expired";
 
@@ -45,36 +44,6 @@ function computeStatus(used: boolean, expiresAt: Date): TokenStatus {
   if (used) return "accepted";
   if (expiresAt < new Date()) return "expired";
   return "pending";
-}
-
-import Link from "next/link";
-
-/**
- * Renders the list of bonded clients or an empty state.
- * Uses Next.js Link for proper client-side navigation with prefetch.
- * AgentClientCard handles visual rendering; Link handles navigation.
- */
-function ClientsSection({ clients }: { clients: AgentClient[] }) {
-  if (clients.length === 0) {
-    return <AgentClientsEmptyState />;
-  }
-
-  return (
-    <div className="w-full max-w-2xl flex flex-col gap-3">
-      {clients.map((client) => (
-        <Link
-          key={client.bondId}
-          href={`/agent/clients/${client.buyerId}`}
-          className="no-underline"
-        >
-          <AgentClientCard
-            client={client}
-            onPress={() => {/* handled by Link wrapper */}}
-          />
-        </Link>
-      ))}
-    </div>
-  );
 }
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
@@ -100,7 +69,7 @@ export default async function AgentDashboardPage() {
     redirect("/swipe");
   }
 
-  // ─── Load referral tokens (Story 3.1 — existing) ───────────────────────────
+  // ─── Load referral tokens (Story 3.1) ───────────────────────────────────────
 
   const rawTokens = await db
     .select()
@@ -120,7 +89,7 @@ export default async function AgentDashboardPage() {
     status: computeStatus(t.used, t.expiresAt),
   }));
 
-  // ─── Load bonded clients (Story 4.1 — new) ────────────────────────────────
+  // ─── Load bonded clients (Story 4.1) ────────────────────────────────────────
 
   const clientRows = await db
     .select({
@@ -155,7 +124,7 @@ export default async function AgentDashboardPage() {
       desc(agentBuyerBonds.createdAt)
     );
 
-  const clients: AgentClient[] = clientRows.map((row) => {
+  const initialClients: AgentClient[] = clientRows.map((row) => {
     const lastMatchAt = row.lastMatchAt ?? null;
     const agentLastSeenAt = row.agentLastSeenAt ?? null;
     let hasNewMatches = false;
@@ -232,7 +201,7 @@ export default async function AgentDashboardPage() {
         <ReferralLinkGenerator initialTokens={initialTokens} />
       </section>
 
-      {/* ─── Section: Clientes Vinculados (Story 4.1) ─── */}
+      {/* ─── Section: Clientes Vinculados (Stories 4.1 + 4.2) ─── */}
       <section style={{ width: "100%", maxWidth: "672px" }}>
         <div
           style={{
@@ -247,7 +216,7 @@ export default async function AgentDashboardPage() {
           >
             Clientes Vinculados
           </h2>
-          {clients.length > 0 && (
+          {initialClients.length > 0 && (
             <span
               style={{
                 fontSize: "12px",
@@ -257,13 +226,17 @@ export default async function AgentDashboardPage() {
                 padding: "2px 10px",
               }}
             >
-              {clients.length}{" "}
-              {clients.length === 1 ? "cliente" : "clientes"}
+              {initialClients.length}{" "}
+              {initialClients.length === 1 ? "cliente" : "clientes"}
             </span>
           )}
         </div>
 
-        <ClientsSection clients={clients} />
+        {/* AgentDashboard: Client Component with Realtime subscription (Story 4.2) */}
+        <AgentDashboard
+          initialClients={initialClients}
+          agentId={user.id}
+        />
       </section>
     </main>
   );
