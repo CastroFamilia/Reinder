@@ -262,6 +262,8 @@ export const agentBuyerBonds = pgTable(
     status: text("status").notNull().default("active"),
     // Bond TTL — same as the referral token expiry, renewable in Story 3.3
     expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+    /** Story 4.1: tracks when agent last viewed this client's matches — used to compute hasNewMatches */
+    agentLastSeenAt: timestamp("agent_last_seen_at", { withTimezone: true }),
     createdAt: timestamp("created_at", { withTimezone: true })
       .defaultNow()
       .notNull(),
