@@ -123,12 +123,15 @@ export async function POST(request: Request): Promise<NextResponse<ApiResponse<S
 
     const agentId = bond?.agentId ?? null;
 
-    // INSERT match_events
-    await db.insert(matchEvents).values({
-      buyerId: user.id,
-      listingId,
-      agentId,
-    });
+    // INSERT match_events — returning id for deep-link payload (Story 4.4)
+    const [matchEvent] = await db
+      .insert(matchEvents)
+      .values({
+        buyerId: user.id,
+        listingId,
+        agentId,
+      })
+      .returning({ id: matchEvents.id });
 
     // Push notification to agent (silent no-op if no token or no bond)
     if (agentId) {
@@ -145,6 +148,7 @@ export async function POST(request: Request): Promise<NextResponse<ApiResponse<S
       // Fire-and-forget — never fail the main request
       notifyAgent(agentId, message, "Nuevo match en Reinder", {
         type: "match.created",
+        matchId: matchEvent?.id,
         listingId,
         buyerId: user.id,
       }).catch((err) => {
