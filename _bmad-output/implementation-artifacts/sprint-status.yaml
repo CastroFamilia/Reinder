@@ -78,7 +78,7 @@ development_status:
   epic-4: in-progress
   4-1-lista-clientes-vinculados-panel-agente: bad-to-check
   4-2-notificacion-tiempo-real-match-cliente: bad-to-check
-  4-3-historial-matches-rechazos-por-cliente: backlog
+  4-3-historial-matches-rechazos-por-cliente: bad-to-check
   4-4-deep-link-notificacion-detalle-match: backlog
   epic-4-retrospective: optional
 
