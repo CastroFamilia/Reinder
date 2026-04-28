@@ -1,46 +1,89 @@
 /**
  * apps/web/src/app/(protected)/agent/page.tsx
  *
- * Panel del Agente — Story 3.1: Generación de Links de Referral
+ * Panel del Agente — Stories 3.1 + 4.1
  *
- * Server Component: loads existing tokens via Drizzle (SSR).
- * Client Component: ReferralLinkGenerator handles generation + interactions.
+ * Story 3.1: Referral link generation (existing)
+ * Story 4.1: Client list with match activity (new section)
  *
+ * Server Component: loads tokens + clients via Drizzle (SSR).
  * Guard: only `agent` role can access — redirects otherwise.
+ *
+ * Source: story 4-1-lista-clientes-vinculados-panel-agente.md (Task 4)
  */
-import { redirect } from 'next/navigation';
-import { createClient } from '@/lib/supabase/server';
-import { db } from '@/lib/supabase/db';
-import { referralTokens, userProfiles } from '@reinder/shared/db/schema';
-import { eq, desc } from 'drizzle-orm';
-import type { Metadata } from 'next';
-import { ReferralLinkGenerator } from '@/features/agent-link/components/referral-link-generator';
-import { buildReferralUrl } from '@/features/agent-link/lib/referral-url';
-import type { ReferralTokenWithStatus } from '@/app/api/v1/referral-tokens/route';
+import { redirect } from "next/navigation";
+import { createClient } from "@/lib/supabase/server";
+import { db } from "@/lib/supabase/db";
+import {
+  referralTokens,
+  userProfiles,
+  agentBuyerBonds,
+  matchEvents,
+} from "@reinder/shared/db/schema";
+import { eq, and, count, max, desc, sql } from "drizzle-orm";
+import type { Metadata } from "next";
+import { ReferralLinkGenerator } from "@/features/agent-link/components/referral-link-generator";
+import { buildReferralUrl } from "@/features/agent-link/lib/referral-url";
+import type { ReferralTokenWithStatus } from "@/app/api/v1/referral-tokens/route";
+import {
+  AgentClientCard,
+  AgentClientsEmptyState,
+} from "@/features/agent-panel/components/AgentClientCard";
+import type { AgentClient } from "@reinder/shared/types/agent";
 
 export const metadata: Metadata = {
-  title: 'Panel del Agente — Reinder',
-  description: 'Panel de gestión de clientes y links de referral del agente representante.',
+  title: "Panel del Agente — Reinder",
+  description:
+    "Panel de gestión de clientes y links de referral del agente representante.",
 };
 
 // ─── Status helper (same logic as API route) ──────────────────────────────────
 
-type TokenStatus = 'pending' | 'accepted' | 'expired';
+type TokenStatus = "pending" | "accepted" | "expired";
 
 function computeStatus(used: boolean, expiresAt: Date): TokenStatus {
-  if (used) return 'accepted';
-  if (expiresAt < new Date()) return 'expired';
-  return 'pending';
+  if (used) return "accepted";
+  if (expiresAt < new Date()) return "expired";
+  return "pending";
+}
+
+// ─── Client card wrapper (Client Component needed for navigation) ──────────────
+
+/**
+ * Inline Client Component wrapper so we can use Next.js router from a Server Component page.
+ * The AgentClientCard itself is a Client Component.
+ */
+function ClientsSection({ clients }: { clients: AgentClient[] }) {
+  if (clients.length === 0) {
+    return <AgentClientsEmptyState />;
+  }
+
+  return (
+    <div className="w-full max-w-2xl flex flex-col gap-3">
+      {clients.map((client) => (
+        <AgentClientCard
+          key={client.bondId}
+          client={client}
+          onPress={() => {
+            // Navigation handled via anchor — server component limitation
+            window.location.href = `/agent/clients/${client.buyerId}`;
+          }}
+        />
+      ))}
+    </div>
+  );
 }
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default async function AgentDashboardPage() {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
   if (!user) {
-    redirect('/login');
+    redirect("/login");
   }
 
   // Verify role — only agents can access this route
@@ -50,11 +93,12 @@ export default async function AgentDashboardPage() {
     .where(eq(userProfiles.id, user.id))
     .limit(1);
 
-  if (!profile || profile.role !== 'agent') {
-    redirect('/swipe');
+  if (!profile || profile.role !== "agent") {
+    redirect("/swipe");
   }
 
-  // Load existing referral tokens (SSR)
+  // ─── Load referral tokens (Story 3.1 — existing) ───────────────────────────
+
   const rawTokens = await db
     .select()
     .from(referralTokens)
@@ -73,43 +117,151 @@ export default async function AgentDashboardPage() {
     status: computeStatus(t.used, t.expiresAt),
   }));
 
+  // ─── Load bonded clients (Story 4.1 — new) ────────────────────────────────
+
+  const clientRows = await db
+    .select({
+      bondId: agentBuyerBonds.id,
+      buyerId: agentBuyerBonds.buyerId,
+      buyerName: userProfiles.fullName,
+      buyerAvatarUrl: userProfiles.avatarUrl,
+      bondCreatedAt: agentBuyerBonds.createdAt,
+      agentLastSeenAt: agentBuyerBonds.agentLastSeenAt,
+      totalMatches: count(matchEvents.id),
+      lastMatchAt: max(matchEvents.createdAt),
+    })
+    .from(agentBuyerBonds)
+    .leftJoin(userProfiles, eq(userProfiles.id, agentBuyerBonds.buyerId))
+    .leftJoin(matchEvents, eq(matchEvents.buyerId, agentBuyerBonds.buyerId))
+    .where(
+      and(
+        eq(agentBuyerBonds.agentId, user.id),
+        eq(agentBuyerBonds.status, "active")
+      )
+    )
+    .groupBy(
+      agentBuyerBonds.id,
+      agentBuyerBonds.buyerId,
+      agentBuyerBonds.createdAt,
+      agentBuyerBonds.agentLastSeenAt,
+      userProfiles.fullName,
+      userProfiles.avatarUrl
+    )
+    .orderBy(
+      sql`${max(matchEvents.createdAt)} DESC NULLS LAST`,
+      desc(agentBuyerBonds.createdAt)
+    );
+
+  const clients: AgentClient[] = clientRows.map((row) => {
+    const lastMatchAt = row.lastMatchAt ?? null;
+    const agentLastSeenAt = row.agentLastSeenAt ?? null;
+    let hasNewMatches = false;
+    if (lastMatchAt) {
+      hasNewMatches = agentLastSeenAt ? lastMatchAt > agentLastSeenAt : true;
+    }
+    return {
+      bondId: row.bondId,
+      buyerId: row.buyerId,
+      buyerName: row.buyerName ?? null,
+      buyerAvatarUrl: row.buyerAvatarUrl ?? null,
+      bondCreatedAt: row.bondCreatedAt.toISOString(),
+      totalMatches: row.totalMatches,
+      lastMatchAt: lastMatchAt?.toISOString() ?? null,
+      hasNewMatches,
+    };
+  });
+
   return (
     <main
       style={{
-        minHeight: '100vh',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        padding: '48px 24px',
-        background: 'radial-gradient(ellipse at center, rgba(255,107,0,0.12) 0%, #0D0D0D 70%)',
-        color: '#F5F0E8',
+        minHeight: "100vh",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        padding: "48px 24px",
+        background:
+          "radial-gradient(ellipse at center, rgba(255,107,0,0.12) 0%, #0D0D0D 70%)",
+        color: "#F5F0E8",
         fontFamily: "'Inter', system-ui, sans-serif",
-        gap: '32px',
+        gap: "40px",
       }}
     >
       {/* Header */}
-      <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-        <div style={{ fontSize: '40px' }}>🤝</div>
+      <div
+        style={{
+          textAlign: "center",
+          display: "flex",
+          flexDirection: "column",
+          gap: "8px",
+        }}
+      >
+        <div style={{ fontSize: "40px" }}>🤝</div>
         <h1
           style={{
-            fontSize: '28px',
+            fontSize: "28px",
             fontWeight: 700,
-            color: '#FF6B00',
+            color: "#FF6B00",
             margin: 0,
           }}
         >
           Panel del Agente
         </h1>
-        <p style={{ color: '#9E9080', margin: 0, fontSize: '14px' }}>
-          Vincula a tus clientes compradores con tu link de referral
+        <p style={{ color: "#9E9080", margin: 0, fontSize: "14px" }}>
+          Gestiona tus clientes y links de referral
         </p>
-        <p style={{ color: '#9E9080', margin: 0, fontSize: '12px' }}>
+        <p style={{ color: "#9E9080", margin: 0, fontSize: "12px" }}>
           Sesión: {user.email}
         </p>
       </div>
 
-      {/* Referral link section */}
-      <ReferralLinkGenerator initialTokens={initialTokens} />
+      {/* ─── Section: Referral Links (Story 3.1) ─── */}
+      <section style={{ width: "100%", maxWidth: "672px" }}>
+        <h2
+          style={{
+            fontSize: "16px",
+            fontWeight: 600,
+            color: "#FF6B00",
+            marginBottom: "16px",
+          }}
+        >
+          Links de Referral
+        </h2>
+        <ReferralLinkGenerator initialTokens={initialTokens} />
+      </section>
+
+      {/* ─── Section: Clientes Vinculados (Story 4.1) ─── */}
+      <section style={{ width: "100%", maxWidth: "672px" }}>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            marginBottom: "16px",
+          }}
+        >
+          <h2
+            style={{ fontSize: "16px", fontWeight: 600, color: "#FF6B00" }}
+          >
+            Clientes Vinculados
+          </h2>
+          {clients.length > 0 && (
+            <span
+              style={{
+                fontSize: "12px",
+                color: "#9E9080",
+                background: "rgba(255,107,0,0.1)",
+                borderRadius: "12px",
+                padding: "2px 10px",
+              }}
+            >
+              {clients.length}{" "}
+              {clients.length === 1 ? "cliente" : "clientes"}
+            </span>
+          )}
+        </div>
+
+        <ClientsSection clients={clients} />
+      </section>
     </main>
   );
 }
