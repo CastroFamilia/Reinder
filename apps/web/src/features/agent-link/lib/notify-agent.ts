@@ -24,7 +24,7 @@ export type NotificationData =
       type: "match.created";
       listingId: string;
       buyerId: string;
-      matchId?: string;
+      matchId?: string; // optional — for deep-link: /agent/match/[matchId] (Story 4.4)
     };
 
 // ─── Main function ─────────────────────────────────────────────────────────────
