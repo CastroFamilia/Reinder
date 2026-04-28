@@ -1,5 +1,5 @@
 # Story Dependency Graph
-_Last updated: 2026-04-27T12:30:00+02:00_
+_Last updated: 2026-04-28T13:14:00+02:00_
 
 ## Stories
 
@@ -18,24 +18,24 @@ _Last updated: 2026-04-27T12:30:00+02:00_
 | 2.5 | 2 | Vista de Detalle de Propiedad (Bottom Sheet) | done | — | — | — | 2.2 | ✅ Yes (done) |
 | 2.6 | 2 | Match Recap Screen | done | — | — | — | 2.3 | ✅ Yes (done) |
 | 2.7 | 2 | Historial de Matches y Badge "Nuevas Propiedades" | done | — | — | — | 2.3, 2.6 | ✅ Yes (done) |
-| 2.8 | 2 | TabBar de Comprador con Navegación Rol-Based | done | — | — | — | 2.7 | ✅ Yes (done) |
-| 2.9 | 2 | Filtros de Búsqueda — Buyer Onboarding y Edición en Sesión | done | — | — | — | 2.2 | ✅ Yes (done) |
-| 3.1 | 3 | Generación de Link de Referral por el Agente | backlog | — | — | — | none (Epic 2 complete ✅) | ✅ Yes |
-| 3.2 | 3 | Aceptación del Vínculo por el Comprador vía Referral Link | backlog | — | — | — | 3.1 | ❌ No (depends on 3.1) |
-| 3.3 | 3 | Reconfirmación Periódica y Desvinculación Voluntaria | backlog | — | — | — | 3.2 | ❌ No (depends on 3.2) |
-| 3.4 | 3 | Sobreescritura del Listing Agent en la UI | backlog | — | — | — | 3.2 | ❌ No (depends on 3.2) |
-| 4.1 | 4 | Lista de Clientes Vinculados — Panel del Agente | backlog | — | — | — | 3.2 | ❌ No (Epic 3 not complete) |
-| 4.2 | 4 | Notificación en Tiempo Real de Match de Cliente | backlog | — | — | — | 4.1 | ❌ No (Epic 3 not complete) |
-| 4.3 | 4 | Historial de Matches y Rechazos por Cliente | backlog | — | — | — | 4.1 | ❌ No (Epic 3 not complete) |
-| 4.4 | 4 | Deep Link — Notificación → Detalle del Match | backlog | — | — | — | 4.2 | ❌ No (Epic 3 not complete) |
-| 5.1 | 5 | Conexión de CRM Agencia — Inmovilla | backlog | — | — | — | Epic 2 complete | ❌ No (ordering: Epic 3 first) |
+| 2.8 | 2 | TabBar de Comprador con Navegación Rol-Based | done (bad-to-check) | — | — | — | 2.7 | ✅ Yes (done) |
+| 2.9 | 2 | Filtros de Búsqueda — Buyer Onboarding y Edición en Sesión | done (bad-to-check) | — | — | — | 2.2 | ✅ Yes (done) |
+| 3.1 | 3 | Generación de Link de Referral por el Agente | done (bad-to-check) | — | — | — | none (Epic 2 complete ✅) | ✅ Yes (done) |
+| 3.2 | 3 | Aceptación del Vínculo por el Comprador vía Referral Link | done (bad-to-check) | — | — | — | 3.1 | ✅ Yes (done) |
+| 3.3 | 3 | Reconfirmación Periódica y Desvinculación Voluntaria | done (bad-to-check) | — | — | — | 3.2 | ✅ Yes (done) |
+| 3.4 | 3 | Sobreescritura del Listing Agent en la UI | done (bad-to-check) | — | — | — | 3.2 | ✅ Yes (done) |
+| 4.1 | 4 | Lista de Clientes Vinculados — Panel del Agente | backlog | #1 | — | — | 3.2 (done ✅) | ✅ Yes |
+| 4.2 | 4 | Notificación en Tiempo Real de Match de Cliente | backlog | #2 | — | — | 4.1 | ❌ No (depends on 4.1) |
+| 4.3 | 4 | Historial de Matches y Rechazos por Cliente | backlog | #3 | — | — | 4.1 | ❌ No (depends on 4.1) |
+| 4.4 | 4 | Deep Link — Notificación → Detalle del Match | backlog | #4 | — | — | 4.2 | ❌ No (depends on 4.2) |
+| 5.1 | 5 | Conexión de CRM Agencia — Inmovilla | backlog | — | — | — | Epic 2 complete | ❌ No (ordering: Epic 3+4 first) |
 | 5.2 | 5 | Sincronización de Listings — Webhook + Batch Desacoplados | backlog | — | — | — | 5.1 | ❌ No |
 | 5.3 | 5 | Validación de Exclusividad y Detección de Duplicados | backlog | — | — | — | 5.2 | ❌ No |
 | 5.4 | 5 | Ciclo de Vida del Listing — Retirada y Vendida | backlog | — | — | — | 5.2 | ❌ No |
 | 6.1 | 6 | Páginas de Listing SSR Indexables por Google | backlog | — | — | — | 5.2 | ❌ No |
 | 6.2 | 6 | Datos Estructurados schema.org en Páginas de Listing | backlog | — | — | — | 6.1 | ❌ No |
 | 6.3 | 6 | Gated Content — Preview para Usuarios No Autenticados | backlog | — | — | — | 6.1 | ❌ No |
-| 7.1 | 7 | CI/CD Pipeline y Observabilidad — Sentry + Analytics | backlog | — | — | — | Epic 2 complete | ❌ No (ordering: Epic 3 first) |
+| 7.1 | 7 | CI/CD Pipeline y Observabilidad — Sentry + Analytics | backlog | — | — | — | Epic 2 complete | ❌ No (ordering: Epic 3+4 first) |
 | 7.2 | 7 | Panel de Activación de Agencias | backlog | — | — | — | 7.1 | ❌ No |
 | 7.3 | 7 | Resolución de Listings Duplicados | backlog | — | — | — | 7.1, 5.3 | ❌ No |
 | 7.4 | 7 | Dashboard de Métricas Globales de Plataforma | backlog | — | — | — | 7.1 | ❌ No |
@@ -69,12 +69,15 @@ _Last updated: 2026-04-27T12:30:00+02:00_
 - **2.8** depends on: 2.7
 - **2.9** depends on: 2.2
 - **3.x** depends on: Epic 2 complete ✅
-- **3.1** → no prior deps within epic — READY
-- **3.2** depends on: 3.1
-- **3.3** depends on: 3.2
-- **3.4** depends on: 3.2
-- **4.x** depends on: Epic 3 (at least 3.2), Epic 2 complete
-- **5.x** depends on: Epic 2 complete (sequential ordering — do Epic 3 first per roadmap)
+- **3.1** → no prior deps within epic — DONE (bad-to-check)
+- **3.2** depends on: 3.1 — DONE (bad-to-check)
+- **3.3** depends on: 3.2 — DONE (bad-to-check)
+- **3.4** depends on: 3.2 — DONE (bad-to-check)
+- **4.1** → deps met (3.2 done) — READY TO WORK ✅
+- **4.2** depends on: 4.1
+- **4.3** depends on: 4.1
+- **4.4** depends on: 4.2
+- **5.x** depends on: Epic 2 complete (sequential ordering — do Epic 3+4 first per roadmap)
 - **6.x** depends on: Epic 5 (at least 5.2)
 - **7.x** depends on: Epic 2 complete (sequential ordering)
 - **8.x** depends on: Epic 2 complete (sequential ordering)
@@ -83,9 +86,10 @@ _Last updated: 2026-04-27T12:30:00+02:00_
 
 ## Notes
 
-**Current epic:** Epic 3 (Vínculo Comprador–Agente Representante) — starting now
-**Epic 2 status:** ✅ COMPLETE — all stories 2.1–2.9 done
-**Stories ready to work:** 3.1 only (3.2/3.3/3.4 sequentially dependent on 3.1)
-**Epic 3 execution plan:** 3.1 first → then 3.2 → then 3.3 + 3.4 in parallel
-**GitHub integration:** Local-only mode — no PRs or issues exist yet (all done stories implemented without GitHub PRs)
-**Sprint status note:** All Epic 1 and Epic 2 stories marked `done` in sprint-status.yaml. epic-2 updated to `done`.
+**Current epic:** Epic 4 (Panel del Agente Representante) — starting now
+**Epic 3 status:** ✅ COMPLETE — all stories 3.1–3.4 done (bad-to-check = implemented by BAD, pending human verification)
+**Stories ready to work:** 4.1 only (4.2 and 4.3 depend on 4.1; 4.4 depends on 4.2)
+**Epic 4 execution plan:** 4.1 first → then 4.2 + 4.3 in parallel → then 4.4
+**GitHub integration:** Active — issues #1 (4.1), #2 (4.2), #3 (4.3), #4 (4.4) created
+**Sprint status note:** Epic 3 stories all marked `bad-to-check` (treated as done for dependency purposes). epic-3 updated to `done`.
+**Worktrees:** Local branches exist for Epic 2-3 stories but no worktrees — local-only merge (no PRs). All branches merged to main locally.

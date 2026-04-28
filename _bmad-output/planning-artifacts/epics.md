@@ -820,6 +820,8 @@ El agente puede gestionar su lista de clientes vinculados, recibir notificacione
 
 ### Story 4.1: Lista de Clientes Vinculados en el Panel del Agente
 
+**GH Issue:** #1
+
 Como agente representante,
 quiero ver la lista de todos mis clientes compradores vinculados en mi panel,
 para que tenga visión clara de quién me representa y acceso rápido a la actividad de cada uno.
@@ -837,6 +839,8 @@ para que tenga visión clara de quién me representa y acceso rápido a la activ
 ---
 
 ### Story 4.2: Notificación en Tiempo Real de Match de Cliente
+
+**GH Issue:** #2
 
 Como agente representante,
 quiero recibir una notificación inmediata cuando uno de mis clientes hace match,
@@ -856,6 +860,8 @@ para que pueda actuar antes que cualquier otro agente.
 
 ### Story 4.3: Historial de Matches y Rechazos por Cliente
 
+**GH Issue:** #3
+
 Como agente representante,
 quiero ver el historial completo de matches y rechazos de cada uno de mis clientes,
 para que tenga la información necesaria para asesorarlos con precisión.
@@ -873,6 +879,8 @@ para que tenga la información necesaria para asesorarlos con precisión.
 ---
 
 ### Story 4.4: Deep Link Notificación → Detalle del Match
+
+**GH Issue:** #4
 
 Como agente representante,
 quiero que al pulsar en la notificación de match llegue directamente al detalle de esa propiedad,
