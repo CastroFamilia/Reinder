@@ -10,6 +10,7 @@
  */
 
 import { describe, it, expect, vi, beforeEach } from "vitest";
+import type { NextRequest } from "next/server";
 
 // ─── Mocks ────────────────────────────────────────────────────────────────────
 
@@ -46,12 +47,12 @@ const makeSupabaseMock = (user: typeof AGENT_USER | null) => ({
 });
 
 const makeGetRequest = (matchId: string) =>
-  new Request(`http://localhost:3000/api/v1/agent/match/${matchId}`);
+  new Request(`http://localhost:3000/api/v1/agent/match/${matchId}`) as unknown as NextRequest;
 
 const makePatchRequest = (matchId: string) =>
   new Request(`http://localhost:3000/api/v1/agent/match/${matchId}`, {
     method: "PATCH",
-  });
+  }) as unknown as NextRequest;
 
 const makeParams = (matchId: string) => Promise.resolve({ matchId });
 

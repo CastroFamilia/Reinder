@@ -4,7 +4,9 @@
  * Tests for GET /api/v1/matches
  * Story 2.7 — Task 1
  */
+import { describe, it, expect } from 'vitest';
 import { GET } from './route';
+
 
 describe('GET /api/v1/matches', () => {
   it('retorna 200 con array de matches', async () => {

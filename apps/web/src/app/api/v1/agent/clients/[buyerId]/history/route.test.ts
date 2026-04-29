@@ -13,6 +13,7 @@
  */
 
 import { describe, it, expect, vi, beforeEach } from "vitest";
+import type { NextRequest } from "next/server";
 
 // ─── Mocks ────────────────────────────────────────────────────────────────────
 
@@ -57,7 +58,7 @@ const makeSupabaseMock = (user: typeof AGENT_USER | null) => ({
 const makeRequest = (buyerId: string, queryParams = "") =>
   new Request(
     `http://localhost:3000/api/v1/agent/clients/${buyerId}/history${queryParams}`
-  );
+  ) as unknown as NextRequest;
 
 const makeParams = (buyerId: string) => Promise.resolve({ buyerId });
 

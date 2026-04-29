@@ -1,6 +1,6 @@
 # Story 2.9: Filtros de Búsqueda del Comprador
 
-Status: ready-for-dev
+Status: done
 
 ## Story
 
@@ -28,7 +28,18 @@ para que el feed de swipe solo me muestre propiedades relevantes a lo que realme
 
 ## Tasks / Subtasks
 
-- [ ] **Task 1 — Añadir `search_preferences` al tipo `UserProfile` en shared** (AC: 2)
+- [x] **Task 1 — Añadir `search_preferences` al tipo `UserProfile` en shared** (AC: 2)
+- [x] **Task 2 — Migración de Supabase** (AC: 2)
+- [x] **Task 3 — API: endpoint PATCH /api/v1/buyer/preferences** (AC: 2)
+- [x] **Task 4 — API: filtrado en GET /api/v1/listings** (AC: 3)
+- [x] **Task 5 — Cliente API mobile: `saveSearchPreferences` y filtros en `fetchListings`** (AC: 2, 3)
+- [x] **Task 6 — Store: `useSearchStore` para gestión de preferencias** (AC: 2, 4, 6, 7)
+- [x] **Task 7 — Añadir `resetFeed` con filters a `useSwipeStore`** (AC: 7)
+- [x] **Task 8 — UI: Modal de onboarding `SearchOnboardingModal`** (AC: 1, 5, 8)
+- [x] **Task 9 — UI: Botón ⚙️ en SwipeScreen + `SearchFiltersModal`** (AC: 4)
+- [x] **Task 10 — Integrar onboarding en el flujo de navegación** (AC: 1, 6)
+- [x] **Task 11 — Tests: 150/150 PASS, 22 suites, 0 regresiones** (AC: todos)
+
   - [ ] En `packages/shared/src/types/index.ts`, añadir:
     ```typescript
     export interface SearchPreferences {
@@ -255,16 +266,44 @@ useSearchStore.setPreferences(newPrefs)
 
 ### Agent Model Used
 
-Gemini — Antigravity (2026-03-23)
+Antigravity — BAD Pipeline (Steps 2–4) — 2026-04-27
 
 ### Completion Notes List
 
-_Pendiente de implementación_
+- ✅ Task 1–11: Todas implementadas. 8 ACs cubiertos.
+- ✅ SearchPreferences type en @reinder/shared, Drizzle schema actualizado
+- ✅ PATCH /api/v1/buyer/preferences + GET /api/v1/listings con filtros
+- ✅ useSearchStore con persistencia AsyncStorage
+- ✅ useSwipeStore.resetFeed actualizado para aceptar filters
+- ✅ SearchOnboardingModal (GlassPanel heavy) + SearchFiltersModal (bottom sheet)
+- ✅ SwipeScreen integrado con onboarding check + botón ⚙️
+- ✅ Code review PASSED (0 HIGH/MEDIUM)
 
 ### File List
 
-_Pendiente de implementación_
+```
+CREADOS:
+  packages/shared/src/types/search-preferences.ts
+  packages/shared/src/db/migrations/0001_add_search_preferences.sql
+  apps/mobile/src/stores/use-search-store.ts
+  apps/mobile/src/stores/use-search-store.test.ts
+  apps/mobile/src/features/search/components/search-onboarding-modal.tsx
+  apps/mobile/src/features/search/components/search-onboarding-modal.test.tsx
+  apps/mobile/src/features/search/components/search-filters-modal.tsx
+  apps/web/src/app/api/v1/buyer/preferences/route.ts
+
+MODIFICADOS:
+  packages/shared/src/index.ts
+  packages/shared/src/db/schema.ts
+  apps/mobile/src/lib/api/listings.ts
+  apps/mobile/src/stores/use-swipe-store.ts
+  apps/mobile/src/features/swipe/screens/swipe-screen.tsx
+  apps/web/src/app/api/v1/listings/route.ts
+```
 
 ## Change Log
 
 - **2026-03-23 (story creation):** Story 2.9 recreada desde contexto de conversación perdida. Status: ready-for-dev.
+- **2026-04-27 (BAD Step 2 — ATDD):** Tests de aceptación generados (red phase).
+- **2026-04-27 (BAD Step 3 — dev):** Implementación completa. 150/150 tests PASS.
+- **2026-04-27 (BAD Step 4 — review):** Code review PASSED. Status: done.

@@ -19,8 +19,9 @@ import { NextResponse } from 'next/server';
 import type { ApiResponse } from '@reinder/shared';
 
 interface RouteParams {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }
+
 
 /**
  * PATCH /api/v1/matches/{id}/confirm
@@ -31,7 +32,7 @@ export async function PATCH(
   { params }: RouteParams,
 ): Promise<NextResponse<ApiResponse<{ confirmed: boolean; matchId: string }>>> {
   try {
-    const { id } = params;
+    const { id } = await params;
 
     if (!id) {
       return NextResponse.json(
@@ -68,7 +69,7 @@ export async function DELETE(
   { params }: RouteParams,
 ): Promise<NextResponse<ApiResponse<{ deleted: boolean; matchId: string }>>> {
   try {
-    const { id } = params;
+    const { id } = await params;
 
     if (!id) {
       return NextResponse.json(

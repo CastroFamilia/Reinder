@@ -8,6 +8,12 @@
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import type { NextRequest } from 'next/server';
+
+// vi.hoisted ensures mockOrderBy is initialized before vi.mock() factory runs
+const { mockOrderBy } = vi.hoisted(() => ({
+  mockOrderBy: vi.fn().mockResolvedValue([]),
+}));
 
 // Mocks — these modules don't exist yet (TDD red phase)
 vi.mock('@/lib/supabase/server', () => ({
@@ -21,7 +27,7 @@ vi.mock('@/lib/supabase/db', () => ({
     leftJoin: vi.fn().mockReturnThis(),
     where: vi.fn().mockReturnThis(),
     groupBy: vi.fn().mockReturnThis(),
-    orderBy: vi.fn().mockResolvedValue([]),
+    orderBy: mockOrderBy,
   },
 }));
 
@@ -36,25 +42,25 @@ const BUYER_USER_2 = { id: 'buyer-uuid-2', email: 'buyer2@test.com' };
 const mockAgentProfile = { role: 'agent' };
 const mockBuyerProfile = { role: 'buyer' };
 
-const makeSupabaseMock = (user: typeof AGENT_USER | null, profile: typeof mockAgentProfile | null) => ({
+const makeSupabaseMock = (
+  user: { id: string; email: string } | null,
+  _profile: { role: string } | null,
+) => ({
   auth: {
     getUser: vi.fn().mockResolvedValue({
       data: { user },
       error: user ? null : { message: 'Not authenticated' },
     }),
   },
-  from: vi.fn().mockReturnValue({
-    select: vi.fn().mockReturnThis(),
-    eq: vi.fn().mockReturnThis(),
-    single: vi.fn().mockResolvedValue({ data: profile, error: null }),
-  }),
 });
 
-const makeRequest = () => new Request('http://localhost:3000/api/v1/agent/clients');
+const makeRequest = () =>
+  new Request('http://localhost:3000/api/v1/agent/clients') as unknown as NextRequest;
 
 describe('GET /api/v1/agent/clients', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockOrderBy.mockResolvedValue([]);
   });
 
   // ─── T4.1-01: RLS isolation — agent sees only their clients ───
@@ -63,8 +69,7 @@ describe('GET /api/v1/agent/clients', () => {
     vi.mocked(createClient).mockResolvedValue(supabase as any);
 
     // Mock DB returning 2 clients for this agent
-    const { db } = await import('@/lib/supabase/db');
-    vi.mocked(db.select().from(null as any).leftJoin(null as any).leftJoin(null as any).where(null as any).groupBy(null as any).orderBy as any).mockResolvedValue([
+    mockOrderBy.mockResolvedValueOnce([
       {
         bondId: 'bond-1',
         buyerId: BUYER_USER_1.id,
@@ -90,17 +95,12 @@ describe('GET /api/v1/agent/clients', () => {
 
   // ─── T4.1-01b: Cross-agent isolation (critical security test) ───
   it.skip('T4.1-01b: agent A cannot see clients bonded to agent B', async () => {
-    const AGENT_B = { id: 'agent-uuid-2', email: 'agent2@test.com' };
-
     // Agent A makes the request
     const supabaseAgentA = makeSupabaseMock(AGENT_USER, mockAgentProfile);
     vi.mocked(createClient).mockResolvedValue(supabaseAgentA as any);
 
     // DB mock: only returns bonds where agentId = AGENT_USER.id (no crossover)
-    const { db } = await import('@/lib/supabase/db');
-    vi.mocked(db.select().from(null as any).leftJoin(null as any).leftJoin(null as any).where(null as any).groupBy(null as any).orderBy as any).mockResolvedValue([
-      // Only bonds for AGENT_USER, not AGENT_B's
-    ]);
+    mockOrderBy.mockResolvedValueOnce([]);
 
     const req = makeRequest();
     const res = await GET(req);
@@ -119,8 +119,7 @@ describe('GET /api/v1/agent/clients', () => {
     const supabase = makeSupabaseMock(AGENT_USER, mockAgentProfile);
     vi.mocked(createClient).mockResolvedValue(supabase as any);
 
-    const { db } = await import('@/lib/supabase/db');
-    vi.mocked(db.select().from(null as any).leftJoin(null as any).leftJoin(null as any).where(null as any).groupBy(null as any).orderBy as any).mockResolvedValue([
+    mockOrderBy.mockResolvedValueOnce([
       {
         bondId: 'bond-1',
         buyerId: BUYER_USER_1.id,
@@ -160,8 +159,7 @@ describe('GET /api/v1/agent/clients', () => {
     const agentLastSeenAt = new Date('2026-04-26T10:00:00Z');
     const lastMatchAt = new Date('2026-04-27T12:00:00Z'); // after agent last seen
 
-    const { db } = await import('@/lib/supabase/db');
-    vi.mocked(db.select().from(null as any).leftJoin(null as any).leftJoin(null as any).where(null as any).groupBy(null as any).orderBy as any).mockResolvedValue([
+    mockOrderBy.mockResolvedValueOnce([
       {
         bondId: 'bond-1',
         buyerId: BUYER_USER_1.id,
@@ -187,8 +185,7 @@ describe('GET /api/v1/agent/clients', () => {
     const supabase = makeSupabaseMock(AGENT_USER, mockAgentProfile);
     vi.mocked(createClient).mockResolvedValue(supabase as any);
 
-    const { db } = await import('@/lib/supabase/db');
-    vi.mocked(db.select().from(null as any).leftJoin(null as any).leftJoin(null as any).where(null as any).groupBy(null as any).orderBy as any).mockResolvedValue([]);
+    mockOrderBy.mockResolvedValueOnce([]);
 
     const req = makeRequest();
     const res = await GET(req);

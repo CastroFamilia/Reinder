@@ -1,0 +1,23 @@
+{
+  "core": {
+    "user_name": "Santiago",
+    "document_output_language": "English",
+    "output_folder": "{project-root}/_bmad-output"
+  },
+  "module": {
+    "max_parallel_stories": "3",
+    "worktree_base_path": ".worktrees",
+    "auto_pr_merge": false,
+    "run_ci_locally": false,
+    "wait_timer_seconds": "3600",
+    "retro_timer_seconds": "600",
+    "context_compaction_threshold": "80",
+    "stale_timeout_minutes": "60",
+    "timer_support": false,
+    "monitor_support": false,
+    "model_standard": "sonnet",
+    "model_quality": "opus",
+    "api_five_hour_threshold": "80",
+    "api_seven_day_threshold": "95"
+  }
+}
