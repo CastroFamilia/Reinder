@@ -75,16 +75,16 @@ development_status:
   epic-3-retrospective: optional
 
   # ─── Epic 4: Panel del Agente Representante ────────────────────────────────
-  epic-4: backlog
-  4-1-lista-clientes-vinculados-panel-agente: backlog
-  4-2-notificacion-tiempo-real-match-cliente: backlog
-  4-3-historial-matches-rechazos-por-cliente: backlog
-  4-4-deep-link-notificacion-detalle-match: backlog
+  epic-4: done
+  4-1-lista-clientes-vinculados-panel-agente: done
+  4-2-notificacion-tiempo-real-match-cliente: done
+  4-3-historial-matches-rechazos-por-cliente: done
+  4-4-deep-link-notificacion-detalle-match: done
   epic-4-retrospective: optional
 
   # ─── Epic 5: Gestión de Listings e Integración CRM ────────────────────────
-  epic-5: backlog
-  5-1-conexion-crm-agencia-inmovilla: backlog
+  epic-5: in-progress
+  5-1-conexion-crm-agencia-inmovilla: done
   5-2-sincronizacion-listings-webhook-batch-desacoplados: backlog
   5-3-validacion-exclusividad-deteccion-duplicados: backlog
   5-4-ciclo-vida-listing-retirada-vendida: backlog

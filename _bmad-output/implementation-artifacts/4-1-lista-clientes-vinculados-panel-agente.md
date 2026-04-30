@@ -1,6 +1,6 @@
 # Story 4.1: Lista de Clientes Vinculados en el Panel del Agente
 
-Status: review
+Status: ready-for-dev
 
 **GH Issue:** #1
 
@@ -26,46 +26,46 @@ para que tenga visión clara de quién me representa y acceso rápido a la activ
 
 ## Tasks / Subtasks
 
-- [x] **Task 1 — API Route: GET /api/v1/agent/clients** (AC: 1, 2, 3, 6)
-  - [x] Crear `apps/web/src/app/api/v1/agent/clients/route.ts`
-  - [x] Guard: solo rol `agent` puede acceder (verificar con Supabase server client)
-  - [x] Query: `agentBuyerBonds` WHERE `agentId = currentUser.id` AND `status = 'active'`
-  - [x] JOIN con `user_profiles` (comprador) para obtener `fullName`, `avatarUrl`
-  - [x] JOIN con `match_events` COUNT por `buyerId` para obtener `totalMatches`
-  - [x] Calcular `lastMatchAt` (MAX `match_events.createdAt` por buyerId)
-  - [x] Calcular `hasNewMatches`: si `lastMatchAt` > `agentLastSeenAt` del bond
-  - [x] Ordenar por `lastMatchAt DESC NULLS LAST`, luego `createdAt DESC`
-  - [x] Devolver `ApiResponse<AgentClient[]>` con wrapper estándar
-  - [x] Crear test `apps/web/src/app/api/v1/agent/clients/route.test.ts` (ATDD red phase + real tests)
+- [ ] **Task 1 — API Route: GET /api/v1/agent/clients** (AC: 1, 2, 3, 6)
+  - [ ] Crear `apps/web/src/app/api/v1/agent/clients/route.ts`
+  - [ ] Guard: solo rol `agent` puede acceder (verificar con Supabase server client)
+  - [ ] Query: `agentBuyerBonds` WHERE `agentId = currentUser.id` AND `status = 'active'`
+  - [ ] JOIN con `user_profiles` (comprador) para obtener `fullName`, `avatarUrl`
+  - [ ] JOIN con `match_events` COUNT por `buyerId` para obtener `totalMatches`
+  - [ ] Calcular `lastMatchAt` (MAX `match_events.createdAt` por buyerId)
+  - [ ] Calcular `hasNewMatches`: si `lastMatchAt` > `agentLastSeenAt` del bond
+  - [ ] Ordenar por `lastMatchAt DESC NULLS LAST`, luego `createdAt DESC`
+  - [ ] Devolver `ApiResponse<AgentClient[]>` con wrapper estándar
+  - [ ] Crear test `apps/web/src/app/api/v1/agent/clients/route.test.ts` (ATDD red phase + real tests)
 
-- [x] **Task 2 — Schema: añadir `agentLastSeenAt` al bond** (AC: 2 — `has-new-matches`)
-  - [x] En `packages/shared/src/db/schema.ts`, añadir campo `agentLastSeenAt` al `agentBuyerBonds`
-  - [x] Crear migration `0002_add_agent_last_seen_at.sql`
-  - [x] PATCH endpoint stub (Story 4.3 lo completará — campo preparado en schema)
+- [ ] **Task 2 — Schema: añadir `agentLastSeenAt` al bond** (AC: 2 — `has-new-matches`)
+  - [ ] En `packages/shared/src/db/schema.ts`, añadir campo `agentLastSeenAt` al `agentBuyerBonds`
+  - [ ] Crear migration `0002_add_agent_last_seen_at.sql`
+  - [ ] PATCH endpoint stub (Story 4.3 lo completará — campo preparado en schema)
 
-- [x] **Task 3 — Componente `AgentClientCard`** (AC: 1, 2, 5)
-  - [x] Crear `apps/web/src/features/agent-panel/components/AgentClientCard.tsx`
-  - [x] Props: `{ client: AgentClient; onPress: () => void }`
-  - [x] Mostrar: avatar/iniciales, nombre, fecha de vínculo, total matches, badge naranja si `hasNewMatches`
-  - [x] Glassmorphism styling (bg-white/10 backdrop-blur-md)
-  - [x] On press: navegar a `/agent/clients/{buyerId}`
-  - [x] Crear test `AgentClientCard.test.tsx` — 8 tests PASS
+- [ ] **Task 3 — Componente `AgentClientCard`** (AC: 1, 2, 5)
+  - [ ] Crear `apps/web/src/features/agent-panel/components/AgentClientCard.tsx`
+  - [ ] Props: `{ client: AgentClient; onPress: () => void }`
+  - [ ] Mostrar: avatar/iniciales, nombre, fecha de vínculo, total matches, badge naranja si `hasNewMatches`
+  - [ ] Glassmorphism styling (bg-white/10 backdrop-blur-md)
+  - [ ] On press: navegar a `/agent/clients/{buyerId}`
+  - [ ] Crear test `AgentClientCard.test.tsx` — 8 tests PASS
 
-- [x] **Task 4 — Página `/agent/clients` (Agent Dashboard)** (AC: 1, 3, 4, 5)
-  - [x] Actualizar `apps/web/src/app/(protected)/agent/page.tsx` (ruta real confirmada)
-  - [x] Server Component carga clientes via Drizzle directamente (SSR)
-  - [x] Renderizar lista de `AgentClientCard` components
-  - [x] Estado vacío: `AgentClientsEmptyState` con mensaje correcto
-  - [x] Link/CTA al generador de referral links (Story 3.1 — preservado)
+- [ ] **Task 4 — Página `/agent/clients` (Agent Dashboard)** (AC: 1, 3, 4, 5)
+  - [ ] Actualizar `apps/web/src/app/(protected)/agent/page.tsx` (ruta real confirmada)
+  - [ ] Server Component carga clientes via Drizzle directamente (SSR)
+  - [ ] Renderizar lista de `AgentClientCard` components
+  - [ ] Estado vacío: `AgentClientsEmptyState` con mensaje correcto
+  - [ ] Link/CTA al generador de referral links (Story 3.1 — preservado)
 
-- [x] **Task 5 — Tipos compartidos** (AC: todos)
-  - [x] Crear `packages/shared/src/types/agent.ts` con `AgentClient` interface
-  - [x] Exportar desde `packages/shared/src/index.ts`
+- [ ] **Task 5 — Tipos compartidos** (AC: todos)
+  - [ ] Crear `packages/shared/src/types/agent.ts` con `AgentClient` interface
+  - [ ] Exportar desde `packages/shared/src/index.ts`
 
-- [x] **Task 6 — Typecheck + tests**
-  - [x] `pnpm --filter @reinder/shared typecheck` → 0 errores ✅
-  - [x] `pnpm --filter @reinder/web test` → 63 passed, 0 failures ✅
-  - [x] Nuevos archivos sin errores de typecheck en espacio de trabajo principal ✅
+- [ ] **Task 6 — Typecheck + tests**
+  - [ ] `pnpm --filter @reinder/shared typecheck` → 0 errores ✅
+  - [ ] `pnpm --filter @reinder/web test` → 63 passed, 0 failures ✅
+  - [ ] Nuevos archivos sin errores de typecheck en espacio de trabajo principal ✅
 
 ## Dev Notes
 

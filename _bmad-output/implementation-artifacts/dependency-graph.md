@@ -25,10 +25,10 @@ _Last updated: 2026-04-28T13:14:00+02:00_
 | 3.3 | 3 | Reconfirmación Periódica y Desvinculación Voluntaria | done (bad-to-check) | — | — | — | 3.2 | ✅ Yes (done) |
 | 3.4 | 3 | Sobreescritura del Listing Agent en la UI | done (bad-to-check) | — | — | — | 3.2 | ✅ Yes (done) |
 | 4.1 | 4 | Lista de Clientes Vinculados — Panel del Agente | done | #1 | — | — | 3.2 (done ✅) | ✅ Yes (done) |
-| 4.2 | 4 | Notificación en Tiempo Real de Match de Cliente | done | #2 | — | — | 4.1 | ✅ Yes (done) |
-| 4.3 | 4 | Historial de Matches y Rechazos por Cliente | done | #3 | — | — | 4.1 | ✅ Yes (done) |
-| 4.4 | 4 | Deep Link — Notificación → Detalle del Match | done | #4 | — | — | 4.2 | ✅ Yes (done) |
-| 5.1 | 5 | Conexión de CRM Agencia — Inmovilla | backlog | — | — | — | Epic 2 complete | ❌ No (ordering: Epic 3+4 first) |
+| 4.2 | 4 | Notificación en Tiempo Real de Match de Cliente | done | #2 | — | — | 4.1 (done ✅) | ✅ Yes (done) |
+| 4.3 | 4 | Historial de Matches y Rechazos por Cliente | done | #3 | — | — | 4.1 (done ✅) | ✅ Yes (done) |
+| 4.4 | 4 | Deep Link — Notificación → Detalle del Match | done | #4 | — | — | 4.2 (done ✅) | ✅ Yes (done) |
+| 5.1 | 5 | Conexión de CRM Agencia — Inmovilla | backlog | — | — | — | Epic 2 complete | ✅ Yes |
 | 5.2 | 5 | Sincronización de Listings — Webhook + Batch Desacoplados | backlog | — | — | — | 5.1 | ❌ No |
 | 5.3 | 5 | Validación de Exclusividad y Detección de Duplicados | backlog | — | — | — | 5.2 | ❌ No |
 | 5.4 | 5 | Ciclo de Vida del Listing — Retirada y Vendida | backlog | — | — | — | 5.2 | ❌ No |
@@ -86,9 +86,7 @@ _Last updated: 2026-04-28T13:14:00+02:00_
 
 ## Notes
 
-**Current epic:** Epic 5 (Gestión de Listings e Integración CRM) — next up
-**Epic 4 status:** ✅ COMPLETE — all stories 4.1–4.4 done and fully tested
-**Stories ready to work:** 5.1 (Conexión de CRM Agencia)
-**Epic 5 execution plan:** 5.1 first → then 5.2 → then 5.3 + 5.4
-**Sprint status note:** Epic 4 fully complete and code is implemented.
-**Worktrees:** Local branches exist for Epic 2-4 stories but no worktrees — local-only merge (no PRs). All branches merged to main locally.
+**Current epic:** Epic 5 (Gestión de Listings e Integración CRM)
+**Epic 5 status:** 5.1 ✅ COMPLETE
+**Stories ready to work:** 5.2 (Sincronización de Listings via Webhook)
+**Epic 5 execution plan:** 5.2 next → then 5.3 + 5.4
