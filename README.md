@@ -107,6 +107,8 @@ Create Story → [Validate Story] → Dev Story → [QA Automation] → [Code Re
 - ✅ Perfil con sección "Mi búsqueda" editable (abre SearchFiltersModal)
 - ✅ Onboarding por swipe con animación tutorial de mano (idle 5s)
 - ✅ Fix TypeScript: GlassPanel acepta `StyleProp<ViewStyle>` (arrays de estilos)
+- ✅ Limpieza de stores de Zustand en logout (prevención de fuga de estado)
+- ✅ AbortController timeout en fetchListings para destrabar Skeleton infinito en Expo Go
 
 **Siguiente:** Verificación humana de stories BAD (`bad-to-check`) → luego Epic 4 (Panel del Agente Representante)
 

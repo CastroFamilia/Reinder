@@ -11,6 +11,7 @@ import { useRouter } from "next/navigation";
 import { registerUser } from "@/features/auth/actions/register";
 import { validateRegisterInput } from "@/features/auth/lib/validation";
 import { GoogleAuthButton } from "@/features/auth/components/google-auth-button";
+import { getSafeNextPath } from "@/features/auth/lib/route-guard.lib";
 
 const styles = {
   card: {
@@ -140,7 +141,11 @@ const styles = {
   } as React.CSSProperties,
 };
 
-export function RegisterForm() {
+interface RegisterFormProps {
+  initialNext?: string;
+}
+
+export function RegisterForm({ initialNext }: RegisterFormProps = {}) {
   const router = useRouter();
   const [acceptedTc, setAcceptedTc] = useState(false);
   const [clientError, setClientError] = useState<string | null>(null);
@@ -148,6 +153,8 @@ export function RegisterForm() {
   const [emailValue, setEmailValue] = useState("");
   const [pending, setPending] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
+
+  const safeNextFromProp = getSafeNextPath(initialNext);
 
   const passwordTooShort = passwordValue.length > 0 && passwordValue.length < 8;
 
@@ -178,7 +185,8 @@ export function RegisterForm() {
       if (result.error) {
         setServerError(result.error);
       } else {
-        router.push("/swipe");
+        router.refresh();
+        router.push(safeNextFromProp || "/swipe");
       }
     } finally {
       setPending(false);
@@ -199,7 +207,7 @@ export function RegisterForm() {
       )}
 
       {/* Botón Google OAuth */}
-      <GoogleAuthButton />
+      <GoogleAuthButton next={safeNextFromProp ?? undefined} />
 
       {/* Separador */}
       <div style={styles.divider}>

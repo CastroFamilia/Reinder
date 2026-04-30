@@ -134,4 +134,4 @@
 
 ---
 
-*Última actualización: 2026-04-30 — Sesión de testing en persona completada. 5 fixes mobile aplicados directamente: descripciones en mocks, fondo del TabBar, fallback de matches, perfil con preferencias, y onboarding por swipe. Fix de TypeScript en GlassPanel. Epic 3 y stories 2.8–2.9 implementadas por BAD, pendientes verificación humana. Epic 4 marcada `in-progress` pero sus stories requieren implementación (aún en backlog real).*
+*Última actualización: 2026-04-30 — Sesión de fixes de Mobile UX completada. Añadida limpieza de Zustand stores (search, swipe, match history) en el evento SIGNED_OUT para prevenir fuga de preferencias de búsqueda entre cuentas. Implementado AbortController timeout de 5s en las requests a la API para evitar renders infinitos del PropertyCardSkeleton cuando el servidor local (Expo Go) se cuelga. Epic 4 restaurada formalmente a backlog.*

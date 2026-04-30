@@ -18,6 +18,7 @@ import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 import { getSafeNextPath } from "@/features/auth/lib/route-guard.lib";
+import { getRedirectPathForRole } from "@/features/auth/lib/login.lib";
 
 export async function GET(request: NextRequest) {
   const requestUrl = new URL(request.url);
@@ -63,7 +64,7 @@ export async function GET(request: NextRequest) {
   // (el cliente ya tiene la sesión del usuario tras exchangeCodeForSession)
   const { data: existingProfile, error: profileError } = await supabase
     .from("user_profiles")
-    .select("id, terms_accepted_at")
+    .select("id, terms_accepted_at, role")
     .eq("id", data.user.id)
     .maybeSingle();
 
@@ -93,7 +94,8 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(`${origin}/terms`);
   }
 
-  // Usuario existente con T&C aceptados → redirigir a next (si seguro) o /swipe
-  const destination = safeNext ? `${origin}${safeNext}` : `${origin}/swipe`;
+  // Usuario existente con T&C aceptados → redirigir a next (si seguro) o su panel por defecto
+  const defaultPath = getRedirectPathForRole(existingProfile.role);
+  const destination = safeNext ? `${origin}${safeNext}` : `${origin}${defaultPath}`;
   return NextResponse.redirect(destination);
 }

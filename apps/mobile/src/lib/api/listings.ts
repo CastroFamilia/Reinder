@@ -41,13 +41,20 @@ export async function fetchListings(
       if (filters.minSqm != null) url.searchParams.set('min_sqm', String(filters.minSqm));
     }
 
+    // Timeout de 5s para evitar que se quede colgado en Expo Go (isLoading stuck)
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 5000);
+
     const response = await fetch(url.toString(), {
       method: 'GET',
       headers: {
         Authorization: `Bearer ${token}`,
         'Content-Type': 'application/json',
       },
+      signal: controller.signal,
     });
+
+    clearTimeout(timeoutId);
 
     if (!response.ok) {
       return {
@@ -81,6 +88,9 @@ export async function saveSearchPreferences(
   token: string,
 ): Promise<ApiResponse<SearchPreferences>> {
   try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 5000);
+
     const response = await fetch(`${API_BASE_URL}/buyer/preferences`, {
       method: 'PATCH',
       headers: {
@@ -88,7 +98,10 @@ export async function saveSearchPreferences(
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(prefs),
+      signal: controller.signal,
     });
+
+    clearTimeout(timeoutId);
 
     if (!response.ok) {
       return {

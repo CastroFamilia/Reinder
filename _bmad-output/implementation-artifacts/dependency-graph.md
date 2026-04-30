@@ -24,10 +24,10 @@ _Last updated: 2026-04-28T13:14:00+02:00_
 | 3.2 | 3 | Aceptación del Vínculo por el Comprador vía Referral Link | done (bad-to-check) | — | — | — | 3.1 | ✅ Yes (done) |
 | 3.3 | 3 | Reconfirmación Periódica y Desvinculación Voluntaria | done (bad-to-check) | — | — | — | 3.2 | ✅ Yes (done) |
 | 3.4 | 3 | Sobreescritura del Listing Agent en la UI | done (bad-to-check) | — | — | — | 3.2 | ✅ Yes (done) |
-| 4.1 | 4 | Lista de Clientes Vinculados — Panel del Agente | backlog | #1 | — | — | 3.2 (done ✅) | ✅ Yes |
-| 4.2 | 4 | Notificación en Tiempo Real de Match de Cliente | backlog | #2 | — | — | 4.1 | ❌ No (depends on 4.1) |
-| 4.3 | 4 | Historial de Matches y Rechazos por Cliente | backlog | #3 | — | — | 4.1 | ❌ No (depends on 4.1) |
-| 4.4 | 4 | Deep Link — Notificación → Detalle del Match | backlog | #4 | — | — | 4.2 | ❌ No (depends on 4.2) |
+| 4.1 | 4 | Lista de Clientes Vinculados — Panel del Agente | done | #1 | — | — | 3.2 (done ✅) | ✅ Yes (done) |
+| 4.2 | 4 | Notificación en Tiempo Real de Match de Cliente | done | #2 | — | — | 4.1 | ✅ Yes (done) |
+| 4.3 | 4 | Historial de Matches y Rechazos por Cliente | done | #3 | — | — | 4.1 | ✅ Yes (done) |
+| 4.4 | 4 | Deep Link — Notificación → Detalle del Match | done | #4 | — | — | 4.2 | ✅ Yes (done) |
 | 5.1 | 5 | Conexión de CRM Agencia — Inmovilla | backlog | — | — | — | Epic 2 complete | ❌ No (ordering: Epic 3+4 first) |
 | 5.2 | 5 | Sincronización de Listings — Webhook + Batch Desacoplados | backlog | — | — | — | 5.1 | ❌ No |
 | 5.3 | 5 | Validación de Exclusividad y Detección de Duplicados | backlog | — | — | — | 5.2 | ❌ No |
@@ -86,10 +86,9 @@ _Last updated: 2026-04-28T13:14:00+02:00_
 
 ## Notes
 
-**Current epic:** Epic 4 (Panel del Agente Representante) — starting now
-**Epic 3 status:** ✅ COMPLETE — all stories 3.1–3.4 done (bad-to-check = implemented by BAD, pending human verification)
-**Stories ready to work:** 4.1 only (4.2 and 4.3 depend on 4.1; 4.4 depends on 4.2)
-**Epic 4 execution plan:** 4.1 first → then 4.2 + 4.3 in parallel → then 4.4
-**GitHub integration:** Active — issues #1 (4.1), #2 (4.2), #3 (4.3), #4 (4.4) created
-**Sprint status note:** Epic 3 stories all marked `bad-to-check` (treated as done for dependency purposes). epic-3 updated to `done`.
-**Worktrees:** Local branches exist for Epic 2-3 stories but no worktrees — local-only merge (no PRs). All branches merged to main locally.
+**Current epic:** Epic 5 (Gestión de Listings e Integración CRM) — next up
+**Epic 4 status:** ✅ COMPLETE — all stories 4.1–4.4 done and fully tested
+**Stories ready to work:** 5.1 (Conexión de CRM Agencia)
+**Epic 5 execution plan:** 5.1 first → then 5.2 → then 5.3 + 5.4
+**Sprint status note:** Epic 4 fully complete and code is implemented.
+**Worktrees:** Local branches exist for Epic 2-4 stories but no worktrees — local-only merge (no PRs). All branches merged to main locally.

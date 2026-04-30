@@ -8,6 +8,15 @@ importers:
 
   .:
     devDependencies:
+      drizzle-kit:
+        specifier: ^0.31.9
+        version: 0.31.9
+      drizzle-orm:
+        specifier: ^0.45.1
+        version: 0.45.1(postgres@3.4.8)
+      postgres:
+        specifier: ^3.4.8
+        version: 3.4.8
       prettier:
         specifier: ^3.3.3
         version: 3.8.1
@@ -132,9 +141,6 @@ importers:
       next:
         specifier: 15.5.12
         version: 15.5.12(babel-plugin-react-compiler@1.0.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
-      postgres:
-        specifier: ^3.4.8
-        version: 3.4.8
       react:
         specifier: 19.1.0
         version: 19.1.0
@@ -175,6 +181,9 @@ importers:
       jsdom:
         specifier: ^29.0.0
         version: 29.0.0
+      postgres:
+        specifier: ^3.4.8
+        version: 3.4.8
       tailwindcss:
         specifier: ^4
         version: 4.2.1

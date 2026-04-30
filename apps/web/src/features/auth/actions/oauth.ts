@@ -13,12 +13,18 @@
  */
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
+import { headers } from "next/headers";
 import { getSafeNextPath } from "@/features/auth/lib/route-guard.lib";
 
 export async function signInWithGoogle(formData: FormData): Promise<void> {
   const supabase = await createClient();
 
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
+  const headersList = await headers();
+  const host = headersList.get("host") || "localhost:3000";
+  const protocol = host.includes("localhost") ? "http" : "https";
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL?.includes("localhost") 
+    ? `${protocol}://${host}` 
+    : process.env.NEXT_PUBLIC_APP_URL ?? `${protocol}://${host}`;
 
   // Leer y sanitizar el parámetro next — viene del input hidden de GoogleAuthButton
   const rawNext = formData.get("next");
@@ -36,10 +42,6 @@ export async function signInWithGoogle(formData: FormData): Promise<void> {
     provider: "google",
     options: {
       redirectTo: callbackUrl,
-      queryParams: {
-        access_type: "offline",
-        prompt: "consent", // Fuerza pantalla de consentimiento Google → garantiza refresh_token
-      },
     },
   });
 

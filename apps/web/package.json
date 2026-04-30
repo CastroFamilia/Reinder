@@ -16,7 +16,6 @@
     "@supabase/supabase-js": "^2.99.2",
     "drizzle-orm": "^0.45.1",
     "next": "15.5.12",
-    "postgres": "^3.4.8",
     "react": "19.1.0",
     "react-dom": "19.1.0"
   },
@@ -32,6 +31,7 @@
     "eslint": "^9",
     "eslint-config-next": "15.5.12",
     "jsdom": "^29.0.0",
+    "postgres": "^3.4.8",
     "tailwindcss": "^4",
     "typescript": "^5",
     "vitest": "^4.1.0"

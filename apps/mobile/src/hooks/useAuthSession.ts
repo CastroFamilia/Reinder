@@ -14,6 +14,9 @@
 import { useEffect, useState } from "react";
 import type { Session } from "@supabase/supabase-js";
 import { supabase } from "../lib/supabase";
+import { useSearchStore } from "../stores/use-search-store";
+import { useSwipeStore } from "../stores/use-swipe-store";
+import { useMatchHistoryStore } from "../stores/use-match-history-store";
 
 interface AuthSessionState {
   /** La sesión activa, o null si el usuario no está autenticado */
@@ -32,9 +35,15 @@ export function useAuthSession(): AuthSessionState {
     // por separado — eliminar ese extra evita un render doble innecesario (fix L1).
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    } = supabase.auth.onAuthStateChange((event, session) => {
       setSession(session);
       setLoading(false);
+
+      if (event === 'SIGNED_OUT') {
+        useSearchStore.getState().reset();
+        useSwipeStore.getState().fullClear();
+        useMatchHistoryStore.getState().clearHistory();
+      }
     });
 
     return () => {

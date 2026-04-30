@@ -158,6 +158,8 @@ interface SwipeStore {
 
   /** Resetea el feed al estado inicial y recarga con los nuevos filtros (AC7 Story 2.9) */
   resetFeed: (token: string, filters?: SearchPreferences) => Promise<void>;
+  /** Limpia completamente el estado (usado en logout) */
+  fullClear: () => void;
 }
 
 export const useSwipeStore = create<SwipeStore>()(
@@ -378,6 +380,22 @@ export const useSwipeStore = create<SwipeStore>()(
           isRecapVisible: false,
         });
         await get().loadFeed(token, filters);
+      },
+
+      fullClear: () => {
+        set({
+          currentCard: null,
+          prefetchQueue: [],
+          isLoading: false,
+          isFetching: false,
+          error: null,
+          cursor: undefined,
+          pendingEvents: [],
+          consecutiveMatchCount: 0,
+          pendingRecapIds: [],
+          recapMatchIds: [],
+          isRecapVisible: false,
+        });
       },
     }),
     {

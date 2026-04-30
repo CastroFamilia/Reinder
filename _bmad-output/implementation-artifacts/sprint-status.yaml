@@ -75,7 +75,7 @@ development_status:
   epic-3-retrospective: optional
 
   # ─── Epic 4: Panel del Agente Representante ────────────────────────────────
-  epic-4: backlog  # Pendiente — BAD nunca ejecutó esta epic
+  epic-4: backlog
   4-1-lista-clientes-vinculados-panel-agente: backlog
   4-2-notificacion-tiempo-real-match-cliente: backlog
   4-3-historial-matches-rechazos-por-cliente: backlog

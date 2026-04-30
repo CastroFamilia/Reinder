@@ -50,6 +50,8 @@ interface SearchStore {
   clearPreferences: () => void;
   /** Marca el onboarding como completado (no re-mostrar el modal) */
   markOnboardingDone: () => void;
+  /** Resetea el store completamente (para usar en el logout) */
+  reset: () => void;
 }
 
 export const useSearchStore = create<SearchStore>()(
@@ -83,6 +85,10 @@ export const useSearchStore = create<SearchStore>()(
 
       markOnboardingDone: () => {
         set({ hasCompletedOnboarding: true });
+      },
+
+      reset: () => {
+        set({ preferences: null, hasCompletedOnboarding: false });
       },
     }),
     {

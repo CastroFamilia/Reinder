@@ -15,15 +15,21 @@ export const metadata: Metadata = {
     "Regístrate en Reinder para descubrir propiedades exclusivas que se adaptan a tus preferencias.",
 };
 
-export default async function RegisterPage() {
+export default async function RegisterPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ next?: string }>;
+}) {
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
+  const resolvedParams = await searchParams;
+
   if (user) {
-    redirect("/swipe");
+    redirect(resolvedParams.next || "/swipe");
   }
 
-  return <RegisterForm />;
+  return <RegisterForm initialNext={resolvedParams.next} />;
 }

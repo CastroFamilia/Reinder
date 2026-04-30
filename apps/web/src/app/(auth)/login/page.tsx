@@ -19,11 +19,11 @@ export const metadata: Metadata = {
 };
 
 interface Props {
-  searchParams: Promise<{ next?: string }>;
+  searchParams: Promise<{ next?: string; error?: string }>;
 }
 
 export default async function LoginPage({ searchParams }: Props) {
-  const { next } = await searchParams;
-  return <LoginForm initialNext={next} />;
+  const { next, error } = await searchParams;
+  return <LoginForm initialNext={next} initialError={error} />;
 }
 

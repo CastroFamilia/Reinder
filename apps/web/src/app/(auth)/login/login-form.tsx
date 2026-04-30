@@ -133,14 +133,25 @@ const styles = {
 interface LoginFormProps {
   /** URL original a la que se redirige tras login exitoso (viene del middleware ?next=). */
   initialNext?: string;
+  initialError?: string;
 }
 
-export function LoginForm({ initialNext }: LoginFormProps = {}) {
+export function LoginForm({ initialNext, initialError }: LoginFormProps = {}) {
   const router = useRouter();
   const [emailValue, setEmailValue] = useState("");
   const [passwordValue, setPasswordValue] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [serverError, setServerError] = useState<string | null>(null);
+
+  // Map backend error codes to user-friendly messages
+  let defaultError = initialError ?? null;
+  if (initialError === "oauth_no_code") defaultError = "Error en la autenticación con Google (no code).";
+  if (initialError === "oauth_exchange_failed") defaultError = "Fallo al intercambiar credenciales con Google.";
+  if (initialError === "oauth_init_failed") defaultError = "Error al iniciar la conexión con Google.";
+  if (initialError === "oauth_no_url") defaultError = "Google no devolvió una URL válida de redirección.";
+  if (initialError === "db_error") defaultError = "Error de base de datos al buscar perfil.";
+  if (initialError === "profile_creation_failed") defaultError = "Error al crear perfil de usuario.";
+
+  const [serverError, setServerError] = useState<string | null>(defaultError);
 
   // Fix L2: calcular una sola vez (banner + handler de submit comparten el mismo valor)
   const safeNextFromProp = getSafeNextPath(initialNext);
@@ -262,7 +273,10 @@ export function LoginForm({ initialNext }: LoginFormProps = {}) {
 
       <p style={styles.registerLink}>
         ¿No tienes cuenta?{" "}
-        <a href="/register" style={styles.registerLinkAnchor}>
+        <a
+          href={`/register${safeNextFromProp ? `?next=${encodeURIComponent(safeNextFromProp)}` : ""}`}
+          style={styles.registerLinkAnchor}
+        >
           Regístrate gratis
         </a>
       </p>
