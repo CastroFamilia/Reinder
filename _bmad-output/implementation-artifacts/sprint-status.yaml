@@ -1,5 +1,5 @@
 # generated: 2026-03-18T12:42:21+01:00
-# last_updated: 2026-04-28T13:20:00+02:00
+# last_updated: 2026-04-30T16:00:00+02:00
 # project: Reinder
 # project_key: NOKEY
 # tracking_system: file-system
@@ -36,7 +36,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: 2026-03-18T12:42:21+01:00
-last_updated: 2026-04-28T13:20:00+02:00
+last_updated: 2026-04-30T16:00:00+02:00
 project: Reinder
 project_key: NOKEY
 tracking_system: file-system
@@ -75,11 +75,11 @@ development_status:
   epic-3-retrospective: optional
 
   # ─── Epic 4: Panel del Agente Representante ────────────────────────────────
-  epic-4: in-progress
-  4-1-lista-clientes-vinculados-panel-agente: bad-to-check
-  4-2-notificacion-tiempo-real-match-cliente: bad-to-check
-  4-3-historial-matches-rechazos-por-cliente: bad-to-check
-  4-4-deep-link-notificacion-detalle-match: bad-to-check
+  epic-4: backlog  # Pendiente — BAD nunca ejecutó esta epic
+  4-1-lista-clientes-vinculados-panel-agente: backlog
+  4-2-notificacion-tiempo-real-match-cliente: backlog
+  4-3-historial-matches-rechazos-por-cliente: backlog
+  4-4-deep-link-notificacion-detalle-match: backlog
   epic-4-retrospective: optional
 
   # ─── Epic 5: Gestión de Listings e Integración CRM ────────────────────────

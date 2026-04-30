@@ -100,6 +100,14 @@ Create Story → [Validate Story] → Dev Story → [QA Automation] → [Code Re
 | **Epic 9** | Content Optimization & A/B Testing | 0/6 | ⬜ Backlog |
 | **Epic 10** | Personalized Content Layer | 0/5 | ⬜ Backlog |
 
+**🔧 Sesión 2026-04-30 — Mobile UX Fixes (testing en persona):**
+- ✅ Descripciones de propiedades en mocks (PropertyDetailSheet legible)
+- ✅ Fix fondo blanco detrás del TabBar redondeado
+- ✅ Matches persistentes con fallback in-memory cuando API no disponible
+- ✅ Perfil con sección "Mi búsqueda" editable (abre SearchFiltersModal)
+- ✅ Onboarding por swipe con animación tutorial de mano (idle 5s)
+- ✅ Fix TypeScript: GlassPanel acepta `StyleProp<ViewStyle>` (arrays de estilos)
+
 **Siguiente:** Verificación humana de stories BAD (`bad-to-check`) → luego Epic 4 (Panel del Agente Representante)
 
 

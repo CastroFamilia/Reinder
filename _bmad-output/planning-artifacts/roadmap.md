@@ -134,4 +134,4 @@
 
 ---
 
-*Última actualización: 2026-04-27 — Epic 3 (Stories 3.1–3.4) implementada por pipeline BAD. Stories 2.8 y 2.9 también completadas por BAD. Todas marcadas `bad-to-check` pendientes de verificación humana.*
+*Última actualización: 2026-04-30 — Sesión de testing en persona completada. 5 fixes mobile aplicados directamente: descripciones en mocks, fondo del TabBar, fallback de matches, perfil con preferencias, y onboarding por swipe. Fix de TypeScript en GlassPanel. Epic 3 y stories 2.8–2.9 implementadas por BAD, pendientes verificación humana. Epic 4 marcada `in-progress` pero sus stories requieren implementación (aún en backlog real).*
