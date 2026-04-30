@@ -131,6 +131,8 @@ export const MOCK_LISTINGS: Listing[] = [
     badge: 'EXCLUSIVA',
     agencyId: 'agency-1',
     createdAt: '2026-03-20T10:00:00Z',
+    description:
+      'Espectacular ático a estrenar en el corazón de Malasaña con terraza privada de 30 m² orientada al sur. Techos altos, suelos de madera maciza y cocina de diseño totalmente equipada. El edificio cuenta con ascensor, conserjería y acceso directo a la terraza comunitaria con vistas panorámicas a la Sierra.',
   },
   {
     id: 'listing-2',
@@ -146,6 +148,8 @@ export const MOCK_LISTINGS: Listing[] = [
     badge: 'NUEVA',
     agencyId: 'agency-1',
     createdAt: '2026-03-19T15:30:00Z',
+    description:
+      'Luminoso piso completamente reformado con materiales de primera calidad. Distribuye dos habitaciones dobles, salón abierto a cocina americana y baño principal con ducha italiana. Situado en finca clásica con ascensor, a 5 minutos andando del metro Iglesia y rodeado de restaurantes y comercios.',
   },
   {
     id: 'listing-3',
@@ -159,6 +163,8 @@ export const MOCK_LISTINGS: Listing[] = [
     status: 'active',
     agencyId: 'agency-2',
     createdAt: '2026-03-18T09:00:00Z',
+    description:
+      'Único loft de estilo industrial en pleno barrio de Lavapiés, con techos de 3,5 m, vigas de acero vistas y ventanales de suelo a techo. Espacio diáfano perfectamente integrado con zona de trabajo, cocina abierta y dormitorio en altillo. Ideal para perfiles creativos que buscan algo diferente en el centro de Madrid.',
   },
   {
     id: 'listing-4',
@@ -173,6 +179,8 @@ export const MOCK_LISTINGS: Listing[] = [
     badge: 'EXCLUSIVA',
     agencyId: 'agency-1',
     createdAt: '2026-03-17T12:00:00Z',
+    description:
+      'Magnífica vivienda unifamiliar en urbanización privada de La Moraleja con jardín de 500 m², piscina y garaje para 3 vehículos. Cinco habitaciones en suite, gran salón con chimenea, cocina profesional y estudio independiente. Seguridad 24h, pistas de pádel y club social incluidos en la comunidad.',
   },
   {
     id: 'listing-5',
@@ -188,5 +196,7 @@ export const MOCK_LISTINGS: Listing[] = [
     badge: 'VENDIDA',
     agencyId: 'agency-2',
     createdAt: '2026-03-16T08:00:00Z',
+    description:
+      'Acogedor estudio en séptima planta con vistas despejadas y mucha luz natural. Completamente equipado y amueblado, con cocina integrada y baño renovado. A tres minutos caminando del Parque del Retiro y con fácil acceso a las líneas 1 y 6 de metro. Perfecto como primera vivienda o inversión.',
   },
 ];

@@ -67,9 +67,11 @@ function BuyerTabNavigator({ token }: { token: string }) {
         tabBarInactiveTintColor: Colors.textMuted,
         tabBarStyle: {
           height: TAB_BAR_HEIGHT,                       // 60px (AC3)
-          backgroundColor: 'transparent',              // GlassPanel gestiona el fondo
-          borderTopWidth: StyleSheet.hairlineWidth,
-          borderTopColor: Colors.border,
+          // Fix: usar el color oscuro en lugar de 'transparent' para evitar el fondo
+          // blanco del sistema que se filtra por los bordes redondeados en iOS.
+          // El GlassPanel blur se renderiza encima, así que el efecto glass se mantiene.
+          backgroundColor: Colors.bgPrimary,
+          borderTopWidth: 0,
         },
         tabBarLabelStyle: {
           fontSize: Typography.sizeSmall,

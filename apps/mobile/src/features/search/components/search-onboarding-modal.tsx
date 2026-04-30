@@ -1,222 +1,488 @@
 /**
  * apps/mobile/src/features/search/components/search-onboarding-modal.tsx
  *
- * Modal fullscreen de onboarding de búsqueda — primera vez del comprador.
- * Inspiración: Tinder onboarding — selección visual rápida.
+ * Modal fullscreen de onboarding de búsqueda — rediseñado como flujo de swipe.
+ * El comprador responde a cada pregunta swipeando la tarjeta:
+ *   → derecha = opción positiva / primera opción
+ *   ← izquierda = opción negativa / segunda opción
  *
- * Story 2.9 — Task 8 (AC: 1, 5, 8)
+ * Idle >6s sin interacción → animación de mano tutorial que muestra cómo swipear.
+ *
+ * Usa PanResponder + Animated (no Reanimated) para evitar el warning
+ * "Reading from value during component render".
+ *
+ * Story 2.9 — Task 8 (AC: 1, 5, 8) — Post-testing redesign
  */
-import React, { useState } from 'react';
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import {
-  View,
-  Text,
-  StyleSheet,
+  Animated,
+  Dimensions,
   Modal,
-  ScrollView,
-  TextInput,
+  PanResponder,
+  StyleSheet,
+  Text,
   TouchableOpacity,
-  Pressable,
+  View,
 } from 'react-native';
 import { GlassPanel } from '../../../components/ui/glass-panel';
-import { Colors, Typography, Spacing } from '../../../lib/tokens';
+import { Colors, Radius, Spacing, Typography } from '../../../lib/tokens';
 import type { SearchPreferences } from '@reinder/shared';
 
-// ─── Zone Chip ────────────────────────────────────────────────────────────────
+// ─── Constants ────────────────────────────────────────────────────────────────
 
-function ZoneChip({
-  zone,
-  onRemove,
-}: {
-  zone: string;
-  onRemove: () => void;
-}) {
+const { width: SCREEN_W } = Dimensions.get('window');
+
+/** Desplazamiento mínimo (px) para confirmar un swipe */
+const SWIPE_THRESHOLD = SCREEN_W * 0.35;
+
+/** Segundos de inactividad antes de mostrar el tutorial de mano */
+const IDLE_SECONDS = 6;
+
+// ─── Onboarding Steps ─────────────────────────────────────────────────────────
+
+type OnboardingStep = {
+  id: string;
+  emoji: string;
+  question: string;
+  /** Opción al swipear → derecha */
+  rightLabel: string;
+  /** Opción al swipear ← izquierda */
+  leftLabel: string;
+  /**
+   * Clave de SearchPreferences que modifica esta pregunta.
+   * 'informational' = paso de UX sin mapeo directo a SearchPreferences.
+   */
+  key: 'informational' | 'maxPrice' | 'minRooms';
+  /** Valor asignado si swipe → derecha */
+  rightValue: string | number;
+  /** Valor asignado si swipe ← izquierda */
+  leftValue: string | number;
+};
+
+const STEPS: OnboardingStep[] = [
+  {
+    id: 'property-type',
+    emoji: '🏠',
+    question: '¿Qué tipo de propiedad buscas?',
+    rightLabel: 'Casa',
+    leftLabel: 'Piso',
+    // Informational — no hay campo en SearchPreferences aún, se añadirá en Epic siguiente
+    key: 'informational',
+    rightValue: 'casa',
+    leftValue: 'piso',
+  },
+  {
+    id: 'transaction-type',
+    emoji: '🔑',
+    question: '¿Compra o alquiler?',
+    rightLabel: 'Compra',
+    leftLabel: 'Alquiler',
+    // Informational — idem
+    key: 'informational',
+    rightValue: 'compra',
+    leftValue: 'alquiler',
+  },
+  {
+    id: 'price-range',
+    emoji: '💶',
+    question: '¿Cuál es tu presupuesto máximo?',
+    rightLabel: 'Hasta 400.000€',
+    leftLabel: 'Más de 400.000€',
+    key: 'maxPrice',
+    rightValue: 400000,
+    leftValue: 800000,
+  },
+  {
+    id: 'rooms',
+    emoji: '🛏',
+    question: '¿Cuántas habitaciones necesitas?',
+    rightLabel: '2 o más hab.',
+    leftLabel: 'No importa',
+    key: 'minRooms',
+    rightValue: 2,
+    leftValue: 1,
+  },
+];
+
+// ─── Props ────────────────────────────────────────────────────────────────────
+
+interface SearchOnboardingModalProps {
+  visible: boolean;
+  onSave: (prefs: SearchPreferences) => void;
+  onSkip: () => void;
+}
+
+// ─── Hand Tutorial Overlay ────────────────────────────────────────────────────
+
+function HandTutorial({ visible }: { visible: boolean }) {
+  const translateX = useRef(new Animated.Value(0)).current;
+  const opacity = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    if (!visible) {
+      Animated.timing(opacity, {
+        toValue: 0,
+        duration: 200,
+        useNativeDriver: true,
+      }).start();
+      return;
+    }
+
+    // Fade in
+    Animated.timing(opacity, {
+      toValue: 1,
+      duration: 400,
+      useNativeDriver: true,
+    }).start(() => {
+      // Loop: mano se mueve de izquierda a derecha y vuelve
+      Animated.loop(
+        Animated.sequence([
+          Animated.timing(translateX, {
+            toValue: 80,
+            duration: 700,
+            useNativeDriver: true,
+          }),
+          Animated.timing(translateX, {
+            toValue: -80,
+            duration: 700,
+            useNativeDriver: true,
+          }),
+          Animated.timing(translateX, {
+            toValue: 0,
+            duration: 400,
+            useNativeDriver: true,
+          }),
+          // Pausa
+          Animated.delay(600),
+        ]),
+      ).start();
+    });
+
+    return () => {
+      translateX.stopAnimation();
+      opacity.stopAnimation();
+    };
+  }, [visible, translateX, opacity]);
+
   return (
-    <View style={styles.chip}>
-      <Text style={styles.chipText}>{zone}</Text>
-      <Pressable onPress={onRemove} hitSlop={8} testID={`remove-zone-${zone}`}>
-        <Text style={styles.chipRemove}>×</Text>
-      </Pressable>
-    </View>
+    <Animated.View
+      style={[styles.handContainer, { opacity }]}
+      pointerEvents="none"
+    >
+      <Animated.Text style={[styles.handEmoji, { transform: [{ translateX }] }]}>
+        👆
+      </Animated.Text>
+      <Text style={styles.handHint}>Desliza para elegir</Text>
+    </Animated.View>
   );
 }
 
-// ─── PillSelector ─────────────────────────────────────────────────────────────
+// ─── Swipeable Card ───────────────────────────────────────────────────────────
 
-function PillSelector<T extends string | number>({
-  options,
-  selected,
-  onSelect,
-  formatLabel,
-  testIDPrefix,
-}: {
-  options: T[];
-  selected: T | null;
-  onSelect: (v: T) => void;
-  formatLabel?: (v: T) => string;
-  testIDPrefix: string;
-}) {
+interface SwipeCardProps {
+  step: OnboardingStep;
+  onSwipeRight: () => void;
+  onSwipeLeft: () => void;
+  onInteraction: () => void;
+}
+
+function SwipeCard({ step, onSwipeRight, onSwipeLeft, onInteraction }: SwipeCardProps) {
+  const pan = useRef(new Animated.ValueXY()).current;
+  const [swipeDirection, setSwipeDirection] = useState<'left' | 'right' | null>(null);
+
+  // Reset on step change
+  useEffect(() => {
+    pan.setValue({ x: 0, y: 0 });
+    setSwipeDirection(null);
+  }, [step.id, pan]);
+
+  const panResponder = useMemo(
+    () =>
+      PanResponder.create({
+        onStartShouldSetPanResponder: () => true,
+        onMoveShouldSetPanResponder: () => true,
+        onPanResponderGrant: () => {
+          onInteraction();
+        },
+        onPanResponderMove: (_, gestureState) => {
+          pan.setValue({ x: gestureState.dx, y: 0 });
+          if (gestureState.dx > 20) setSwipeDirection('right');
+          else if (gestureState.dx < -20) setSwipeDirection('left');
+          else setSwipeDirection(null);
+        },
+        onPanResponderRelease: (_, gestureState) => {
+          if (gestureState.dx > SWIPE_THRESHOLD) {
+            // Swipe right — fly out
+            Animated.timing(pan, {
+              toValue: { x: SCREEN_W * 1.5, y: 0 },
+              duration: 250,
+              useNativeDriver: true,
+            }).start(() => onSwipeRight());
+          } else if (gestureState.dx < -SWIPE_THRESHOLD) {
+            // Swipe left — fly out
+            Animated.timing(pan, {
+              toValue: { x: -SCREEN_W * 1.5, y: 0 },
+              duration: 250,
+              useNativeDriver: true,
+            }).start(() => onSwipeLeft());
+          } else {
+            // Spring back to center
+            Animated.spring(pan, {
+              toValue: { x: 0, y: 0 },
+              useNativeDriver: true,
+              friction: 5,
+            }).start();
+            setSwipeDirection(null);
+          }
+        },
+      }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [step.id],
+  );
+
+  const rotate = pan.x.interpolate({
+    inputRange: [-SCREEN_W / 2, 0, SCREEN_W / 2],
+    outputRange: ['-8deg', '0deg', '8deg'],
+    extrapolate: 'clamp',
+  });
+
+  const rightLabelOpacity = pan.x.interpolate({
+    inputRange: [20, 80],
+    outputRange: [0, 1],
+    extrapolate: 'clamp',
+  });
+
+  const leftLabelOpacity = pan.x.interpolate({
+    inputRange: [-80, -20],
+    outputRange: [1, 0],
+    extrapolate: 'clamp',
+  });
+
   return (
-    <View style={styles.pillRow}>
-      {options.map((opt) => (
-        <Pressable
-          key={String(opt)}
-          onPress={() => onSelect(opt)}
-          style={[styles.pill, selected === opt && styles.pillActive]}
-          testID={`${testIDPrefix}-${opt}`}
-        >
-          <Text style={[styles.pillText, selected === opt && styles.pillTextActive]}>
-            {formatLabel ? formatLabel(opt) : String(opt)}
-          </Text>
-        </Pressable>
+    <Animated.View
+      style={[
+        styles.card,
+        {
+          transform: [{ translateX: pan.x }, { rotate }],
+        },
+      ]}
+      {...panResponder.panHandlers}
+    >
+      {/* Right label — aparece al deslizar derecha */}
+      <Animated.View style={[styles.swipeLabel, styles.swipeLabelRight, { opacity: rightLabelOpacity }]}>
+        <Text style={styles.swipeLabelText}>{step.rightLabel}</Text>
+      </Animated.View>
+
+      {/* Left label — aparece al deslizar izquierda */}
+      <Animated.View style={[styles.swipeLabel, styles.swipeLabelLeft, { opacity: leftLabelOpacity }]}>
+        <Text style={styles.swipeLabelText}>{step.leftLabel}</Text>
+      </Animated.View>
+
+      {/* Card content */}
+      <Text style={styles.cardEmoji}>{step.emoji}</Text>
+      <Text style={styles.cardQuestion}>{step.question}</Text>
+
+      {/* Hints */}
+      <View style={styles.hintsRow}>
+        <View style={styles.hintChip}>
+          <Text style={styles.hintArrow}>←</Text>
+          <Text style={styles.hintText}>{step.leftLabel}</Text>
+        </View>
+        <View style={[styles.hintChip, styles.hintChipRight]}>
+          <Text style={styles.hintText}>{step.rightLabel}</Text>
+          <Text style={styles.hintArrow}>→</Text>
+        </View>
+      </View>
+    </Animated.View>
+  );
+}
+
+// ─── Progress Dots ────────────────────────────────────────────────────────────
+
+function ProgressDots({ total, current }: { total: number; current: number }) {
+  return (
+    <View style={styles.dotsRow}>
+      {Array.from({ length: total }).map((_, i) => (
+        <View
+          key={i}
+          style={[
+            styles.dot,
+            i === current ? styles.dotActive : styles.dotInactive,
+          ]}
+        />
       ))}
     </View>
   );
 }
 
-// ─── Props ───────────────────────────────────────────────────────────────────
-
-interface SearchOnboardingModalProps {
-  visible: boolean;
-  /** Llamado al guardar preferencias */
-  onSave: (prefs: SearchPreferences) => void;
-  /** Llamado al saltar el onboarding */
-  onSkip: () => void;
-}
-
-// ─── Component ───────────────────────────────────────────────────────────────
-
-const PRICE_OPTIONS = [200000, 300000, 400000, 600000, 800000, 1000000];
-const ROOM_OPTIONS = [1, 2, 3, 4];
-const SQM_OPTIONS = [40, 60, 80, 100];
+// ─── Main Component ───────────────────────────────────────────────────────────
 
 export function SearchOnboardingModal({
   visible,
   onSave,
   onSkip,
 }: SearchOnboardingModalProps) {
-  const [zoneInput, setZoneInput] = useState('');
-  const [zones, setZones] = useState<string[]>([]);
-  const [maxPrice, setMaxPrice] = useState<number | null>(null);
-  const [minRooms, setMinRooms] = useState<number | null>(null);
-  const [minSqm, setMinSqm] = useState<number | null>(null);
+  const [stepIndex, setStepIndex] = useState(0);
+  const [answers, setAnswers] = useState<Partial<Record<'maxPrice' | 'minRooms', number>>>({});
+  const [showHandTutorial, setShowHandTutorial] = useState(false);
 
-  const canSave = zones.length > 0;
+  // Idle timer
+  const idleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  function addZone() {
-    const z = zoneInput.trim();
-    if (z && zones.length < 5 && !zones.includes(z)) {
-      setZones([...zones, z]);
-      setZoneInput('');
+  const resetIdleTimer = useCallback(() => {
+    setShowHandTutorial(false);
+    if (idleTimerRef.current) clearTimeout(idleTimerRef.current);
+    idleTimerRef.current = setTimeout(() => {
+      setShowHandTutorial(true);
+    }, IDLE_SECONDS * 1000);
+  }, []);
+
+  // Start idle timer when modal becomes visible
+  useEffect(() => {
+    if (visible) {
+      setStepIndex(0);
+      setAnswers({});
+      resetIdleTimer();
+    } else {
+      if (idleTimerRef.current) clearTimeout(idleTimerRef.current);
+      setShowHandTutorial(false);
     }
-  }
-
-  function removeZone(z: string) {
-    setZones(zones.filter((x) => x !== z));
-  }
-
-  function handleSave() {
-    const prefs: SearchPreferences = {
-      zones,
-      ...(maxPrice != null && { maxPrice }),
-      ...(minRooms != null && { minRooms }),
-      ...(minSqm != null && { minSqm }),
+    return () => {
+      if (idleTimerRef.current) clearTimeout(idleTimerRef.current);
     };
-    onSave(prefs);
-  }
+  }, [visible, resetIdleTimer]);
+
+  const handleInteraction = useCallback(() => {
+    resetIdleTimer();
+  }, [resetIdleTimer]);
+
+  const recordAnswer = useCallback(
+    (value: string | number) => {
+      const step = STEPS[stepIndex];
+      if (!step) return;
+
+      // Solo actualizar answers si el paso tiene una clave de SearchPreferences real
+      const newAnswers =
+        step.key !== 'informational' && typeof value === 'number'
+          ? { ...answers, [step.key]: value }
+          : answers;
+
+      setAnswers(newAnswers);
+      resetIdleTimer();
+
+      const nextIndex = stepIndex + 1;
+      if (nextIndex >= STEPS.length) {
+        // Todos los pasos completados — construir SearchPreferences y guardar
+        const prefs: SearchPreferences = {
+          zones: [], // El usuario puede refinar zonas luego desde el Perfil o ⚙️
+          ...(newAnswers.maxPrice != null && { maxPrice: newAnswers.maxPrice }),
+          ...(newAnswers.minRooms != null && { minRooms: newAnswers.minRooms }),
+        };
+        onSave(prefs);
+      } else {
+        setStepIndex(nextIndex);
+      }
+    },
+    [stepIndex, answers, resetIdleTimer, onSave],
+  );
+
+  const handleSwipeRight = useCallback(() => {
+    const step = STEPS[stepIndex];
+    if (step) recordAnswer(step.rightValue);
+  }, [stepIndex, recordAnswer]);
+
+  const handleSwipeLeft = useCallback(() => {
+    const step = STEPS[stepIndex];
+    if (step) recordAnswer(step.leftValue);
+  }, [stepIndex, recordAnswer]);
+
+  const currentStep = STEPS[stepIndex];
+  if (!currentStep) return null;
 
   return (
     <Modal
       visible={visible}
-      animationType="slide"
+      animationType="fade"
       transparent={false}
       statusBarTranslucent
+      testID="search-onboarding-modal"
     >
       <GlassPanel intensity="heavy" style={styles.background} testID="search-modal-glass">
-        <ScrollView
-          contentContainerStyle={styles.content}
-          keyboardShouldPersistTaps="handled"
+        {/* Header */}
+        <View style={styles.headerContainer}>
+          <Text style={styles.brandName}>Reinder</Text>
+          <Text style={styles.headerSubtitle}>Personaliza tu feed</Text>
+        </View>
+
+        {/* Progress dots */}
+        <ProgressDots total={STEPS.length} current={stepIndex} />
+
+        {/* Step counter */}
+        <Text style={styles.stepCounter}>
+          {stepIndex + 1} / {STEPS.length}
+        </Text>
+
+        {/* Swipe card area */}
+        <View style={styles.cardArea}>
+          <SwipeCard
+            key={currentStep.id}
+            step={currentStep}
+            onSwipeRight={handleSwipeRight}
+            onSwipeLeft={handleSwipeLeft}
+            onInteraction={handleInteraction}
+          />
+
+          {/* Hand tutorial overlay */}
+          <HandTutorial visible={showHandTutorial} />
+        </View>
+
+        {/* Manual buttons as fallback */}
+        <View style={styles.buttonsRow}>
+          <TouchableOpacity
+            style={[styles.choiceBtn, styles.choiceBtnLeft]}
+            onPress={() => {
+              handleInteraction();
+              handleSwipeLeft();
+            }}
+            accessibilityLabel={currentStep.leftLabel}
+            accessibilityRole="button"
+            testID={`onboarding-left-btn-${currentStep.id}`}
+          >
+            <Text style={styles.choiceBtnArrow}>←</Text>
+            <Text style={styles.choiceBtnText}>{currentStep.leftLabel}</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[styles.choiceBtn, styles.choiceBtnRight]}
+            onPress={() => {
+              handleInteraction();
+              handleSwipeRight();
+            }}
+            accessibilityLabel={currentStep.rightLabel}
+            accessibilityRole="button"
+            testID={`onboarding-right-btn-${currentStep.id}`}
+          >
+            <Text style={styles.choiceBtnText}>{currentStep.rightLabel}</Text>
+            <Text style={styles.choiceBtnArrow}>→</Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* Skip */}
+        <TouchableOpacity
+          onPress={onSkip}
+          style={styles.skipBtn}
+          testID="skip-button"
+          accessibilityLabel="Ver todo el catálogo sin filtros"
+          accessibilityRole="button"
         >
-          {/* Header */}
-          <Text style={styles.title}>¿Qué estás buscando?</Text>
-          <Text style={styles.subtitle}>
-            Personalizamos tu feed para que swipees solo lo que importa
-          </Text>
-
-          {/* Zona — requerida */}
-          <Text style={styles.sectionLabel}>Zona *</Text>
-          <View style={styles.zoneInputRow}>
-            <TextInput
-              style={styles.zoneInput}
-              value={zoneInput}
-              onChangeText={setZoneInput}
-              onSubmitEditing={addZone}
-              placeholder="Ej: Malasaña, Chamberí…"
-              placeholderTextColor={Colors.textMuted}
-              returnKeyType="done"
-              testID="zone-input"
-            />
-            <Pressable
-              onPress={addZone}
-              style={styles.addBtn}
-              testID="add-zone-btn"
-            >
-              <Text style={styles.addBtnText}>+</Text>
-            </Pressable>
-          </View>
-          <View style={styles.chipContainer}>
-            {zones.map((z) => (
-              <ZoneChip key={z} zone={z} onRemove={() => removeZone(z)} />
-            ))}
-          </View>
-
-          {/* Precio máximo */}
-          <Text style={styles.sectionLabel}>Precio máximo</Text>
-          <PillSelector
-            options={PRICE_OPTIONS}
-            selected={maxPrice}
-            onSelect={setMaxPrice}
-            formatLabel={(v) => `${(v / 1000).toFixed(0)}k€`}
-            testIDPrefix="price"
-          />
-
-          {/* Habitaciones mínimas */}
-          <Text style={styles.sectionLabel}>Habitaciones mínimas</Text>
-          <PillSelector
-            options={ROOM_OPTIONS}
-            selected={minRooms}
-            onSelect={setMinRooms}
-            formatLabel={(v) => `${v}+`}
-            testIDPrefix="rooms"
-          />
-
-          {/* m² mínimos */}
-          <Text style={styles.sectionLabel}>Metros cuadrados mínimos</Text>
-          <PillSelector
-            options={SQM_OPTIONS}
-            selected={minSqm}
-            onSelect={setMinSqm}
-            formatLabel={(v) => `${v}+`}
-            testIDPrefix="sqm"
-          />
-
-          {/* CTAs */}
-          <TouchableOpacity
-            onPress={handleSave}
-            disabled={!canSave}
-            style={[styles.primaryBtn, !canSave && styles.primaryBtnDisabled]}
-            testID="save-button"
-          >
-            <Text style={styles.primaryBtnText}>Empezar a swipear</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            onPress={onSkip}
-            style={styles.ghostBtn}
-            testID="skip-button"
-          >
-            <Text style={styles.ghostBtnText}>Ver todo el catálogo</Text>
-          </TouchableOpacity>
-        </ScrollView>
+          <Text style={styles.skipText}>Ver todo el catálogo</Text>
+        </TouchableOpacity>
       </GlassPanel>
     </Modal>
   );
@@ -227,133 +493,211 @@ export function SearchOnboardingModal({
 const styles = StyleSheet.create({
   background: {
     flex: 1,
+    alignItems: 'center',
+    paddingTop: 60,
+    paddingBottom: 40,
   },
-  content: {
-    paddingHorizontal: Spacing.lg,
-    paddingTop: 72,
-    paddingBottom: Spacing.xl,
+
+  // Header
+  headerContainer: {
+    alignItems: 'center',
+    marginBottom: Spacing.lg,
   },
-  title: {
-    fontSize: Typography.sizeH1,
+  brandName: {
+    fontSize: Typography.sizeDisplay,
     fontWeight: `${Typography.weightBold}`,
-    color: Colors.textPrimary,
-    marginBottom: Spacing.xs,
+    color: Colors.accentPrimary,
+    letterSpacing: -1,
   },
-  subtitle: {
+  headerSubtitle: {
     fontSize: Typography.sizeBody,
     color: Colors.textMuted,
+    marginTop: 2,
+  },
+
+  // Progress dots
+  dotsRow: {
+    flexDirection: 'row',
+    gap: 8,
+    marginBottom: Spacing.sm,
+  },
+  dot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+  },
+  dotActive: {
+    backgroundColor: Colors.accentPrimary,
+    width: 24,
+  },
+  dotInactive: {
+    backgroundColor: 'rgba(255,255,255,0.2)',
+  },
+  stepCounter: {
+    fontSize: Typography.sizeSmall,
+    color: Colors.textMuted,
+    marginBottom: Spacing.lg,
+  },
+
+  // Card area
+  cardArea: {
+    flex: 1,
+    width: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+  // Swipe card
+  card: {
+    width: SCREEN_W - Spacing.xl * 2,
+    backgroundColor: 'rgba(30, 26, 21, 0.92)',
+    borderRadius: Radius.card,
+    borderWidth: 1,
+    borderColor: 'rgba(255,107,0,0.2)',
+    padding: Spacing.xl,
+    alignItems: 'center',
+    // Shadow
+    shadowColor: Colors.accentPrimary,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 20,
+    elevation: 8,
+  },
+  cardEmoji: {
+    fontSize: 72,
+    marginBottom: Spacing.lg,
+  },
+  cardQuestion: {
+    fontSize: Typography.sizeH2,
+    fontWeight: `${Typography.weightBold}`,
+    color: Colors.textPrimary,
+    textAlign: 'center',
+    lineHeight: 30,
     marginBottom: Spacing.xl,
   },
-  sectionLabel: {
-    fontSize: Typography.sizeSmall,
-    fontWeight: `${Typography.weightMedium}`,
-    color: Colors.textMuted,
-    textTransform: 'uppercase',
-    letterSpacing: 1,
-    marginBottom: Spacing.sm,
-    marginTop: Spacing.md,
-  },
-  zoneInputRow: {
+
+  // Hints inside card
+  hintsRow: {
     flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: '100%',
     gap: Spacing.sm,
   },
-  zoneInput: {
+  hintChip: {
     flex: 1,
-    backgroundColor: Colors.bgSurface,
-    color: Colors.textPrimary,
-    borderRadius: 12,
-    paddingHorizontal: Spacing.md,
-    paddingVertical: 10,
-    fontSize: Typography.sizeBody,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: 'rgba(255,255,255,0.05)',
+    borderRadius: Radius.btn,
+    paddingVertical: 8,
+    paddingHorizontal: Spacing.sm,
     borderWidth: 1,
-    borderColor: Colors.border,
+    borderColor: 'rgba(255,255,255,0.08)',
   },
-  addBtn: {
-    width: 44,
-    height: 44,
-    borderRadius: 12,
-    backgroundColor: Colors.accentPrimary,
-    justifyContent: 'center',
-    alignItems: 'center',
+  hintChipRight: {
+    justifyContent: 'flex-end',
+    borderColor: 'rgba(255,107,0,0.25)',
   },
-  addBtnText: {
-    fontSize: 24,
-    color: '#fff',
-    fontWeight: '600',
-    lineHeight: 26,
-  },
-  chipContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: Spacing.sm,
-    marginTop: Spacing.sm,
-  },
-  chip: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: Colors.accentPrimary + '22',
-    borderRadius: 20,
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-    gap: 6,
-  },
-  chipText: {
-    fontSize: Typography.sizeSmall,
-    color: Colors.accentPrimary,
-    fontWeight: `${Typography.weightMedium}`,
-  },
-  chipRemove: {
-    fontSize: 16,
-    color: Colors.accentPrimary,
-    lineHeight: 18,
-  },
-  pillRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: Spacing.sm,
-  },
-  pill: {
-    paddingHorizontal: Spacing.md,
-    paddingVertical: Spacing.sm,
-    borderRadius: 24,
-    borderWidth: 1,
-    borderColor: Colors.border,
-    backgroundColor: Colors.bgSurface,
-  },
-  pillActive: {
-    backgroundColor: Colors.accentPrimary,
-    borderColor: Colors.accentPrimary,
-  },
-  pillText: {
+  hintArrow: {
     fontSize: Typography.sizeBody,
-    color: Colors.textMuted,
-    fontWeight: `${Typography.weightMedium}`,
-  },
-  pillTextActive: {
-    color: '#fff',
-  },
-  primaryBtn: {
-    backgroundColor: Colors.accentPrimary,
-    borderRadius: 16,
-    paddingVertical: 16,
-    alignItems: 'center',
-    marginTop: Spacing.xl,
-  },
-  primaryBtnDisabled: {
-    opacity: 0.4,
-  },
-  primaryBtnText: {
-    color: '#fff',
-    fontSize: Typography.sizeBody,
+    color: Colors.accentPrimary,
     fontWeight: `${Typography.weightBold}`,
   },
-  ghostBtn: {
+  hintText: {
+    fontSize: Typography.sizeSmall,
+    color: Colors.textMuted,
+    flex: 1,
+  },
+
+  // Swipe direction labels (appear during drag)
+  swipeLabel: {
+    position: 'absolute',
+    top: Spacing.lg,
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.sm,
+    borderRadius: Radius.btn,
+    borderWidth: 2,
+  },
+  swipeLabelRight: {
+    right: Spacing.md,
+    borderColor: Colors.accentPrimary,
+    backgroundColor: 'rgba(255,107,0,0.15)',
+  },
+  swipeLabelLeft: {
+    left: Spacing.md,
+    borderColor: Colors.accentReject,
+    backgroundColor: 'rgba(139,58,58,0.15)',
+  },
+  swipeLabelText: {
+    fontSize: Typography.sizeSmall,
+    fontWeight: `${Typography.weightBold}`,
+    color: Colors.textPrimary,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+
+  // Hand tutorial
+  handContainer: {
+    position: 'absolute',
+    bottom: -60,
     alignItems: 'center',
+    pointerEvents: 'none',
+  },
+  handEmoji: {
+    fontSize: 48,
+    transform: [{ rotate: '90deg' }],
+  },
+  handHint: {
+    fontSize: Typography.sizeSmall,
+    color: Colors.textMuted,
+    marginTop: 8,
+  },
+
+  // Bottom buttons (accessibility fallback)
+  buttonsRow: {
+    flexDirection: 'row',
+    gap: Spacing.sm,
+    paddingHorizontal: Spacing.lg,
+    marginTop: Spacing.xl,
+    width: '100%',
+  },
+  choiceBtn: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
     paddingVertical: 14,
+    borderRadius: Radius.btn,
+    borderWidth: 1.5,
+    gap: 6,
+  },
+  choiceBtnLeft: {
+    borderColor: Colors.accentReject,
+    backgroundColor: 'rgba(139,58,58,0.1)',
+  },
+  choiceBtnRight: {
+    borderColor: Colors.accentPrimary,
+    backgroundColor: 'rgba(255,107,0,0.1)',
+  },
+  choiceBtnText: {
+    fontSize: Typography.sizeSmall,
+    fontWeight: `${Typography.weightMedium}`,
+    color: Colors.textPrimary,
+  },
+  choiceBtnArrow: {
+    fontSize: Typography.sizeBody,
+    color: Colors.accentPrimary,
+    fontWeight: `${Typography.weightBold}`,
+  },
+
+  // Skip
+  skipBtn: {
+    paddingVertical: Spacing.md,
     marginTop: Spacing.sm,
   },
-  ghostBtnText: {
-    color: Colors.textMuted,
+  skipText: {
     fontSize: Typography.sizeBody,
+    color: Colors.textMuted,
   },
 });

@@ -81,6 +81,53 @@ export const useMatchHistoryStore = create<MatchHistoryStore>()(
         const result = await getMatches(token);
 
         if (result.error) {
+          // Fallback: construir historial desde los listings en memoria del swipe store.
+          // Esto muestra todos los matches de la sesión aunque el backend no esté disponible.
+          try {
+            const { useSwipeStore } = require('./use-swipe-store') as {
+              useSwipeStore: { getState: () => { pendingRecapIds: string[]; recapMatchIds: string[]; prefetchQueue: import('@reinder/shared').Listing[]; currentCard: import('@reinder/shared').Listing | null } };
+            };
+            const swipeState = useSwipeStore.getState();
+
+            // Reunir todos los listing IDs que han tenido match (pendingRecapIds incluye todos)
+            const matchedIds = Array.from(
+              new Set([...swipeState.pendingRecapIds, ...swipeState.recapMatchIds]),
+            );
+
+            if (matchedIds.length > 0) {
+              // Construir el pool de listings disponibles en memoria
+              const allListings = [
+                ...(swipeState.currentCard ? [swipeState.currentCard] : []),
+                ...swipeState.prefetchQueue,
+              ];
+
+              // Para cada ID matcheado, buscar el listing en memoria y convertirlo
+              const fallbackMatches: import('@reinder/shared').MatchHistoryItem[] = matchedIds
+                .map((id, idx) => {
+                  const listing = allListings.find((l) => l.id === id);
+                  if (!listing) return null;
+                  return {
+                    matchId: id,
+                    listingId: id,
+                    imageUrl: listing.imageUrl,
+                    price: listing.price,
+                    address: `${listing.title} — ${listing.location}`,
+                    listingStatus: listing.status as 'active' | 'sold' | 'withdrawn',
+                    matchedAt: new Date(Date.now() - idx * 60000).toISOString(),
+                    confirmed: false,
+                  };
+                })
+                .filter((x): x is import('@reinder/shared').MatchHistoryItem => x !== null);
+
+              if (fallbackMatches.length > 0) {
+                set({ matches: fallbackMatches, isLoading: false, newMatchesSinceLastVisit: fallbackMatches.length });
+                return;
+              }
+            }
+          } catch {
+            // useSwipeStore puede no estar disponible (tests) — silenciar
+          }
+
           set({ isLoading: false });
           return;
         }
