@@ -11,12 +11,12 @@
  * Fallback: si BlurView no soportado → rgba(30,26,21,0.95) sólido.
  */
 import { BlurView } from 'expo-blur';
-import { StyleSheet, type ViewStyle } from 'react-native';
+import { StyleSheet, type StyleProp, type ViewStyle } from 'react-native';
 import { BlurIntensity, Colors, Radius, SurfaceColors, type GlassPanelIntensity } from '../../lib/tokens';
 
 interface GlassPanelProps {
   intensity?: GlassPanelIntensity;
-  style?: ViewStyle;
+  style?: StyleProp<ViewStyle>;
   children?: React.ReactNode;
   testID?: string;
 }
