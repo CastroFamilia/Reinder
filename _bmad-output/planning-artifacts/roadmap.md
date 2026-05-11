@@ -50,10 +50,10 @@
 | **3.2** | Aceptación del Vínculo por el Comprador vía Referral Link | 3 | — | 🤖 bad-to-check |
 | **3.3** | Reconfirmación Periódica y Desvinculación Voluntaria | 3 | — | 🤖 bad-to-check |
 | **3.4** | Sobreescritura del Listing Agent en la UI | 2 | — | 🤖 bad-to-check |
-| **4.1** | Lista de Clientes Vinculados en el Panel del Agente | 2 | — | 🔵 backlog |
-| **4.2** | Notificación en Tiempo Real de Match de Cliente | 4 | ☝️ Configurar Expo Push Notifications (APNS cert iOS + FCM key Android) | 🔵 backlog |
-| **4.3** | Historial de Matches y Rechazos por Cliente | 2 | — | 🔵 backlog |
-| **4.4** | Deep Link Notificación → Detalle del Match | 3 | — | 🔵 backlog |
+| **4.1** | Lista de Clientes Vinculados en el Panel del Agente | 2 | — | ✅ done |
+| **4.2** | Notificación en Tiempo Real de Match de Cliente | 4 | ☝️ Configurar Expo Push Notifications (APNS cert iOS + FCM key Android) | ✅ done |
+| **4.3** | Historial de Matches y Rechazos por Cliente | 2 | — | ✅ done |
+| **4.4** | Deep Link Notificación → Detalle del Match | 3 | — | ✅ done |
 
 ---
 
@@ -61,7 +61,7 @@
 
 | Story | Título | Complejidad | Acción humana | Estado |
 |---|---|:---:|---|---|
-| **5.1** | Conexión de CRM de Agencia (Inmovilla) | 4 | ☝️ Cuenta Inmovilla de prueba + API key para desarrollo | 🔵 backlog |
+| **5.1** | Conexión de CRM de Agencia (Inmovilla) | 4 | ☝️ Cuenta Inmovilla de prueba + API key para desarrollo | ✅ done |
 | **5.2** | Sincronización de Listings via Webhook y Batch Desacoplados | 5 | ☝️ Activar `pg_cron` en Supabase + deploy Edge Function `crm-webhook` | 🔵 backlog |
 | **5.3** | Validación de Exclusividad y Detección de Duplicados | 4 | — | 🔵 backlog |
 | **5.4** | Ciclo de Vida del Listing — Retirada y Vendida | 3 | — | 🔵 backlog |
@@ -134,4 +134,4 @@
 
 ---
 
-*Última actualización: 2026-04-30 — Sesión de fixes de Mobile UX completada. Añadida limpieza de Zustand stores (search, swipe, match history) en el evento SIGNED_OUT para prevenir fuga de preferencias de búsqueda entre cuentas. Implementado AbortController timeout de 5s en las requests a la API para evitar renders infinitos del PropertyCardSkeleton cuando el servidor local (Expo Go) se cuelga. Epic 4 restaurada formalmente a backlog.*
+*Última actualización: 2026-05-11 — Añadidos 17 archivos de test con 163 tests nuevos cubriendo packages/shared, apps/mobile y apps/web (constantes, design tokens, API clients, hooks, routes, componentes agent-link). README actualizado con sección Prerequisites (pnpm obligatorio). Epic 4 completado. Story 5.1 completada.*

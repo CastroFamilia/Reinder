@@ -42,7 +42,15 @@ To intelligently manage the version control process by grouping uncommitted chan
     - **Multiple Units**: If there are changes addressing different issues, split them into separate commits.
     - **Submodule References**: Group submodule pointer updates separately from other changes.
 
-5.  **Commit Root Repository**:
+5.  **Check and Update Project Tracking Documents**:
+    - **BEFORE committing**, review these three files for accuracy against the current sprint-status:
+      - `README.md` — Verify the **Progreso de Épicas** table matches `sprint-status.yaml` (story counts, statuses, "Siguiente" pointer).
+      - `_bmad-output/planning-artifacts/roadmap.md` — Verify each story's status column matches `sprint-status.yaml`. Update the "Última actualización" footer with today's date and a brief summary.
+      - `_bmad-output/implementation-artifacts/sprint-status.yaml` — Verify `last_updated` timestamp is current.
+    - If any of these files are stale or inconsistent, update them and include them in the commit.
+    - **Consistency rule**: All three files MUST agree on epic/story statuses. The source of truth is `sprint-status.yaml`.
+
+6.  **Commit Root Repository**:
     - For each identified group of changes:
       1.  **Stage**: Run `git add <path/to/files>` for the files in this group.
       2.  **Message**: Generate a specific, descriptive commit message using the format `<type>: <description>`.
@@ -50,14 +58,15 @@ To intelligently manage the version control process by grouping uncommitted chan
           - **Description**: A concise summary of the change (start with uppercase, no period).
       3.  **Commit**: Run `git commit -m "<type>: <description>"`.
 
-6.  **Push Root Repository**:
+7.  **Push Root Repository**:
     - Once all groups are committed, run `git push origin <branch>`.
 
-7.  **Report**:
+8.  **Report**:
     - Inform the user of:
       - All submodules that were committed and pushed (with commit messages).
       - All root repository commits created (with messages).
       - Which repositories and branches were pushed.
+      - Whether tracking documents (README, roadmap, sprint-status) were updated.
 
 ---
 
