@@ -1,165 +1,190 @@
 /**
  * apps/mobile/src/lib/api/matches.test.ts
  *
- * Tests for the matches API client (confirmMatch, discardMatch, getMatches).
- * Story 2.6 — Task 6 | Story 2.7 — Task 2
+ * Unit tests for the matches API client.
+ * Tests confirmMatch, discardMatch, and getMatches —
+ * success, HTTP errors, and network errors for each.
  */
+
+const mockFetch = jest.fn();
+global.fetch = mockFetch;
+
 import { confirmMatch, discardMatch, getMatches } from './matches';
 
-// Mock global fetch for this test module
-const mockFetch = jest.fn();
-Object.assign(globalThis, { fetch: mockFetch });
+describe('confirmMatch', () => {
+  beforeEach(() => jest.clearAllMocks());
 
+  it('sends PATCH request to /matches/{id}/confirm', async () => {
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: () => Promise.resolve({ data: { confirmed: true }, error: null }),
+    });
 
-describe('matches API client', () => {
-  beforeEach(() => {
-    mockFetch.mockReset();
+    await confirmMatch('match-123', 'token');
+
+    expect(mockFetch).toHaveBeenCalledWith(
+      expect.stringContaining('/matches/match-123/confirm'),
+      expect.objectContaining({
+        method: 'PATCH',
+        headers: expect.objectContaining({
+          Authorization: 'Bearer token',
+        }),
+      }),
+    );
   });
 
-  describe('confirmMatch', () => {
-    it('retorna {confirmed: true} si el servidor responde 200', async () => {
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({ data: { confirmed: true }, error: null }),
-      });
-
-      const result = await confirmMatch('match-1', 'mock-token');
-
-      expect(result.error).toBeNull();
-      expect(result.data).toEqual({ confirmed: true });
-      expect(mockFetch).toHaveBeenCalledWith(
-        expect.stringContaining('/api/v1/matches/match-1/confirm'),
-        expect.objectContaining({
-          method: 'PATCH',
-          headers: expect.objectContaining({
-            Authorization: 'Bearer mock-token',
-          }),
-        }),
-      );
+  it('returns confirmed:true on success', async () => {
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: () => Promise.resolve({ data: { confirmed: true }, error: null }),
     });
 
-    it('retorna error si el servidor responde 403', async () => {
-      mockFetch.mockResolvedValueOnce({
-        ok: false,
-        status: 403,
-        statusText: 'Forbidden',
-      });
-
-      const result = await confirmMatch('match-1', 'bad-token');
-
-      expect(result.data).toBeNull();
-      expect(result.error?.code).toBe('HTTP_403');
-    });
-
-    it('retorna NETWORK_ERROR si fetch lanza excepción', async () => {
-      mockFetch.mockRejectedValueOnce(new Error('Network failure'));
-
-      const result = await confirmMatch('match-1', 'mock-token');
-
-      expect(result.data).toBeNull();
-      expect(result.error?.code).toBe('NETWORK_ERROR');
-    });
+    const result = await confirmMatch('match-1', 'token');
+    expect(result.data).toEqual({ confirmed: true });
+    expect(result.error).toBeNull();
   });
 
-  describe('discardMatch', () => {
-    it('retorna {deleted: true} si el servidor responde 200', async () => {
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({ data: { deleted: true }, error: null }),
-      });
-
-      const result = await discardMatch('match-2', 'mock-token');
-
-      expect(result.error).toBeNull();
-      expect(result.data).toEqual({ deleted: true });
-      expect(mockFetch).toHaveBeenCalledWith(
-        expect.stringContaining('/api/v1/matches/match-2'),
-        expect.objectContaining({
-          method: 'DELETE',
-          headers: expect.objectContaining({
-            Authorization: 'Bearer mock-token',
-          }),
-        }),
-      );
+  it('returns HTTP error when response is not ok', async () => {
+    mockFetch.mockResolvedValueOnce({
+      ok: false,
+      status: 404,
+      statusText: 'Not Found',
     });
 
-    it('retorna error si el servidor responde 404', async () => {
-      mockFetch.mockResolvedValueOnce({
-        ok: false,
-        status: 404,
-        statusText: 'Not Found',
-      });
-
-      const result = await discardMatch('match-999', 'mock-token');
-
-      expect(result.data).toBeNull();
-      expect(result.error?.code).toBe('HTTP_404');
-    });
-
-    it('retorna NETWORK_ERROR si fetch lanza excepción', async () => {
-      mockFetch.mockRejectedValueOnce(new Error('Network failure'));
-
-      const result = await discardMatch('match-2', 'mock-token');
-
-      expect(result.data).toBeNull();
-      expect(result.error?.code).toBe('NETWORK_ERROR');
-    });
+    const result = await confirmMatch('match-bad', 'token');
+    expect(result.data).toBeNull();
+    expect(result.error?.code).toBe('HTTP_404');
   });
 
-  describe('getMatches', () => {
-    it('retorna array de MatchHistoryItem si el servidor responde 200', async () => {
-      const mockMatches = [
-        {
-          matchId: 'match-1',
-          listingId: 'listing-1',
-          imageUrl: 'https://example.com/photo.jpg',
-          price: 250000,
-          address: 'Calle Gran Vía 1, Madrid',
-          listingStatus: 'active',
-          matchedAt: '2026-03-25T10:00:00Z',
-          confirmed: true,
-        },
-      ];
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({ data: mockMatches, error: null }),
-      });
+  it('returns NETWORK_ERROR when fetch throws', async () => {
+    mockFetch.mockRejectedValueOnce(new Error('Network error'));
 
-      const result = await getMatches('mock-token');
+    const result = await confirmMatch('match-1', 'token');
+    expect(result.data).toBeNull();
+    expect(result.error?.code).toBe('NETWORK_ERROR');
+    expect(result.error?.message).toContain('confirmar');
+  });
+});
 
-      expect(result.error).toBeNull();
-      expect(result.data).toEqual(mockMatches);
-      expect(mockFetch).toHaveBeenCalledWith(
-        expect.stringContaining('/api/v1/matches'),
-        expect.objectContaining({
-          method: 'GET',
-          headers: expect.objectContaining({
-            Authorization: 'Bearer mock-token',
-          }),
+describe('discardMatch', () => {
+  beforeEach(() => jest.clearAllMocks());
+
+  it('sends DELETE request to /matches/{id}', async () => {
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: () => Promise.resolve({ data: { deleted: true }, error: null }),
+    });
+
+    await discardMatch('match-456', 'token');
+
+    expect(mockFetch).toHaveBeenCalledWith(
+      expect.stringContaining('/matches/match-456'),
+      expect.objectContaining({
+        method: 'DELETE',
+        headers: expect.objectContaining({
+          Authorization: 'Bearer token',
         }),
-      );
+      }),
+    );
+  });
+
+  it('returns deleted:true on success', async () => {
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: () => Promise.resolve({ data: { deleted: true }, error: null }),
     });
 
-    it('retorna error si el servidor responde 401', async () => {
-      mockFetch.mockResolvedValueOnce({
-        ok: false,
-        status: 401,
-        statusText: 'Unauthorized',
-      });
+    const result = await discardMatch('match-1', 'token');
+    expect(result.data).toEqual({ deleted: true });
+    expect(result.error).toBeNull();
+  });
 
-      const result = await getMatches('bad-token');
-
-      expect(result.data).toBeNull();
-      expect(result.error?.code).toBe('HTTP_401');
+  it('returns HTTP error when response is not ok', async () => {
+    mockFetch.mockResolvedValueOnce({
+      ok: false,
+      status: 403,
+      statusText: 'Forbidden',
     });
 
-    it('retorna NETWORK_ERROR si fetch lanza excepción', async () => {
-      mockFetch.mockRejectedValueOnce(new Error('Network failure'));
+    const result = await discardMatch('match-1', 'token');
+    expect(result.data).toBeNull();
+    expect(result.error?.code).toBe('HTTP_403');
+  });
 
-      const result = await getMatches('mock-token');
+  it('returns NETWORK_ERROR when fetch throws', async () => {
+    mockFetch.mockRejectedValueOnce(new Error('No connection'));
 
-      expect(result.data).toBeNull();
-      expect(result.error?.code).toBe('NETWORK_ERROR');
+    const result = await discardMatch('match-1', 'token');
+    expect(result.data).toBeNull();
+    expect(result.error?.code).toBe('NETWORK_ERROR');
+    expect(result.error?.message).toContain('descartar');
+  });
+});
+
+describe('getMatches', () => {
+  beforeEach(() => jest.clearAllMocks());
+
+  it('sends GET request to /matches with auth header', async () => {
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: () => Promise.resolve({ data: [], error: null }),
     });
+
+    await getMatches('my-token');
+
+    expect(mockFetch).toHaveBeenCalledWith(
+      expect.stringContaining('/matches'),
+      expect.objectContaining({
+        method: 'GET',
+        headers: expect.objectContaining({
+          Authorization: 'Bearer my-token',
+        }),
+      }),
+    );
+  });
+
+  it('returns match history array on success', async () => {
+    const mockMatches = [
+      {
+        matchId: 'm-1',
+        listingId: 'l-1',
+        imageUrl: 'https://example.com/1.jpg',
+        price: 300000,
+        address: 'Madrid',
+        listingStatus: 'active',
+        matchedAt: '2026-03-22T21:00:00Z',
+        confirmed: true,
+      },
+    ];
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: () => Promise.resolve({ data: mockMatches, error: null }),
+    });
+
+    const result = await getMatches('token');
+    expect(result.data).toHaveLength(1);
+    expect(result.data![0].matchId).toBe('m-1');
+    expect(result.error).toBeNull();
+  });
+
+  it('returns HTTP error when response is not ok', async () => {
+    mockFetch.mockResolvedValueOnce({
+      ok: false,
+      status: 401,
+      statusText: 'Unauthorized',
+    });
+
+    const result = await getMatches('bad-token');
+    expect(result.data).toBeNull();
+    expect(result.error?.code).toBe('HTTP_401');
+  });
+
+  it('returns NETWORK_ERROR when fetch throws', async () => {
+    mockFetch.mockRejectedValueOnce(new Error('Offline'));
+
+    const result = await getMatches('token');
+    expect(result.data).toBeNull();
+    expect(result.error?.code).toBe('NETWORK_ERROR');
+    expect(result.error?.message).toContain('historial');
   });
 });

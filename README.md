@@ -227,6 +227,30 @@ Estas herramientas se pueden usar en cualquier momento, en cualquier fase.
 
 ---
 
+## 📦 Prerequisites
+
+> ⚠️ **This project uses `pnpm` — `npm install` will NOT work.**  
+> The monorepo uses pnpm workspaces, a `pnpm-lock.yaml` lockfile, and `workspace:*` protocol references between packages. Running `npm install` will fail to resolve internal dependencies.
+
+**Install pnpm** (if you don't have it):
+
+```bash
+# Option 1 — via Corepack (recommended, comes with Node.js ≥ 16.13)
+corepack enable
+corepack prepare pnpm@10.32.1 --activate
+
+# Option 2 — via npm (one-time global install)
+npm install -g pnpm@10.32.1
+```
+
+**Verify:**
+
+```bash
+pnpm --version  # Should output 10.32.1 or compatible
+```
+
+---
+
 ## 🚀 Quick Start
 
 ```bash
