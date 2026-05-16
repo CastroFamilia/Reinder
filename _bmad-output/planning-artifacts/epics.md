@@ -922,6 +922,8 @@ para que mis exclusivas activas se importen automáticamente al swipe feed.
 
 ### Story 5.2: Sincronización de Listings via Webhook y Batch Desacoplados
 
+**GH Issue:** #5
+
 Como sistema Reinder,
 quiero sincronizar listings desde el CRM de forma desacoplada del request path del comprador,
 para que la ingesta de inventario no impacte en el rendimiento del swipe feed (NFR11).
@@ -941,6 +943,8 @@ para que la ingesta de inventario no impacte en el rendimiento del swipe feed (N
 
 ### Story 5.3: Validación de Exclusividad y Detección de Duplicados
 
+**GH Issue:** #6
+
 Como sistema Reinder,
 quiero validar exclusividad y detectar duplicados al importar listings,
 para que el feed solo contenga propiedades de calidad verificada.
@@ -958,6 +962,8 @@ para que el feed solo contenga propiedades de calidad verificada.
 ---
 
 ### Story 5.4: Ciclo de Vida del Listing — Retirada y Vendida
+
+**GH Issue:** #7
 
 Como administrador de agencia,
 quiero poder marcar manualmente una propiedad como retirada del mercado o como vendida,

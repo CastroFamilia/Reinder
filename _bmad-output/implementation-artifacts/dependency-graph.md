@@ -1,5 +1,5 @@
 # Story Dependency Graph
-_Last updated: 2026-04-28T13:14:00+02:00_
+_Last updated: 2026-05-16T19:07:00+02:00_
 
 ## Stories
 
@@ -28,10 +28,10 @@ _Last updated: 2026-04-28T13:14:00+02:00_
 | 4.2 | 4 | Notificación en Tiempo Real de Match de Cliente | done | #2 | — | — | 4.1 (done ✅) | ✅ Yes (done) |
 | 4.3 | 4 | Historial de Matches y Rechazos por Cliente | done | #3 | — | — | 4.1 (done ✅) | ✅ Yes (done) |
 | 4.4 | 4 | Deep Link — Notificación → Detalle del Match | done | #4 | — | — | 4.2 (done ✅) | ✅ Yes (done) |
-| 5.1 | 5 | Conexión de CRM Agencia — Inmovilla | backlog | — | — | — | Epic 2 complete | ✅ Yes |
-| 5.2 | 5 | Sincronización de Listings — Webhook + Batch Desacoplados | backlog | — | — | — | 5.1 | ❌ No |
-| 5.3 | 5 | Validación de Exclusividad y Detección de Duplicados | backlog | — | — | — | 5.2 | ❌ No |
-| 5.4 | 5 | Ciclo de Vida del Listing — Retirada y Vendida | backlog | — | — | — | 5.2 | ❌ No |
+| 5.1 | 5 | Conexión de CRM Agencia — Inmovilla | done | — | — | — | Epic 2 complete | ✅ Yes (done) |
+| 5.2 | 5 | Sincronización de Listings — Webhook + Batch Desacoplados | backlog | #5 | — | — | 5.1 (done ✅) | ✅ Yes |
+| 5.3 | 5 | Validación de Exclusividad y Detección de Duplicados | backlog | #6 | — | — | 5.2 | ❌ No (5.2 not done) |
+| 5.4 | 5 | Ciclo de Vida del Listing — Retirada y Vendida | backlog | #7 | — | — | 5.2 | ❌ No (5.2 not done) |
 | 6.1 | 6 | Páginas de Listing SSR Indexables por Google | backlog | — | — | — | 5.2 | ❌ No |
 | 6.2 | 6 | Datos Estructurados schema.org en Páginas de Listing | backlog | — | — | — | 6.1 | ❌ No |
 | 6.3 | 6 | Gated Content — Preview para Usuarios No Autenticados | backlog | — | — | — | 6.1 | ❌ No |
@@ -87,6 +87,7 @@ _Last updated: 2026-04-28T13:14:00+02:00_
 ## Notes
 
 **Current epic:** Epic 5 (Gestión de Listings e Integración CRM)
-**Epic 5 status:** 5.1 ✅ COMPLETE
+**Epic 5 status:** 5.1 ✅ COMPLETE (done)
 **Stories ready to work:** 5.2 (Sincronización de Listings via Webhook)
-**Epic 5 execution plan:** 5.2 next → then 5.3 + 5.4
+**Epic 5 execution plan:** 5.2 next → then 5.3 + 5.4 in parallel
+**GH Issues created this run:** #5 (5.2), #6 (5.3), #7 (5.4)
