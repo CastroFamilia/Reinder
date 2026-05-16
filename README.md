@@ -93,7 +93,7 @@ Create Story → [Validate Story] → Dev Story → [QA Automation] → [Code Re
 | **Epic 2** | Swipe Loop | 7 done · 2 🤖 bad-to-check (2.8, 2.9) | ✅ Completado — pendiente verificación humana |
 | **Epic 3** | Vínculo Comprador–Agente | 4 🤖 bad-to-check (3.1–3.4) | 🤖 Pendiente verificación humana |
 | **Epic 4** | Panel del Agente Representante | 4/4 done | ✅ **Completado** |
-| **Epic 5** | Gestión de Listings e Integración CRM | 1/4 done (5.1) | 🚧 En Progreso |
+| **Epic 5** | Gestión de Listings e Integración CRM | 5.1 ✅ · 5.2–5.4 🤖 bad-to-check | 🤖 Pendiente verificación humana |
 | **Epic 6** | Descubrimiento Orgánico y SEO | 0/3 | ⬜ Backlog |
 | **Epic 7** | Administración de Plataforma | 0/4 | ⬜ Backlog |
 | **Epic 8** | Engagement Intelligence | 0/7 | ⬜ Backlog |

@@ -62,9 +62,9 @@
 | Story | Título | Complejidad | Acción humana | Estado |
 |---|---|:---:|---|---|
 | **5.1** | Conexión de CRM de Agencia (Inmovilla) | 4 | ☝️ Cuenta Inmovilla de prueba + API key para desarrollo | ✅ done |
-| **5.2** | Sincronización de Listings via Webhook y Batch Desacoplados | 5 | ☝️ Activar `pg_cron` en Supabase + deploy Edge Function `crm-webhook` | 🔵 backlog |
-| **5.3** | Validación de Exclusividad y Detección de Duplicados | 4 | — | 🔵 backlog |
-| **5.4** | Ciclo de Vida del Listing — Retirada y Vendida | 3 | — | 🔵 backlog |
+| **5.2** | Sincronización de Listings via Webhook y Batch Desacoplados | 5 | ☝️ Activar `pg_cron` en Supabase + deploy Edge Function `crm-webhook` | 🤖 bad-to-check |
+| **5.3** | Validación de Exclusividad y Detección de Duplicados | 4 | — | 🤖 bad-to-check |
+| **5.4** | Ciclo de Vida del Listing — Retirada y Vendida | 3 | — | 🤖 bad-to-check |
 
 ---
 
@@ -134,4 +134,4 @@
 
 ---
 
-*Última actualización: 2026-05-11 — Añadidos 17 archivos de test con 163 tests nuevos cubriendo packages/shared, apps/mobile y apps/web (constantes, design tokens, API clients, hooks, routes, componentes agent-link). README actualizado con sección Prerequisites (pnpm obligatorio). Epic 4 completado. Story 5.1 completada.*
+*Última actualización: 2026-05-16 — Pipeline BAD completado para Epic 5: Stories 5.2, 5.3 y 5.4 implementadas (PRs #8, #9, #10). crm-webhook Edge Function, pg_cron worker con backoff, validación de exclusividad catastral, ciclo de vida de listings (withdrawn/sold + auto-remove 72h). Epic 6 desbloqueado.*
