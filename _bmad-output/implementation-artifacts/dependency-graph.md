@@ -30,9 +30,9 @@ _Last updated: 2026-05-16T19:07:00+02:00_
 | 4.4 | 4 | Deep Link — Notificación → Detalle del Match | done | #4 | — | — | 4.2 (done ✅) | ✅ Yes (done) |
 | 5.1 | 5 | Conexión de CRM Agencia — Inmovilla | done | — | — | — | Epic 2 complete | ✅ Yes (done) |
 | 5.2 | 5 | Sincronización de Listings — Webhook + Batch Desacoplados | done | #5 | #8 | main | 5.1 (done ✅) | ✅ Yes (done) |
-| 5.3 | 5 | Validación de Exclusividad y Detección de Duplicados | backlog | #6 | — | — | 5.2 (done ✅) | ✅ Yes |
-| 5.4 | 5 | Ciclo de Vida del Listing — Retirada y Vendida | backlog | #7 | — | — | 5.2 (done ✅) | ✅ Yes |
-| 6.1 | 6 | Páginas de Listing SSR Indexables por Google | backlog | — | — | — | 5.2 | ❌ No |
+| 5.3 | 5 | Validación de Exclusividad y Detección de Duplicados | done | #6 | #9 | main | 5.2 (done ✅) | ✅ Yes (done) |
+| 5.4 | 5 | Ciclo de Vida del Listing — Retirada y Vendida | done | #7 | #10 | main | 5.2 (done ✅) | ✅ Yes (done) |
+| 6.1 | 6 | Páginas de Listing SSR Indexables por Google | backlog | — | — | — | 5.2 (done ✅) | ✅ Yes |
 | 6.2 | 6 | Datos Estructurados schema.org en Páginas de Listing | backlog | — | — | — | 6.1 | ❌ No |
 | 6.3 | 6 | Gated Content — Preview para Usuarios No Autenticados | backlog | — | — | — | 6.1 | ❌ No |
 | 7.1 | 7 | CI/CD Pipeline y Observabilidad — Sentry + Analytics | backlog | — | — | — | Epic 2 complete | ❌ No (ordering: Epic 3+4 first) |
@@ -86,8 +86,8 @@ _Last updated: 2026-05-16T19:07:00+02:00_
 
 ## Notes
 
-**Current epic:** Epic 5 (Gestión de Listings e Integración CRM)
-**Epic 5 status:** 5.1 ✅ 5.2 ✅ COMPLETE
-**Stories ready to work:** 5.3 (Validación Exclusividad) + 5.4 (Ciclo de Vida) — ambas desbloqueadas, ejecutables en paralelo
-**Epic 5 execution plan:** 5.3 + 5.4 en paralelo → epic done
-**GH Issues:** #5 (5.2 done PR#8), #6 (5.3 ready), #7 (5.4 ready)
+**Current epic:** Epic 5 ✅ COMPLETE (all 4 stories done)
+**PRs created this sprint:** #8 (5.2), #9 (5.3), #10 (5.4)
+**Next epic:** Epic 6 (Descubrimiento Orgánico y SEO) — unlocked (dependency: 5.2 done)
+**Epic 6 first story:** 6.1 (Páginas de Listing SSR Indexables por Google)
+**Epic 5 retrospective:** optional — run if desired
