@@ -218,12 +218,21 @@ $$;
 
 -- ─────────────────────────────────────────────────────────────────────────────
 -- Add unique constraint on (agency_id, external_id) for ON CONFLICT to work
--- This enables idempotent upserts from the queue worker
+-- Uses DO block for idempotent constraint creation (PostgreSQL compatibility)
 -- ─────────────────────────────────────────────────────────────────────────────
 
-ALTER TABLE listings
-ADD CONSTRAINT IF NOT EXISTS listings_agency_external_id_unique
-UNIQUE (agency_id, external_id);
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint
+    WHERE conname = 'listings_agency_external_id_unique'
+      AND conrelid = 'listings'::regclass
+  ) THEN
+    ALTER TABLE listings
+    ADD CONSTRAINT listings_agency_external_id_unique
+    UNIQUE (agency_id, external_id);
+  END IF;
+END $$;
 
 -- ─────────────────────────────────────────────────────────────────────────────
 -- pg_cron Jobs Registration
