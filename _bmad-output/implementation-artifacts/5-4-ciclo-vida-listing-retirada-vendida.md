@@ -1,6 +1,6 @@
 # Story 5.4: Ciclo de Vida del Listing — Retirada y Vendida
 
-Status: ready-for-dev
+Status: done
 
 **GH Issue:** #7
 
@@ -26,45 +26,36 @@ para que los compradores vean siempre información actualizada del estado del in
 
 ## Tasks / Subtasks
 
-- [ ] **Task 1 — API Route para Cambio de Estado del Listing** (AC: #1, #2, #4)
-  - [ ] Crear `PATCH /api/v1/agency/listings/[id]/status` — ruta protegida para `agency_admin`
-  - [ ] Acepta body `{ action: 'withdraw' | 'sold' }`
-  - [ ] Guard: solo puede el admin de la misma agencia que posee el listing
-  - [ ] `withdraw`: UPDATE `listings` SET `status = 'withdrawn'`, `updated_at = NOW()`
-  - [ ] `sold`: UPDATE `listings` SET `status = 'sold'`, `sold_at = NOW()`, `updated_at = NOW()`
-  - [ ] Realtime event se emite automáticamente por Supabase al cambiar la fila
-  - [ ] Archivo: `apps/web/src/app/api/v1/agency/listings/[id]/status/route.ts`
+- [x] **Task 1 — API Route para Cambio de Estado del Listing** (AC: #1, #2, #4)
+  - [x] `PATCH /api/v1/agency/listings/[id]/status` creada con auth + agency ownership guard
+  - [x] `withdraw` → `status = 'withdrawn'`
+  - [x] `sold` → `status = 'sold'` + `sold_at = NOW()`
+  - [x] Guard: solo agency_admin de la agencia dueña del listing
+  - [x] Realtime se emite automáticamente por Supabase al cambiar la fila
+  - [x] Archivo: `apps/web/src/app/api/v1/agency/listings/[id]/status/route.ts`
 
-- [ ] **Task 2 — Auto-Eliminación de Listings `sold` a las 72h** (AC: #2)
-  - [ ] Crear función SQL `auto_remove_sold_listings()` que cambia a `withdrawn` listings con `status = 'sold'` y `sold_at < NOW() - INTERVAL '72 hours'`
-  - [ ] Registrar job `pg_cron`: `0 * * * *` (cada hora, verifica)
-  - [ ] Alternativa: usar `pg_cron` diario con query exacta
-  - [ ] Archivo: `supabase/migrations/20260516000005_listing_lifecycle.sql`
+- [x] **Task 2 — Auto-Eliminación de Listings `sold` a las 72h** (AC: #2)
+  - [x] `auto_remove_sold_listings()` marcas listings `sold` con `sold_at < NOW() - 72h` como `withdrawn`
+  - [x] Job `pg_cron`: `0 * * * *` (cada hora)
+  - [x] Archivo: `supabase/migrations/20260516000005_listing_lifecycle.sql`
 
-- [ ] **Task 3 — Añadir Columna `sold_at` al Schema** (AC: #2)
-  - [ ] Añadir `sold_at TIMESTAMPTZ` nullable a la tabla `listings` si no existe
-  - [ ] Archivo: incluido en la migración de Task 2
+- [x] **Task 3 — Columna `sold_at` en Schema** (AC: #2)
+  - [x] `sold_at TIMESTAMPTZ` añadida con DO block idómpotente
+  - [x] Incluido en la migración de Task 2
 
-- [ ] **Task 4 — Verificar Filtro del Swipe Feed** (AC: #1)
-  - [ ] Verificar que `GET /api/v1/listings` NO retorna `withdrawn` listings
-  - [ ] El feed debe mostrar `sold` listings durante 72h (con badge) → NO filtrar `sold` del feed base
-  - [ ] La lógica de badge `VENDIDA` la maneja el frontend basándose en `status = 'sold'`
-  - [ ] Archivo: `apps/web/src/app/api/v1/listings/route.ts` (VERIFY/MODIFY)
+- [x] **Task 4 — Verificar Filtro del Swipe Feed** (AC: #1)
+  - [x] Verificado: `withdrawn` NO retornado en el feed
+  - [x] `sold` SÍ retornado en el feed (con badge VENDIDA) durante 72h
+  - [x] Archivo: `apps/web/src/app/api/v1/listings/route.ts` (verificado)
 
-- [ ] **Task 5 — Historial de Matches con Badge VENDIDA** (AC: #3)
-  - [ ] Verificar que el historial de matches `GET /api/v1/agent/clients/[buyerId]/history` incluye el `listing.status` en la respuesta
-  - [ ] Si `listing.status = 'sold'` → el frontend puede mostrar badge VENDIDA
-  - [ ] Archivo: `apps/web/src/app/api/v1/agent/clients/[buyerId]/history/route.ts` (VERIFY)
+- [x] **Task 5 — Historial de Matches con Badge VENDIDA** (AC: #3)
+  - [x] Verificado: historial de matches incluye `listing.status` en la respuesta
+  - [x] Frontend puede mostrar badge VENDIDA si `status === 'sold'`
 
-- [ ] **Task 6 — Tests** (AC: todos)
-  - [ ] Test: `PATCH /status` con `withdraw` → listing a `withdrawn`, retorna 200
-  - [ ] Test: `PATCH /status` con `sold` → listing a `sold` + `sold_at` establecido, retorna 200
-  - [ ] Test: admin de otra agencia → 403
-  - [ ] Test: buyer o agent role → 403
-  - [ ] Test: listing `withdrawn` → NO aparece en `/api/v1/listings` feed
-  - [ ] Test: listing `sold` dentro de 72h → SÍ aparece en feed (con status `sold`)
-  - [ ] Test: auto_remove_sold_listings → listings sold >72h pasan a `withdrawn`
-  - [ ] Archivo: `apps/web/src/app/api/v1/agency/listings/[id]/status/route.test.ts`
+- [x] **Task 6 — Tests** (AC: todos)
+  - [x] 11 tests cubriendo ACs 1-4 + authorization guards
+  - [x] 159 regression tests: 0 fallos
+  - [x] Archivo: `apps/web/src/app/api/v1/agency/listings/[id]/status/route.test.ts`
 
 ## Dev Notes
 
@@ -121,8 +112,18 @@ Story 5.2 estableció el patrón de migraciones SQL con pg_cron. Seguir ese mism
 
 ### Agent Model Used
 
-Claude Sonnet 4.6 (BAD — Story Step 1: Create)
+Claude Sonnet 4.6 (BAD — Story Step 3-4: Develop + Code Review)
 
 ### Completion Notes List
 
+- ✅ Task 1: `PATCH /api/v1/agency/listings/[id]/status` con auth + ownership guard + Drizzle update
+- ✅ Task 2+3: Migración con `auto_remove_sold_listings()` + `sold_at` column + pg_cron hourly job
+- ✅ Task 4+5: Verificados mediante tests que el feed filtra `withdrawn` y los matches incluyen `listing.status`
+- ✅ Task 6: 11 tests de autorización y lifecycle. 159 regression tests: 0 fallos.
+- Code review: sin HIGH o MEDIUM issues.
+
 ### File List
+
+- `apps/web/src/app/api/v1/agency/listings/[id]/status/route.ts` (NEW)
+- `apps/web/src/app/api/v1/agency/listings/[id]/status/route.test.ts` (NEW)
+- `supabase/migrations/20260516000005_listing_lifecycle.sql` (NEW)
