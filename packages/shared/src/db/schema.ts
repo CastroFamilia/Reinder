@@ -279,3 +279,36 @@ export const agentBuyerBonds = pgTable(
   })
 );
 
+// ---------------------------------------------------------------------------
+// Tabla: crm_sync_queue
+// Cola de procesamiento asíncrono para ingesta de listings (Story 5.2).
+// ---------------------------------------------------------------------------
+
+export const crmSyncStatusEnum = pgEnum("crm_sync_status", [
+  "pending",
+  "processing",
+  "completed",
+  "error",
+]);
+
+export const crmSyncQueue = pgTable(
+  "crm_sync_queue",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    agencyId: uuid("agency_id"), // opcional inicialmente, por si se infiere del payload
+    payload: jsonb("payload").notNull(),
+    status: crmSyncStatusEnum("status").notNull().default("pending"),
+    retryCount: integer("retry_count").notNull().default(0),
+    errorLog: text("error_log"),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => ({
+    idxCrmSyncQueueStatus: index("idx_crm_sync_queue_status").on(table.status),
+  })
+);
+

@@ -22,6 +22,7 @@ import { GlassPanel } from '../../../components/ui/glass-panel';
 import { Colors, Typography, Spacing, Radius } from '../../../lib/tokens';
 import { useSearchStore } from '../../../stores/use-search-store';
 import { useSwipeStore } from '../../../stores/use-swipe-store';
+import { useMatchHistoryStore } from '../../../stores/use-match-history-store';
 import { useAuthSession } from '../../../hooks/useAuthSession';
 import { supabase } from '../../../lib/supabase';
 import { SearchFiltersModal } from '../../search/components/search-filters-modal';
@@ -53,7 +54,8 @@ function PreferenceRow({ label, value }: { label: string; value: string }) {
 export function ProfileScreen() {
   const { session } = useAuthSession();
   const { preferences, setPreferences } = useSearchStore();
-  const { resetFeed } = useSwipeStore();
+  const { resetFeed, fullClear: clearSwipeStore } = useSwipeStore();
+  const { fullClear: clearMatchStore } = useMatchHistoryStore();
   const [isFiltersOpen, setIsFiltersOpen] = useState(false);
 
   const handleSavePreferences = useCallback(
@@ -70,21 +72,22 @@ export function ProfileScreen() {
   }, []);
 
   const handleDevClearMatches = useCallback(async () => {
-    if (!session?.access_token) return;
     try {
-      const url = `${process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:3000'}/api/v1/dev/clear-swipes`;
-      await fetch(url, {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${session.access_token}`,
-        },
-      });
-      await resetFeed(session.access_token, preferences ?? undefined);
+      if (session?.access_token) {
+        const url = `${process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:3000'}/api/v1/dev/clear-swipes`;
+        await fetch(url, {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${session.access_token}` },
+        }).catch(() => {});
+      }
+      clearSwipeStore();
+      clearMatchStore();
+      await resetFeed(session?.access_token ?? '', preferences ?? undefined);
       alert('Matches y swipes limpiados correctamente');
     } catch (e) {
       alert('Error limpiando matches');
     }
-  }, [session?.access_token, resetFeed, preferences]);
+  }, [session?.access_token, resetFeed, preferences, clearSwipeStore, clearMatchStore]);
 
   const hasPrefs = preferences != null;
 

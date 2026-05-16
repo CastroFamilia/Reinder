@@ -72,6 +72,7 @@ export function SwipeScreen({
     isRecapVisible,
     recapMatchIds,
     dismissRecap,
+    recentlySwiped,
   } = useSwipeStore();
 
   // Story 2.9: search preferences store
@@ -238,9 +239,9 @@ export function SwipeScreen({
     void supabase.auth.signOut();
   }, []);
 
-  // Reconstruir los listings del recap desde el prefetchQueue + currentCard combo
+  // Reconstruir los listings del recap desde la caché de recentlySwiped
   // (usa los listings ya en memoria para construir la lista del recap sin fetch adicional)
-  const recapListings = [...(currentCard ? [currentCard] : []), ...prefetchQueue].filter((l) =>
+  const recapListings = recentlySwiped.filter((l) =>
     recapMatchIds.includes(l.id),
   );
 

@@ -65,6 +65,8 @@ interface MatchHistoryStore {
   markVisited: () => void;
   /** Marca el badge como descartado por el usuario (sobrevive re-mounts) */
   dismissBadge: () => void;
+  /** Limpia completamente el estado local del historial (para Dev Tools / Logout) */
+  fullClear: () => void;
 }
 
 export const useMatchHistoryStore = create<MatchHistoryStore>()(
@@ -85,18 +87,24 @@ export const useMatchHistoryStore = create<MatchHistoryStore>()(
           // Esto muestra todos los matches de la sesión aunque el backend no esté disponible.
           try {
             const { useSwipeStore } = require('./use-swipe-store') as {
-              useSwipeStore: { getState: () => { pendingRecapIds: string[]; recapMatchIds: string[]; prefetchQueue: import('@reinder/shared').Listing[]; currentCard: import('@reinder/shared').Listing | null } };
+              useSwipeStore: { getState: () => { pendingRecapIds: string[]; recapMatchIds: string[]; prefetchQueue: import('@reinder/shared').Listing[]; currentCard: import('@reinder/shared').Listing | null; pendingEvents: import('@reinder/shared').SwipeEvent[] } };
             };
             const swipeState = useSwipeStore.getState();
 
-            // Reunir todos los listing IDs que han tenido match (pendingRecapIds incluye todos)
+            // Reunir todos los listing IDs que han tenido match (pendingEvents contiene todos los offline)
             const matchedIds = Array.from(
-              new Set([...swipeState.pendingRecapIds, ...swipeState.recapMatchIds]),
+              new Set([
+                ...swipeState.pendingEvents.filter(e => e.action === 'match').map(e => e.listingId),
+                ...swipeState.pendingRecapIds,
+                ...swipeState.recapMatchIds
+              ]),
             );
 
             if (matchedIds.length > 0) {
+              const { MOCK_LISTINGS } = require('../lib/api/listings');
               // Construir el pool de listings disponibles en memoria
               const allListings = [
+                ...MOCK_LISTINGS,
                 ...(swipeState.currentCard ? [swipeState.currentCard] : []),
                 ...swipeState.prefetchQueue,
               ];
@@ -104,7 +112,7 @@ export const useMatchHistoryStore = create<MatchHistoryStore>()(
               // Para cada ID matcheado, buscar el listing en memoria y convertirlo
               const fallbackMatches: import('@reinder/shared').MatchHistoryItem[] = matchedIds
                 .map((id, idx) => {
-                  const listing = allListings.find((l) => l.id === id);
+                  const listing = allListings.find((l: import('@reinder/shared').Listing) => l.id === id);
                   if (!listing) return null;
                   return {
                     matchId: id,
@@ -160,6 +168,15 @@ export const useMatchHistoryStore = create<MatchHistoryStore>()(
 
       dismissBadge: () => {
         set({ isBadgeDismissed: true });
+      },
+
+      fullClear: () => {
+        set({
+          matches: [],
+          lastVisitAt: null,
+          newMatchesSinceLastVisit: 0,
+          isBadgeDismissed: false,
+        });
       },
     }),
     {

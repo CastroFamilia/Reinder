@@ -82,6 +82,8 @@ interface SwipeStore {
   error: string | null;
   /** Cursor de paginación para cargar más listings */
   cursor: string | undefined;
+  /** Tarjetas recién swipeadas (para usarlas en el recap) */
+  recentlySwiped: Listing[];
   /**
    * Cola de eventos de swipe pendientes de sincronizar (offline queue).
    * Story 2.3: se registran aquí cuando el POST /api/v1/swipe-events falla por red.
@@ -167,6 +169,7 @@ export const useSwipeStore = create<SwipeStore>()(
     (set, get) => ({
       currentCard: null,
       prefetchQueue: [],
+      recentlySwiped: [],
       isLoading: false,
       isFetching: false,
       error: null,
@@ -218,7 +221,7 @@ export const useSwipeStore = create<SwipeStore>()(
       },
 
       advanceCard: (token: string) => {
-        const { prefetchQueue, loadMore } = get();
+        const { prefetchQueue, loadMore, currentCard, recentlySwiped } = get();
         const [next, ...rest] = prefetchQueue;
 
         // [DEV] Si el buffer se agota y no hay backend, rellenar con mocks únicos
@@ -227,6 +230,7 @@ export const useSwipeStore = create<SwipeStore>()(
           set({
             currentCard: mocks[0] ?? null,
             prefetchQueue: mocks.slice(1),
+            recentlySwiped: currentCard ? [currentCard, ...recentlySwiped].slice(0, 10) : recentlySwiped,
           });
           return;
         }
@@ -234,6 +238,7 @@ export const useSwipeStore = create<SwipeStore>()(
         set({
           currentCard: next ?? null,
           prefetchQueue: rest,
+          recentlySwiped: currentCard ? [currentCard, ...recentlySwiped].slice(0, 10) : recentlySwiped,
         });
 
         // Rellenar buffer si quedan ≤5 tarjetas (sin bloquear la UI)
@@ -373,6 +378,7 @@ export const useSwipeStore = create<SwipeStore>()(
         set({
           currentCard: null,
           prefetchQueue: [],
+          recentlySwiped: [],
           cursor: undefined,
           consecutiveMatchCount: 0,
           pendingRecapIds: [],
@@ -386,6 +392,7 @@ export const useSwipeStore = create<SwipeStore>()(
         set({
           currentCard: null,
           prefetchQueue: [],
+          recentlySwiped: [],
           isLoading: false,
           isFetching: false,
           error: null,
