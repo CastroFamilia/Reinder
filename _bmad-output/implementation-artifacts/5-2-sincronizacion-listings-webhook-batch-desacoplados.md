@@ -1,6 +1,6 @@
 # Story 5.2: Sincronización de Listings via Webhook y Batch Desacoplados
 
-Status: review
+Status: done
 
 **GH Issue:** #5
 
