@@ -85,7 +85,7 @@ development_status:
   # ─── Epic 5: Gestión de Listings e Integración CRM ────────────────────────
   epic-5: in-progress
   5-1-conexion-crm-agencia-inmovilla: done
-  5-2-sincronizacion-listings-webhook-batch-desacoplados: backlog
+  5-2-sincronizacion-listings-webhook-batch-desacoplados: done
   5-3-validacion-exclusividad-deteccion-duplicados: backlog
   5-4-ciclo-vida-listing-retirada-vendida: backlog
   epic-5-retrospective: optional
