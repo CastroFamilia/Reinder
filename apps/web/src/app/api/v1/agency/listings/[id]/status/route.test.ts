@@ -5,6 +5,7 @@
  * Story 6.1: AC4 — cache invalidation via revalidateTag
  * Story 5.4: status change lifecycle (withdraw, sold)
  */
+import type { NextRequest } from 'next/server';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 // Mock Supabase server client
@@ -69,7 +70,7 @@ function makeRequest(body: Record<string, string>, listingId = 'listing-1'): Nex
   }) as unknown as NextRequest;
 }
 
-import type { NextRequest } from 'next/server';
+
 
 describe('PATCH /api/v1/agency/listings/[id]/status', () => {
   beforeEach(() => {
