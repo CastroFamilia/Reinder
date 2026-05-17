@@ -32,19 +32,13 @@ export type ListingForSSR = {
 };
 
 /**
- * Fetches a listing by ID for SSR rendering.
- * Returns null if the listing does not exist.
- *
- * Caching: tag-based ISR via unstable_cache.
- * Tag: `listings-{id}` — invalidated via revalidateTag() in status PATCH route.
- *
- * NOTE: sold_at column not yet in schema (Story 5.4 worktree not merged).
- * Using updatedAt as proxy: if status='sold' AND updatedAt < now-72h → 404.
- * [Source: _bmad-output/implementation-artifacts/6-1-paginas-listing-ssr-indexables-google.md]
+ * Internal cached fetcher factory.
+ * Creates a per-id cached query that Next.js can deduplicate and tag-invalidate.
+ * Separated from getListingById so the cache instance is stable across renders.
  */
-export function getListingById(id: string): Promise<ListingForSSR | null> {
+function createCachedListingFetcher(id: string) {
   return unstable_cache(
-    async () => {
+    async (): Promise<ListingForSSR | null> => {
       const rows = await db
         .select({
           id: listings.id,
@@ -73,10 +67,26 @@ export function getListingById(id: string): Promise<ListingForSSR | null> {
     [`listing-${id}`],
     {
       tags: [`listings-${id}`, 'listings'],
-      revalidate: 3600, // 1-hour fallback revalidation (NFR4)
+      revalidate: 3600,
     }
-  )();
+  );
 }
+
+/**
+ * Fetches a listing by ID for SSR rendering.
+ * Returns null if the listing does not exist.
+ *
+ * Caching: tag-based ISR via unstable_cache.
+ * Tag: `listings-{id}` — invalidated via revalidateTag() in status PATCH route.
+ *
+ * NOTE: sold_at column not yet in schema (Story 5.4 worktree not merged).
+ * Using updatedAt as proxy: if status='sold' AND updatedAt < now-72h → 404.
+ * [Source: _bmad-output/implementation-artifacts/6-1-paginas-listing-ssr-indexables-google.md]
+ */
+export async function getListingById(id: string): Promise<ListingForSSR | null> {
+  return createCachedListingFetcher(id)();
+}
+
 
 /**
  * Determines if a listing should be shown publicly (AC5, AC6).
