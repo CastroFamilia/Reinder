@@ -93,7 +93,7 @@ development_status:
   # ─── Epic 6: Descubrimiento Orgánico y SEO ────────────────────────────────
   epic-6: in-progress
   6-1-paginas-listing-ssr-indexables-google: done
-  6-2-datos-estructurados-schemaorg-paginas-listing: backlog
+  6-2-datos-estructurados-schemaorg-paginas-listing: ready-for-dev
   6-3-gated-content-preview-usuarios-no-autenticados: backlog
   epic-6-retrospective: optional
 
