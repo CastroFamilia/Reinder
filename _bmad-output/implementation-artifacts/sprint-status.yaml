@@ -91,8 +91,8 @@ development_status:
   epic-5-retrospective: optional
 
   # ─── Epic 6: Descubrimiento Orgánico y SEO ────────────────────────────────
-  epic-6: backlog
-  6-1-paginas-listing-ssr-indexables-google: backlog
+  epic-6: in-progress
+  6-1-paginas-listing-ssr-indexables-google: ready-for-dev
   6-2-datos-estructurados-schemaorg-paginas-listing: backlog
   6-3-gated-content-preview-usuarios-no-autenticados: backlog
   epic-6-retrospective: optional
