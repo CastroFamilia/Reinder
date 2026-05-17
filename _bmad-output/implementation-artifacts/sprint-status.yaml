@@ -101,8 +101,8 @@ development_status:
   epic-7: in-progress
   7-1-cicd-pipeline-observabilidad-sentry-analytics: done
   7-2-panel-activacion-agencias: done
-  7-3-resolucion-listings-duplicados: ready-for-dev
-  7-4-dashboard-metricas-globales-plataforma: backlog
+  7-3-resolucion-listings-duplicados: done
+  7-4-dashboard-metricas-globales-plataforma: ready-for-dev
   epic-7-retrospective: optional
 
   # ─── Epic 8: Engagement Intelligence ─────────────────────────────────────
