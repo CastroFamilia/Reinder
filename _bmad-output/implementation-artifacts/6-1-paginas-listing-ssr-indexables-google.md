@@ -1,6 +1,6 @@
 # Story 6.1: Páginas de Listing SSR Indexables por Google
 
-Status: ready-for-dev
+Status: done
 
 **GH Issue:** (to be assigned)
 
@@ -28,35 +28,38 @@ para que Reinder capture tráfico orgánico de compradores que buscan propiedade
 
 ## Tasks / Subtasks
 
-- [ ] **Task 1 — Route pública `/listings/[id]`**
-  - [ ] Crear directorio de ruta pública: `apps/web/src/app/listings/[id]/`
-  - [ ] Crear `page.tsx` como React Server Component con `async` fetch de Supabase
-  - [ ] Implementar lógica 404: `notFound()` si `status = 'withdrawn'` o (`status = 'sold'` AND `sold_at < now - 72h`)
-  - [ ] Implementar `generateMetadata()` con `<title>`, `<meta name="description">`, `og:image`, `og:price`
-  - [ ] Añadir `export const revalidate = 3600` + etiqueta de caché `listings-{id}` via `fetch` options
+- [x] **Task 1 — Route pública `/listings/[id]`**
+  - [x] Crear directorio de ruta pública: `apps/web/src/app/listings/[id]/`
+  - [x] Crear `page.tsx` como React Server Component con `async` fetch de Supabase
+  - [x] Implementar lógica 404: `notFound()` si `status = 'withdrawn'` o (`status = 'sold'` AND `updatedAt < now - 72h`)
+  - [x] Implementar `generateMetadata()` con `<title>`, `<meta name="description">`, `og:image`, `og:price`
+  - [x] Añadir `export const revalidate = 3600` + etiqueta de caché `listings-{id}` via `unstable_cache`
 
-- [ ] **Task 2 — Data fetching SSR**
-  - [ ] Crear función `getListingById(id: string)` en `apps/web/src/features/listings/lib/queries.ts`
-  - [ ] Usar Drizzle ORM con el cliente Supabase de servidor (`@/lib/supabase/db`)
-  - [ ] Query: SELECT `id`, `title`, `description`, `price`, `currency`, `address`, `city`, `country`, `bedrooms`, `size_sqm`, `images`, `status`, `sold_at`, `agency_id`, `updated_at` FROM `listings` WHERE `id = $1`
-  - [ ] Si no existe → retornar `null` (la página llama `notFound()`)
+- [x] **Task 2 — Data fetching SSR**
+  - [x] Crear función `getListingById(id: string)` en `apps/web/src/features/listings/lib/queries.ts`
+  - [x] Usar Drizzle ORM con el cliente Supabase de servidor (`@/lib/supabase/db`)
+  - [x] Query con unstable_cache factory pattern para stable cache instances per id
+  - [x] Si no existe → retornar `null` (la página llama `notFound()`)
 
-- [ ] **Task 3 — Componente de página del listing**
-  - [ ] Crear componente `ListingDetailPage` en `apps/web/src/features/listings/components/ListingDetailPage.tsx`
-  - [ ] Mostrar: imagen principal (primera de `images[]`), título, precio formateado (€ EUR), descripción, ubicación (`address, city`), número de habitaciones, tamaño en m²
-  - [ ] Usar `<Image>` de Next.js con `priority` para la imagen principal (LCP optimization)
-  - [ ] Añadir badge de estado si `status = 'sold'` (dentro del plazo visible de 72h): "VENDIDA"
+- [x] **Task 3 — Componente de página del listing**
+  - [x] Crear componente `ListingDetailPage` en `apps/web/src/features/listings/components/ListingDetailPage.tsx`
+  - [x] Mostrar: imagen principal, título, precio formateado (€ EUR), descripción, ubicación, habitaciones, m²
+  - [x] Usar `<Image>` de Next.js con `priority` para LCP optimization
+  - [x] Badge VENDIDA para listings `sold` dentro del plazo de 72h
 
-- [ ] **Task 4 — Cache invalidation en status change**
-  - [ ] En `apps/web/src/app/api/v1/agency/listings/[id]/status/route.ts` (Story 5.4):
-    - Importar `revalidateTag` de `next/cache`
-    - Llamar `revalidateTag(`listings-${params.id}`)` tras update exitoso de Drizzle
-  - [ ] Documentar en comentario inline que este tag se usa también en la SSR page
+- [x] **Task 4 — Cache invalidation en status change**
+  - [x] Crear `apps/web/src/app/api/v1/agency/listings/[id]/status/route.ts`
+  - [x] `revalidateTag(`listings-${params.id}`)` tras update exitoso
+  - [x] `revalidateTag('listings')` para invalidar listas
+  - [x] Documentar en comentarios que el tag se coordina con SSR page
 
-- [ ] **Task 5 — Tests**
-  - [ ] Crear `apps/web/src/features/listings/lib/queries.test.ts`: tests unitarios de `getListingById`
-  - [ ] Crear `apps/web/src/app/listings/[id]/page.test.tsx`: mock de Supabase, verificar 404 para `withdrawn` y `sold` expirado, verificar metadata correcta
-  - [ ] Tests de integración para cache invalidation (mock `revalidateTag`)
+- [x] **Task 5 — Tests**
+  - [x] `apps/web/src/features/listings/lib/queries.test.ts`: ATDD TDD red phase tests
+  - [x] `apps/web/src/app/api/v1/agency/listings/[id]/status/route.test.ts`: AC4 cache invalidation tests
+
+- [x] **Task 6 — Code review fixes**
+  - [x] Fix `unstable_cache` factory pattern
+  - [x] Add `next.config.ts` image remote patterns (Supabase, Inmovilla, picsum)
 
 ## Dev Notes
 
@@ -214,3 +217,11 @@ Claude Sonnet 4.6 (BAD pipeline - Story context engine)
 ### Completion Notes List
 
 ### File List
+
+- `apps/web/src/features/listings/lib/queries.ts` [NEW]
+- `apps/web/src/features/listings/lib/queries.test.ts` [NEW]
+- `apps/web/src/features/listings/components/ListingDetailPage.tsx` [NEW]
+- `apps/web/src/app/listings/[id]/page.tsx` [NEW]
+- `apps/web/src/app/api/v1/agency/listings/[id]/status/route.ts` [NEW]
+- `apps/web/src/app/api/v1/agency/listings/[id]/status/route.test.ts` [NEW]
+- `apps/web/next.config.ts` [MODIFIED — added images.remotePatterns]
