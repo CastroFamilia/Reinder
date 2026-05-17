@@ -1,6 +1,6 @@
 # Story 6.2: Datos Estructurados Schema.org en Páginas de Listing
 
-Status: ready-for-dev
+Status: done
 
 **GH Issue:** (to be assigned)
 
@@ -26,24 +26,27 @@ para que Google muestre rich snippets en los resultados de búsqueda.
 
 ## Tasks / Subtasks
 
-- [ ] **Task 1 — `structured-data.ts` — generador de JSON-LD**
-  - [ ] Crear `apps/web/src/features/listings/lib/structured-data.ts`
-  - [ ] Exportar función pura `buildListingJsonLd(listing: ListingForSSR): string`
-  - [ ] Generar objeto `@type: "RealEstateListing"` con `@context: "https://schema.org"`
-  - [ ] Incluir: `name`, `description`, `price` (as `priceSpecification.price`), `address` (`PostalAddress`), `numberOfRooms`, `floorSize` (`QuantitativeValue`), `photo` (array de `ImageObject`)
-  - [ ] Omitir claves cuando el campo fuente es `null | undefined`
-  - [ ] Añadir `url` con la URL canónica del listing (`/listings/{id}`)
+- [x] **Task 1 — `structured-data.ts` — generador de JSON-LD**
+  - [x] Crear `apps/web/src/features/listings/lib/structured-data.ts`
+  - [x] Exportar función pura `buildListingJsonLd(listing: ListingForSSR): string`
+  - [x] Generar objeto `@type: "RealEstateListing"` con `@context: "https://schema.org"`
+  - [x] Incluir: `name`, `description`, `priceSpecification`, `address` (`PostalAddress`), `numberOfRooms`, `floorSize` (`QuantitativeValue`), `photo` (array de `ImageObject`)
+  - [x] Omitir claves cuando el campo fuente es `null | undefined`
+  - [x] Añadir `url` con URL canónica del listing
 
-- [ ] **Task 2 — Inyectar JSON-LD en el `<head>` de la página SSR**
-  - [ ] En `apps/web/src/app/listings/[id]/page.tsx`, importar `buildListingJsonLd`
-  - [ ] Renderizar `<script type="application/ld+json">` con el JSON-LD via `dangerouslySetInnerHTML={{ __html: buildListingJsonLd(listing) }}`
-  - [ ] Colocar el `<script>` dentro de `<head>` via Next.js `<Head>` o directamente en el RSC retornado (Next.js 15 permite `<script>` en RSC sin `<Head>`)
+- [x] **Task 2 — Inyectar JSON-LD en el `<head>` de la página SSR**
+  - [x] En `apps/web/src/app/listings/[id]/page.tsx`, importar `buildListingJsonLd`
+  - [x] Renderizar `<script type="application/ld+json">` con `dangerouslySetInnerHTML={{ __html: buildListingJsonLd(listing) }}`
+  - [x] RSC compatible — no need for `<Head>` wrapper in Next.js 15
 
-- [ ] **Task 3 — Tests unitarios del generador**
-  - [ ] Crear `apps/web/src/features/listings/lib/structured-data.test.ts`
-  - [ ] T6.2-01: HTML contiene `<script type="application/ld+json">` con tipo `RealEstateListing`
-  - [ ] T6.2-02: JSON-LD incluye `name`, `description`, `price`, `address`, `numberOfRooms`, `floorSize`, `image`
-  - [ ] T6.2-03: Campos opcionales nulos no aparecen en el JSON-LD output
+- [x] **Task 3 — Tests unitarios del generador**
+  - [x] Crear `apps/web/src/features/listings/lib/structured-data.test.ts`
+  - [x] T6.2-01: JSON valid, `@type: RealEstateListing`
+  - [x] T6.2-02: All required fields present in full listing
+  - [x] T6.2-03: Null optional fields absent from minimal listing output
+
+- [x] **Task 4 — Code review fixes**
+  - [x] BASE_URL trailing slash strip: `?.replace(/\/$/, '')`
 
 ## Dev Notes
 
@@ -217,3 +220,7 @@ Claude Sonnet 4.6 (BAD pipeline - Story context engine)
 ### Completion Notes List
 
 ### File List
+
+- `apps/web/src/features/listings/lib/structured-data.ts` [NEW]
+- `apps/web/src/features/listings/lib/structured-data.test.ts` [NEW]
+- `apps/web/src/app/listings/[id]/page.tsx` [MODIFY — add JSON-LD script injection]
