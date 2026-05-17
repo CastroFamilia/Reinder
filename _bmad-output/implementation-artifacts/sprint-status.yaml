@@ -98,11 +98,11 @@ development_status:
   epic-6-retrospective: optional
 
   # ─── Epic 7: Administración de Plataforma ─────────────────────────────────
-  epic-7: in-progress
+  epic-7: done
   7-1-cicd-pipeline-observabilidad-sentry-analytics: done
   7-2-panel-activacion-agencias: done
   7-3-resolucion-listings-duplicados: done
-  7-4-dashboard-metricas-globales-plataforma: ready-for-dev
+  7-4-dashboard-metricas-globales-plataforma: done
   epic-7-retrospective: optional
 
   # ─── Epic 8: Engagement Intelligence ─────────────────────────────────────
