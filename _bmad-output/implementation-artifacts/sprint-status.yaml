@@ -99,8 +99,8 @@ development_status:
 
   # ─── Epic 7: Administración de Plataforma ─────────────────────────────────
   epic-7: in-progress
-  7-1-cicd-pipeline-observabilidad-sentry-analytics: ready-for-dev
-  7-2-panel-activacion-agencias: backlog
+  7-1-cicd-pipeline-observabilidad-sentry-analytics: done
+  7-2-panel-activacion-agencias: ready-for-dev
   7-3-resolucion-listings-duplicados: backlog
   7-4-dashboard-metricas-globales-plataforma: backlog
   epic-7-retrospective: optional
