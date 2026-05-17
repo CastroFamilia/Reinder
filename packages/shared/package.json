@@ -11,7 +11,9 @@
     "./types": "./src/types/index.ts",
     "./constants": "./src/constants/index.ts",
     "./db": "./src/db/index.ts",
-    "./db/schema": "./src/db/schema.ts"
+    "./db/schema": "./src/db/schema.ts",
+    "./engagement/types": "./src/engagement/types.ts",
+    "./engagement/use-engagement-tracker": "./src/engagement/use-engagement-tracker.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit",

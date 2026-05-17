@@ -312,3 +312,142 @@ export const crmSyncQueue = pgTable(
   })
 );
 
+// ---------------------------------------------------------------------------
+// Epic 8: Engagement Intelligence
+// ---------------------------------------------------------------------------
+
+/**
+ * Enum de tipos de eventos de engagement.
+ * Source: epics.md#Story 8.1
+ */
+export const engagementEventTypeEnum = pgEnum("engagement_event_type", [
+  "photo_view",
+  "photo_swipe",
+  "scroll_depth",
+  "detail_open",
+  "detail_close",
+  "match_reaffirm",
+]);
+
+// ---------------------------------------------------------------------------
+// Tabla: listing_engagement_events
+// Eventos de micro-comportamiento del comprador (append-only).
+// GDPR/NFR8: sólo buyer INSERT + platform_admin SELECT — agencias NUNCA ven
+// datos individuales de compradores. Todo dato expuesto a agencias debe ser
+// agregado vía listing_analytics_hourly.
+// RLS: ver packages/shared/src/db/rls-engagement-events-policies.sql
+// ---------------------------------------------------------------------------
+
+export const listingEngagementEvents = pgTable(
+  "listing_engagement_events",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    buyerId: uuid("buyer_id").notNull(),    // Referencia a auth.users.id
+    listingId: uuid("listing_id")
+      .notNull()
+      .references(() => listings.id),
+    sessionId: uuid("session_id").notNull(), // Agrupa eventos de una misma sesión
+    eventType: engagementEventTypeEnum("event_type").notNull(),
+    /**
+     * Payload varía según event_type:
+     * - photo_view:    { photo_index: number, duration_ms: number }
+     * - scroll_depth:  { max_depth_pct: number }
+     * - detail_open:   {}
+     * - detail_close:  { duration_ms: number }
+     * - match_reaffirm: { match_event_id: string }
+     */
+    payload: jsonb("payload").$type<Record<string, unknown>>().default({}),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => ({
+    idxEngagementListingId: index("idx_engagement_listing_id").on(table.listingId),
+    idxEngagementBuyerId: index("idx_engagement_buyer_id").on(table.buyerId),
+    idxEngagementEventType: index("idx_engagement_event_type").on(table.eventType),
+  })
+);
+
+// ---------------------------------------------------------------------------
+// Tabla: listing_analytics_hourly
+// Read model pre-agregado por listing — consumido por dashboard de agencia.
+// Actualizado por pg_cron aggregation job (Story 8.7).
+// Nunca contiene PII de compradores individuales (NFR8).
+// ---------------------------------------------------------------------------
+
+export const listingAnalyticsHourly = pgTable(
+  "listing_analytics_hourly",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    listingId: uuid("listing_id")
+      .notNull()
+      .references(() => listings.id),
+    /** Hora del bucket de agregación */
+    bucketHour: timestamp("bucket_hour", { withTimezone: true }).notNull(),
+    /** Número total de visualizaciones */
+    totalViews: integer("total_views").notNull().default(0),
+    /** Tiempo medio de visualización por foto (ms) */
+    avgPhotoViewMs: integer("avg_photo_view_ms").notNull().default(0),
+    /** Scroll depth medio en detalle (0-100) */
+    avgScrollDepthPct: integer("avg_scroll_depth_pct").notNull().default(0),
+    /** Número de matches en este período */
+    matchCount: integer("match_count").notNull().default(0),
+    /** Número de rechazos en este período */
+    rejectCount: integer("reject_count").notNull().default(0),
+    /** Número de reaffirms en este período */
+    reaffirmCount: integer("reaffirm_count").notNull().default(0),
+    /** Datos de engagement por foto: Array<{ photo_index, avg_duration_ms, view_count }> */
+    photoEngagement: jsonb("photo_engagement").$type<
+      Array<{ photo_index: number; avg_duration_ms: number; view_count: number }>
+    >().default([]),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => ({
+    idxAnalyticsListingId: index("idx_analytics_listing_id").on(table.listingId),
+    idxAnalyticsBucketHour: index("idx_analytics_bucket_hour").on(table.bucketHour),
+    uniqueListingBucket: unique("listing_analytics_unique").on(
+      table.listingId,
+      table.bucketHour
+    ),
+  })
+);
+
+// ---------------------------------------------------------------------------
+// Tabla: buyer_intent_scores
+// Read model de score de intención de compra por comprador.
+// Consumido por panel del agente (Story 8.6).
+// Actualizado por pg_cron aggregation job (Story 8.7).
+// ---------------------------------------------------------------------------
+
+export const buyerIntentScores = pgTable(
+  "buyer_intent_scores",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    buyerId: uuid("buyer_id").notNull(),  // Referencia a auth.users.id
+    /** Score global 0-100 */
+    score: integer("score").notNull().default(0),
+    /** Componentes del score para debugging / transparencia */
+    scoreBreakdown: jsonb("score_breakdown").$type<{
+      matchCount: number;
+      reaffirmRatio: number;
+      avgViewTimeVsGlobal: number;
+      preferenceConsistency: number;
+    }>(),
+    lastCalculatedAt: timestamp("last_calculated_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => ({
+    uniqueBuyerScore: unique("buyer_intent_scores_buyer_unique").on(table.buyerId),
+    idxIntentBuyerId: index("idx_intent_buyer_id").on(table.buyerId),
+  })
+);
+
