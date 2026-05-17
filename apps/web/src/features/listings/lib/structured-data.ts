@@ -23,7 +23,8 @@
 import type { ListingForSSR } from './queries';
 
 /** Base URL for canonical listing URLs. Override via env in production. */
-const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL ?? 'https://reinder.app';
+const BASE_URL =
+  process.env.NEXT_PUBLIC_BASE_URL?.replace(/\/$/, '') ?? 'https://reinder.app';
 
 /**
  * Builds a schema.org RealEstateListing JSON-LD string for a listing.
