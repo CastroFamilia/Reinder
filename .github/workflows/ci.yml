@@ -1,0 +1,59 @@
+# .github/workflows/ci.yml
+#
+# Story 7.1: CI/CD Pipeline y Observabilidad
+# AC1: PR push → lint, typecheck, test → report in PR
+#
+# Uses Turborepo tasks defined in turbo.json:
+#   - pnpm lint     → runs across all packages
+#   - pnpm typecheck → runs TypeScript compiler checks
+#   - pnpm test     → runs Vitest (web) + Jest (mobile) suites
+
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+# Cancel redundant runs for the same PR/branch
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  ci:
+    name: Lint · Typecheck · Test
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Type check
+        run: pnpm typecheck
+
+      - name: Test
+        run: pnpm test
+        env:
+          # Supabase test env (mocked in tests, but env vars prevent crashes)
+          NEXT_PUBLIC_SUPABASE_URL: http://localhost:54321
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: test-anon-key

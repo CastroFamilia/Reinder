@@ -5,7 +5,9 @@ import { createClient } from "@/lib/supabase/server";
 import { db } from "@/lib/supabase/db";
 import { userProfiles } from "@reinder/shared/db/schema";
 import { eq } from "drizzle-orm";
+import * as Sentry from "@sentry/nextjs";
 import { DevRoleSwitcher } from "@/components/dev/DevRoleSwitcher";
+import { PostHogProvider } from "@/providers/PostHogProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -43,6 +45,13 @@ export default async function RootLayout({
       console.error("Error fetching user profile in layout:", e);
     }
   }
+
+  // Story 7.1 — AC4: Set Sentry user context with role for error tracking
+  if (user) {
+    Sentry.setUser({ id: user.id, role: role ?? undefined });
+  } else {
+    Sentry.setUser(null);
+  }
   
   const isDev = process.env.NODE_ENV === "development";
   return (
@@ -50,7 +59,10 @@ export default async function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        {children}
+        {/* Story 7.1 — AC5: PostHog analytics (GDPR-compliant, EU data residency) */}
+        <PostHogProvider>
+          {children}
+        </PostHogProvider>
         <DevRoleSwitcher initialRole={role} isDev={isDev} />
       </body>
     </html>
