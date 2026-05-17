@@ -91,10 +91,10 @@ development_status:
   epic-5-retrospective: optional
 
   # ─── Epic 6: Descubrimiento Orgánico y SEO ────────────────────────────────
-  epic-6: in-progress
+  epic-6: done
   6-1-paginas-listing-ssr-indexables-google: done
   6-2-datos-estructurados-schemaorg-paginas-listing: done
-  6-3-gated-content-preview-usuarios-no-autenticados: ready-for-dev
+  6-3-gated-content-preview-usuarios-no-autenticados: done
   epic-6-retrospective: optional
 
   # ─── Epic 7: Administración de Plataforma ─────────────────────────────────

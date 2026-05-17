@@ -1,6 +1,6 @@
 # Story 6.3: Gated Content — Preview para Usuarios No Autenticados
 
-Status: ready-for-dev
+Status: done
 
 **GH Issue:** (to be assigned)
 
@@ -26,35 +26,32 @@ para que pueda evaluar si la propiedad me interesa antes de crear una cuenta.
 
 ## Tasks / Subtasks
 
-- [ ] **Task 1 — Detectar autenticación en el RSC (Server Component)**
-  - [ ] En `apps/web/src/app/listings/[id]/page.tsx`, llamar al cliente Supabase server para verificar `auth.getUser()`
-  - [ ] Pasar `isAuthenticated: boolean` como prop a `ListingDetailPage`
-  - [ ] NO redirigir usuarios no autenticados — la página es pública (no usar el middleware)
+- [x] **Task 1 — Detectar autenticación en el RSC (Server Component)**
+  - [x] En `apps/web/src/app/listings/[id]/page.tsx`, llamar `createClient().auth.getUser()` (parallel con listing fetch)
+  - [x] Pasar `isAuthenticated: boolean` como prop a `ListingDetailPage`
+  - [x] NO redirigir usuarios no autenticados — la página es pública
 
-- [ ] **Task 2 — Preview mode en `ListingDetailPage`**
-  - [ ] Modificar `ListingDetailPage` para aceptar prop `isAuthenticated: boolean`
-  - [ ] Preview (no autenticado): imagen principal, precio, ubicación, descripción cortada (~200 chars + "...")
-  - [ ] Ocultar en cliente: galería completa, descripción completa, datos de agente — **usar CSS/conditional render**, no JS-only hiding (para no romper SSR)
-  - [ ] Full mode (autenticado): toda la información visible
+- [x] **Task 2 — Preview mode en `ListingDetailPage`**
+  - [x] Prop `isAuthenticated: boolean` controla preview vs full mode
+  - [x] Preview: imagen principal, precio, ubicación, descripción cortada (~200 chars + …)
+  - [x] Full: galería completa, descripción completa
+  - [x] `truncateDescription()` corta en límite de palabra
 
-- [ ] **Task 3 — `GatedContentCTA` component**
-  - [ ] Crear `apps/web/src/features/listings/components/GatedContentCTA.tsx`
-  - [ ] Mostrar cuando `!isAuthenticated`
-  - [ ] Texto: "Regístrate gratis para ver todos los detalles y empezar a hacer match con propiedades"
-  - [ ] Botón primario: "Registrarme" → `/register?next=/listings/{id}` (naranja, AC2)
-  - [ ] Botón secundario: "Iniciar sesión" → `/login?next=/listings/{id}` (AC2, AC5)
-  - [ ] Los query params `?next=` permiten el redirect post-auth de vuelta al listing (AC5)
+- [x] **Task 3 — `GatedContentCTA` component**
+  - [x] Crear `GatedContentCTA.tsx`
+  - [x] Texto: “Regístrate gratis...”
+  - [x] Botón primario: “Registrarme” → `/register?next=/listings/{id}` (naranja)
+  - [x] Botón secundario: “Iniciar sesión” → `/login?next=/listings/{id}`
 
-- [ ] **Task 4 — Verificar anti-cloaking**
-  - [ ] Asegurar que el HTML renderizado en servidor es idéntico para bot y usuario anónimo
-  - [ ] El `isAuthenticated` check ocurre en el RSC — si Supabase devuelve `user: null` → preview mode
-  - [ ] Google bot no tiene cookies de sesión → recibe exactamente la misma preview que el usuario anónimo → NO cloaking
+- [x] **Task 4 — Verificar anti-cloaking**
+  - [x] HTML idéntico para bot y usuario anónimo (mismo RSC render con `isAuthenticated=false`)
+  - [x] No User-Agent sniffing — determinación basada solo en sesión Supabase
 
-- [ ] **Task 5 — Tests**
-  - [ ] Crear `apps/web/src/features/listings/components/GatedContentCTA.test.tsx`
-  - [ ] Tests: CTA visible cuando `!isAuthenticated`, botones con href correctos incluyendo `?next=` param
-  - [ ] Tests: descripción cortada correctamente en preview mode
-  - [ ] Tests: AC4 anti-cloaking (bot recibe mismo HTML que anónimo — via mismo server-side render logic)
+- [x] **Task 5 — Tests**
+  - [x] `GatedContentCTA.test.tsx`: CTA text, button hrefs with `?next=`, preview truncation, anti-cloaking logic
+
+- [x] **Task 6 — CSS styling**
+  - [x] `listing-detail.css`: dark theme, orange accent, responsive layout
 
 ## Dev Notes
 
@@ -199,3 +196,9 @@ Claude Sonnet 4.6 (BAD pipeline - Story context engine)
 ### Completion Notes List
 
 ### File List
+
+- `apps/web/src/features/listings/components/GatedContentCTA.tsx` [NEW]
+- `apps/web/src/features/listings/components/GatedContentCTA.test.tsx` [NEW]
+- `apps/web/src/features/listings/components/ListingDetailPage.tsx` [MODIFY — isAuthenticated prop, preview mode]
+- `apps/web/src/features/listings/components/listing-detail.css` [NEW]
+- `apps/web/src/app/listings/[id]/page.tsx` [MODIFY — auth check, isAuthenticated prop]
