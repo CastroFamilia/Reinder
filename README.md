@@ -94,25 +94,27 @@ Create Story → [Validate Story] → Dev Story → [QA Automation] → [Code Re
 | **Epic 3** | Vínculo Comprador–Agente | 4 🤖 bad-to-check (3.1–3.4) | 🤖 Pendiente verificación humana |
 | **Epic 4** | Panel del Agente Representante | 4/4 done | ✅ **Completado** |
 | **Epic 5** | Gestión de Listings e Integración CRM | 5.1 ✅ · 5.2–5.4 🤖 bad-to-check | 🤖 Pendiente verificación humana |
-| **Epic 6** | Descubrimiento Orgánico y SEO | 0/3 | ⬜ Backlog |
-| **Epic 7** | Administración de Plataforma | 0/4 | ⬜ Backlog |
-| **Epic 8** | Engagement Intelligence | 0/7 | ⬜ Backlog |
+| **Epic 6** | Descubrimiento Orgánico y SEO | 3/3 done | ✅ **Completado** |
+| **Epic 7** | Administración de Plataforma | 4/4 done | ✅ **Completado** |
+| **Epic 8** | Engagement Intelligence | 7/7 done | ✅ **Completado** |
 | **Epic 9** | Content Optimization & A/B Testing | 0/6 | ⬜ Backlog |
 | **Epic 10** | Personalized Content Layer | 0/5 | ⬜ Backlog |
+| **Epic 11** | Experiencia Web del Comprador | 7/7 done | ✅ **Completado** |
 
 > 🤖 **bad-to-check** = Implementado por el pipeline BAD (Autonomous Development) — funcional pero pendiente de revisión y validación humana antes de considerarse definitivamente `done`.
 
-**🔧 Sesión 2026-04-30 — Mobile UX Fixes (testing en persona):**
-- ✅ Descripciones de propiedades en mocks (PropertyDetailSheet legible)
-- ✅ Fix fondo blanco detrás del TabBar redondeado
-- ✅ Matches persistentes con fallback in-memory cuando API no disponible
-- ✅ Perfil con sección "Mi búsqueda" editable (abre SearchFiltersModal)
-- ✅ Onboarding por swipe con animación tutorial de mano (idle 5s)
-- ✅ Fix TypeScript: GlassPanel acepta `StyleProp<ViewStyle>` (arrays de estilos)
-- ✅ Limpieza de stores de Zustand en logout (prevención de fuga de estado)
-- ✅ AbortController timeout en fetchListings para destrabar Skeleton infinito en Expo Go
+**🌐 Sesión 2026-05-22 — Epic 11: Web Experience (Buyer-Facing):**
+- ✅ Landing page premium con hero, features, how-it-works, live stats, CTA
+- ✅ Auth pages rediseñadas con layout split-screen (branding + formulario)
+- ✅ Buyer dashboard personalizado (`/home`) con matches, filtros, agente, stats
+- ✅ Galería de matches responsive (`/matches`) con property cards
+- ✅ Perfil del comprador (`/profile`) con preferencias, agente, logout
+- ✅ Navbar glassmorphism con mobile menu + Footer con links legales
+- ✅ Listing detail enriquecido (`/listings/[id]`) con auth-gate, share, match badge
+- ✅ Design system completo en `globals.css` (tokens, glass, buttons, badges, cards, animations)
+- ✅ Public stats API (`/api/v1/public/stats`)
 
-**Siguiente:** Verificación humana de stories BAD (`bad-to-check`) → luego Epic 5 (Gestión de Listings e Integración CRM)
+**Siguiente:** Epic 9 (Content Optimization & A/B Testing) o verificación humana de stories BAD (`bad-to-check`)
 
 
 ---

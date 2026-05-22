@@ -1,5 +1,5 @@
 # generated: 2026-03-18T12:42:21+01:00
-# last_updated: 2026-05-16T19:41:00+02:00
+# last_updated: 2026-05-17T21:51:00+02:00
 # project: Reinder
 # project_key: NOKEY
 # tracking_system: file-system
@@ -36,7 +36,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: 2026-03-18T12:42:21+01:00
-last_updated: 2026-05-16T19:41:00+02:00
+last_updated: 2026-05-22T19:14:00+02:00
 project: Reinder
 project_key: NOKEY
 tracking_system: file-system
@@ -106,14 +106,14 @@ development_status:
   epic-7-retrospective: optional
 
   # ─── Epic 8: Engagement Intelligence ─────────────────────────────────────
-  epic-8: backlog
-  8-1-schema-engagement-events-instrumentacion-base: backlog
-  8-2-instrumentacion-propertycard-tiempo-por-foto: backlog
-  8-3-instrumentacion-propertydetailsheet-scroll-depth: backlog
-  8-4-tracking-match-reaffirm-recap-screen: backlog
-  8-5-dashboard-analytics-listing-agencias: backlog
-  8-6-buyer-intent-score-panel-agente: backlog
-  8-7-aggregation-jobs-read-models-analytics: backlog
+  epic-8: done
+  8-1-schema-engagement-events-instrumentacion-base: done  # PR #18
+  8-2-instrumentacion-propertycard-tiempo-por-foto: done  # PR #19
+  8-3-instrumentacion-propertydetailsheet-scroll-depth: done  # PR #20
+  8-4-tracking-match-reaffirm-recap-screen: done  # PR #21
+  8-5-dashboard-analytics-listing-agencias: done  # PR #22
+  8-6-buyer-intent-score-panel-agente: done  # PR #23
+  8-7-aggregation-jobs-read-models-analytics: done  # PR #24
   epic-8-retrospective: optional
 
   # ─── Epic 9: Content Optimization & A/B Testing ───────────────────────────
@@ -134,3 +134,14 @@ development_status:
   10-4-adaptacion-highlights-descripcion-perfil: backlog
   10-5-control-privacidad-desactivacion-personalizacion: backlog
   epic-10-retrospective: optional
+
+  # ─── Epic 11: Experiencia Web del Comprador ──────────────────────────────
+  epic-11: done
+  11-1-landing-page-publica-primera-impresion-marca: done
+  11-2-auth-pages-rediseno-registro-login-premium: done
+  11-3-home-comprador-dashboard-personalizado: done
+  11-4-galeria-matches-comprador-web: done
+  11-5-perfil-comprador-web: done
+  11-6-navegacion-web-comprador-header-layout: done
+  11-7-pagina-detalle-listing-enriquecida: done
+  epic-11-retrospective: optional

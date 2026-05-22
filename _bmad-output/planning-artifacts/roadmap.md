@@ -72,13 +72,13 @@
 
 | Story | Título | Complejidad | Acción humana | Estado |
 |---|---|:---:|---|---|
-| **6.1** | Páginas de Listing SSR Indexables por Google | 3 | ☝️ Configurar dominio en Vercel + env vars de producción | 🔵 backlog |
-| **6.2** | Datos Estructurados Schema.org en Páginas de Listing | 2 | — | 🔵 backlog |
-| **6.3** | Gated Content — Preview para Usuarios No Autenticados | 3 | — | 🔵 backlog |
-| **7.1** | CI/CD Pipeline y Observabilidad (Sentry + Analytics) | 3 | ☝️ Crear proyectos Sentry + PostHog + conectar GitHub Actions con EAS | 🔵 backlog |
-| **7.2** | Panel de Activación de Agencias | 2 | — | 🔵 backlog |
-| **7.3** | Resolución de Listings Duplicados | 3 | — | 🔵 backlog |
-| **7.4** | Dashboard de Métricas Globales de Plataforma | 3 | — | 🔵 backlog |
+| **6.1** | Páginas de Listing SSR Indexables por Google | 3 | ☝️ Configurar dominio en Vercel + env vars de producción | ✅ done |
+| **6.2** | Datos Estructurados Schema.org en Páginas de Listing | 2 | — | ✅ done |
+| **6.3** | Gated Content — Preview para Usuarios No Autenticados | 3 | — | ✅ done |
+| **7.1** | CI/CD Pipeline y Observabilidad (Sentry + Analytics) | 3 | ☝️ Crear proyectos Sentry + PostHog + conectar GitHub Actions con EAS | ✅ done |
+| **7.2** | Panel de Activación de Agencias | 2 | — | ✅ done |
+| **7.3** | Resolución de Listings Duplicados | 3 | — | ✅ done |
+| **7.4** | Dashboard de Métricas Globales de Plataforma | 3 | — | ✅ done |
 
 ---
 
@@ -88,13 +88,13 @@
 
 | Story | Título | Complejidad | Acción humana | Estado |
 |---|---|:---:|---|---|
-| **8.1** | Schema de Engagement Events e Instrumentación Base | 3 | ☝️ Migración SQL en Supabase: tabla `listing_engagement_events` | 🔵 backlog |
-| **8.2** | Instrumentación de PropertyCard — Tiempo por Foto | 3 | — | 🔵 backlog |
-| **8.3** | Instrumentación de PropertyDetailSheet — Scroll Depth | 2 | — | 🔵 backlog |
-| **8.4** | Tracking de Match Reaffirm desde Match Recap Screen | 3 | — | 🔵 backlog |
-| **8.5** | Dashboard de Analytics por Listing para Agencias | 4 | ☝️ Activar `pg_cron` jobs de aggregation en Supabase | 🔵 backlog |
-| **8.6** | Buyer Intent Score en Panel del Agente | 3 | — | 🔵 backlog |
-| **8.7** | Aggregation Jobs para Read Models de Analytics | 3 | — | 🔵 backlog |
+| **8.1** | Schema de Engagement Events e Instrumentación Base | 3 | ☝️ Migración SQL en Supabase: tabla `listing_engagement_events` | ✅ done |
+| **8.2** | Instrumentación de PropertyCard — Tiempo por Foto | 3 | — | ✅ done |
+| **8.3** | Instrumentación de PropertyDetailSheet — Scroll Depth | 2 | — | ✅ done |
+| **8.4** | Tracking de Match Reaffirm desde Match Recap Screen | 3 | — | ✅ done |
+| **8.5** | Dashboard de Analytics por Listing para Agencias | 4 | ☝️ Activar `pg_cron` jobs de aggregation en Supabase | ✅ done |
+| **8.6** | Buyer Intent Score en Panel del Agente | 3 | — | ✅ done |
+| **8.7** | Aggregation Jobs para Read Models de Analytics | 3 | — | ✅ done |
 | **9.1** | Schema de Experimentos y Motor de Asignación de Variantes | 4 | ☝️ Migración SQL: tablas `listing_experiments`, `experiment_assignments` | 🔵 backlog |
 | **9.2** | UI de Creación de Experimento para Agencias (Portada A/B) | 3 | — | 🔵 backlog |
 | **9.3** | Medición de Impacto y Dashboard de Resultados del Experimento | 3 | — | 🔵 backlog |
@@ -109,6 +109,22 @@
 
 ---
 
+## Fase 5 — Web Experience
+
+> Transforma la web de Reinder en una experiencia completa para compradores.
+
+| Story | Título | Complejidad | Acción humana | Estado |
+|---|---|:---:|---|---|
+| **11.1** | Landing Page Pública — Primera Impresión de Marca | 3 | — | ✅ done |
+| **11.2** | Auth Pages Rediseño — Registro y Login Premium | 2 | — | ✅ done |
+| **11.3** | Home del Comprador — Dashboard Personalizado | 3 | — | ✅ done |
+| **11.4** | Galería de Matches del Comprador en Web | 2 | — | ✅ done |
+| **11.5** | Perfil del Comprador en Web | 2 | — | ✅ done |
+| **11.6** | Navegación Web del Comprador — Header y Layout | 2 | — | ✅ done |
+| **11.7** | Página de Detalle de Listing Enriquecida | 3 | — | ✅ done |
+
+---
+
 ## Resumen por Fase
 
 | Fase | Stories | Complejidad total | Media | Con acción humana |
@@ -117,7 +133,8 @@
 | Fase 2 — CRM | 4 | 16 | 4.0 | 2 |
 | Fase 3 — SEO + Admin | 7 | 19 | 2.7 | 2 |
 | Fase 4 — Intelligence Platform | 18 | 59 | 3.3 | 6 |
-| **Total** | **52** | **159** | **3.1** | **16** |
+| Fase 5 — Web Experience | 7 | 17 | 2.4 | 0 |
+| **Total** | **59** | **176** | **3.0** | **16** |
 
 ---
 
@@ -134,4 +151,4 @@
 
 ---
 
-*Última actualización: 2026-05-16 — Pipeline BAD completado para Epic 5: Stories 5.2, 5.3 y 5.4 implementadas (PRs #8, #9, #10). crm-webhook Edge Function, pg_cron worker con backoff, validación de exclusividad catastral, ciclo de vida de listings (withdrawn/sold + auto-remove 72h). Epic 6 desbloqueado.*
+*Última actualización: 2026-05-22 — Epic 11 (Web Experience) completado: landing page con 5 secciones, auth split-screen, buyer dashboard, matches gallery, profile, listing detail enriquecido. Epics 6, 7, 8 actualizados a done (completados en sesiones anteriores).*

@@ -1122,3 +1122,116 @@ para que pueda detectar anomalías, medir el éxito del producto y tomar decisio
 **And** las métricas se muestran en tarjetas usando `GlassPanel` con tipografía Inter
 **And** los datos son agregados/anonimizados — sin datos personales identificables (GDPR, NFR8)
 **And** el acceso está restringido por RLS a `platform_admin` únicamente
+
+---
+
+## Epic 11: Experiencia Web del Comprador — El comprador descubre, entiende y usa Reinder desde el navegador
+
+**Status: done**
+
+**Objetivo:** Transformar la web de Reinder (que era el boilerplate de Next.js) en una experiencia completa para el comprador, incluyendo landing page pública, dashboard personalizado, galería de matches, perfil, y páginas de detalle de listings.
+
+**FRs cubiertos:** FR1, FR5, FR6, FR10, FR11, FR12, FR28, FR30
+**NFRs cubiertos:** NFR1 (accesibilidad), NFR3 (performance web), NFR8 (GDPR)
+
+### Story 11.1: Landing Page Pública — Primera Impresión de Marca
+
+Como visitante no autenticado,
+quiero aterrizar en una página que me transmita qué es Reinder y por qué debería usarlo,
+para que entienda la propuesta de valor y quiera registrarme.
+
+**Acceptance Criteria:**
+
+**Given** un usuario no autenticado que accede a `reinder.com`
+**When** la página carga
+**Then** ve una landing page premium con hero, mockup del swipe, propuesta de valor en 3 bloques, stats de plataforma, y CTA de registro
+**And** la página está optimizada para SEO con meta tags y Open Graph
+**And** si el usuario ya está autenticado, es redirigido al dashboard (`/home`)
+
+---
+
+### Story 11.2: Auth Pages Rediseño — Registro y Login Premium
+
+Como visitante que decide crear cuenta,
+quiero que las pantallas de registro y login sean coherentes con la landing,
+para que la transición sea fluida y sin fricción.
+
+**Acceptance Criteria:**
+
+**Given** un usuario en `/register` o `/login`
+**When** la página carga
+**Then** ve un diseño split-screen (branding izquierda, formulario derecha en desktop)
+**And** tras registro/login exitoso, redirige a `/home`
+
+---
+
+### Story 11.3: Home del Comprador — Dashboard Personalizado
+
+Como comprador autenticado,
+quiero una página de inicio con resumen de mi actividad,
+para que entienda mi progreso y tenga acceso rápido a la información relevante.
+
+**Acceptance Criteria:**
+
+**Given** un comprador autenticado en `/home`
+**When** la página carga
+**Then** ve bienvenida personalizada, CTA de app, últimos matches, filtros activos, info del agente, y estadísticas
+
+---
+
+### Story 11.4: Galería de Matches del Comprador en Web
+
+Como comprador autenticado,
+quiero ver todos mis matches desde el navegador,
+para revisarlos en pantalla grande.
+
+**Acceptance Criteria:**
+
+**Given** un comprador autenticado en `/matches`
+**When** la página carga
+**Then** ve una galería responsive con property cards (imagen, precio, badges, fecha de match)
+**And** click navega al detalle del listing
+
+---
+
+### Story 11.5: Perfil del Comprador en Web
+
+Como comprador autenticado,
+quiero gestionar mi perfil y cuenta desde la web.
+
+**Acceptance Criteria:**
+
+**Given** un comprador autenticado en `/profile`
+**When** la página carga
+**Then** ve datos personales, preferencias de búsqueda (read-only), agente representante, estadísticas, y botón de cerrar sesión
+
+---
+
+### Story 11.6: Navegación Web del Comprador — Header y Layout
+
+Como comprador autenticado,
+quiero una navegación clara y coherente en toda la web.
+
+**Acceptance Criteria:**
+
+**Given** un comprador autenticado en cualquier página protegida
+**When** la página carga
+**Then** ve un header fijo con logo, navegación (Home, Matches, Perfil), badge de notificaciones, y avatar
+**And** en mobile, el header se convierte en hamburger menu
+**And** un footer con links legales y de producto
+
+---
+
+### Story 11.7: Página de Detalle de Listing Enriquecida
+
+Como comprador que accede a un listing desde su galería o desde búsqueda,
+quiero ver toda la información de la propiedad con contexto de mi actividad.
+
+**Acceptance Criteria:**
+
+**Given** un comprador autenticado en `/listings/[id]`
+**When** la página carga
+**Then** ve la propiedad con galería de imágenes, precio, specs, descripción, ubicación
+**And** si el listing está en sus matches, ve badge "EN TUS MATCHES"
+**And** ve datos de su agente representante y botón de compartir (WhatsApp, email, copiar link)
+**And** usuarios no autenticados ven la versión con CTA de registro
