@@ -76,8 +76,10 @@ export async function middleware(request: NextRequest) {
  */
 export const config = {
   matcher: [
+    "/home/:path*",
     "/swipe/:path*",
     "/matches/:path*",
+    "/profile/:path*",
     "/agent/:path*",
     "/agency/:path*",
     "/admin/:path*",
