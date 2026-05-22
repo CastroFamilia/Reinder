@@ -181,9 +181,9 @@ export function LoginForm({ initialNext, initialError }: LoginFormProps = {}) {
         //      (solo si es un path seguro validado por getSafeNextPath)
         //   2. `result.redirectTo` — panel del rol (del servidor)
         //   3. "/swipe" — fallback definitivo
-        const rawRolePath = result.redirectTo ?? "/swipe";
+        const rawRolePath = result.redirectTo ?? "/home";
         const destination =
-          safeNextFromProp ?? (rawRolePath.startsWith("/") ? rawRolePath : "/swipe");
+          safeNextFromProp ?? (rawRolePath.startsWith("/") ? rawRolePath : "/home");
         router.refresh();
         router.push(destination);
       }

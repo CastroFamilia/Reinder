@@ -28,7 +28,7 @@ export default async function RegisterPage({
   const resolvedParams = await searchParams;
 
   if (user) {
-    redirect(resolvedParams.next || "/swipe");
+    redirect(resolvedParams.next || "/home");
   }
 
   return <RegisterForm initialNext={resolvedParams.next} />;

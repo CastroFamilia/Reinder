@@ -186,7 +186,7 @@ export function RegisterForm({ initialNext }: RegisterFormProps = {}) {
         setServerError(result.error);
       } else {
         router.refresh();
-        router.push(safeNextFromProp || "/swipe");
+        router.push(safeNextFromProp || "/home");
       }
     } finally {
       setPending(false);
