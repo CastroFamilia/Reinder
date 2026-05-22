@@ -1,26 +1,33 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Inter } from "next/font/google";
 import "./globals.css";
 import { createClient } from "@/lib/supabase/server";
-import { db } from "@/lib/supabase/db";
-import { userProfiles } from "@reinder/shared/db/schema";
-import { eq } from "drizzle-orm";
 import { DevRoleSwitcher } from "@/components/dev/DevRoleSwitcher";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const inter = Inter({
+  variable: "--font-inter",
   subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+  display: "swap",
 });
 
 export const metadata: Metadata = {
   title: "Reinder — Encuentra tu propiedad ideal",
   description:
-    "Reinder es la plataforma para descubrir propiedades exclusivas con tu agente de confianza.",
+    "Reinder es la plataforma para descubrir propiedades exclusivas con tu agente de confianza. Swipe. Match. Move.",
+  openGraph: {
+    title: "Reinder — Descubre propiedades exclusivas",
+    description:
+      "La búsqueda de tu próxima casa como hábito. Swipe para descubrir, match para guardar, tu agente actúa por ti.",
+    type: "website",
+    locale: "es_ES",
+    siteName: "Reinder",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Reinder — Descubre propiedades exclusivas",
+    description:
+      "La búsqueda de tu próxima casa como hábito. Swipe para descubrir, match para guardar.",
+  },
 };
 
 export default async function RootLayout({
@@ -47,9 +54,7 @@ export default async function RootLayout({
   const isDev = process.env.NODE_ENV === "development";
   return (
     <html lang="es">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
+      <body className={`${inter.variable} antialiased`}>
         {children}
         <DevRoleSwitcher initialRole={role} isDev={isDev} />
       </body>
