@@ -125,6 +125,21 @@
 
 ---
 
+## 🔧 Consolidación — Agujeros Identificados (Sesión 2026-05-22)
+
+> Gaps detectados en party mode multi-agente. Deben verificarse antes de añadir épicas nuevas.
+
+| # | Agujero | Impacto | Prioridad | Estado |
+|---|---|---|---|---|
+| G1 | Onboarding post-registro vacío (cold start) | 🔴 Crítico | P1 | 🔵 pendiente |
+| G2 | 9 stories `bad-to-check` sin verificación humana (Epics 2, 3, 5) | 🔴 Crítico | P1 | 🔵 pendiente |
+| G3 | Sin "next step" para compradores sin agente (70% de usuarios) | 🔴 Crítico | P1 | 🔵 pendiente |
+| G4 | Sin email transaccional ni canal de re-engagement | 🟠 Alto | P2 | 🔵 pendiente |
+| G5 | Listing detail duplicado (Epic 6 vs Epic 11) — auditoría necesaria | 🟡 Medio | P2 | 🔵 pendiente |
+| G6 | Sin concepto de "plan" en schema de agencias para monetización | 🟡 Medio | P3 | 🔵 pendiente |
+
+---
+
 ## Resumen por Fase
 
 | Fase | Stories | Complejidad total | Media | Con acción humana |
@@ -151,4 +166,4 @@
 
 ---
 
-*Última actualización: 2026-05-22 — Epic 11 (Web Experience) completado: landing page con 5 secciones, auth split-screen, buyer dashboard, matches gallery, profile, listing detail enriquecido. Epics 6, 7, 8 actualizados a done (completados en sesiones anteriores).*
+*Última actualización: 2026-05-22 — Epic 11 completado. Sección de Consolidación añadida con 6 agujeros de producto identificados en party mode (P1: onboarding, bad-to-check, path sin agente; P2: email, listing dedup; P3: plan schema).*

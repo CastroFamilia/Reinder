@@ -97,7 +97,7 @@ El propio gesto de entrada enseña el vocabulario del producto. Los dos gestos d
 
 **Dónde surgió:** PRD — Growth Features + future-ideas.md (sesión PRD)
 
-**Estado:** Fase 2. Requiere capa de analytics y dashboard B2B.
+**Estado:** ✅ **Implementado en Epic 8** (Stories 8.1–8.7). Dashboard de analytics, engagement events, buyer intent score, y aggregation jobs están en producción. Falta el gate de paywall (ver sección Monetización).
 
 ---
 
@@ -279,4 +279,90 @@ La parte superior de la tarjeta (~55%) muestra la foto de portada en formato hor
 
 ---
 
-*Última actualización: 2026-04-30 — Añadidas dos ideas: Modos de Vista de Tarjeta (Cover vs. Detail) y Widget Embebible de Reinder para páginas web de agencias.*
+## 🟣 Estrategia de Monetización — Analytics Freemium
+
+### Modelo: Data-as-a-Service con Network Effects
+
+**Flywheel:**
+```
+Compradores swipean (gratis)
+  → generan engagement data (tiempo por foto, scroll, matches)
+    → agencias ven métricas básicas (gratis)
+      → agencias quieren insights accionables
+        → pagan por plan Pro (paywall)
+          → usan insights para mejorar listings
+            → mejores listings → más engagement
+              → más datos → más valor Pro → FLYWHEEL
+```
+
+### Propuesta de Valor vs. Competencia
+
+| | Idealista | Reinder |
+|---|---|---|
+| **Qué dice** | 150 personas vieron tu anuncio, 8 contactaron | La gente hace swipe-out en la foto de la cocina |
+| **Tipo de dato** | Métrica de **resultado** | Métrica de **causa** |
+| **Acción de la agencia** | Bajar el precio para generar más contactos | Mejorar/cambiar esa foto para aumentar la conversión |
+| **Impacto económico** | La agencia pierde margen (baja precio 5-10%) | La agencia mantiene el precio original |
+| **Conclusión** | Te dice **cuántas** personas vieron tu piso | Te dice **por qué** no lo compraron |
+
+> 🎯 **Pitch line:** *"Idealista te dice cuántas personas vieron tu piso. Reinder te dice por qué no lo compraron."*
+
+### Modelo Freemium: Datos Gratis, Inteligencia de Pago
+
+| Lo que la agencia ve gratis | Lo que ve en plan Pro |
+|---|---|
+| Nº total de swipes en su listing | Desglose por foto (tiempo por foto) |
+| Ratio match/reject global | Comparativa vs. media del mercado |
+| Nº de matches este mes | Buyer Intent Score por listing |
+| — | Recomendaciones de mejora ("Cambia la portada") |
+| — | A/B testing de portadas (Epic 9) |
+| — | Exportación de datos |
+
+### Estado de Implementación
+
+| Componente | Estado |
+|---|---|
+| Motor de datos (Epic 8: engagement events, tiempo por foto, scroll depth) | ✅ Implementado |
+| Dashboard de analytics para agencias (Story 8.5) | ✅ Implementado |
+| Buyer Intent Score (Story 8.6) | ✅ Implementado |
+| Aggregation jobs (Story 8.7) | ✅ Implementado |
+| Campo `plan` en schema de `agencies` | ❌ Pendiente (Gap G6) |
+| Middleware de gate en API de analytics | ❌ Pendiente |
+| UI de "upgrade" en dashboard de agencia | ❌ Pendiente |
+| Integración Stripe para pagos | ❌ Pendiente |
+| A/B testing de portadas (Epic 9) — feature exclusiva Pro | ⬜ Backlog |
+
+### Roadmap de Monetización
+
+1. **Consolidación (G6):** Añadir `agencies.plan` + `plan_limits` JSONB al schema
+2. **Gate middleware:** Filtrar datos de analytics según plan en las APIs existentes
+3. **Stripe Checkout:** Integrar flujo de upgrade antes de Epic 9
+4. **Lanzar freemium:** Datos crudos gratis, insights Pro — cuando haya tracción de agencias
+
+**Dónde surgió:** Party mode session 2026-05-22
+
+---
+
+## 🟢 Web Experience — Ideas Validadas en Party Mode (2026-05-22)
+
+### Daily Drop: Selección Diaria Personalizada
+
+**Concepto:** En lugar de browse libre (que canibaliza la app), la web muestra 5-8 propiedades seleccionadas para el comprador cada día en su dashboard `/home`. Sin scroll infinito. Sin filtros. Rotación cada 24h. Si quiere más, abre la app.
+
+**Valor:** Preserva la escasez artificial (principio de scarcity) que genera engagement en la app, mientras da al usuario web una razón para volver cada día.
+
+**Decisión de party mode:** El browse libre de listings va contra el core de Reinder. La web es un canal de gestión y consideración, no de descubrimiento. El Daily Drop resuelve el cold-start sin canibalizar.
+
+**Requiere:** Motor de selección (puede basarse en Buyer Intent Score del Epic 8 + filtros de búsqueda del comprador).
+
+**Estado:** 🔵 Backlog — priorizar tras consolidación.
+
+### Escaparate SEO en Landing
+
+**Concepto:** 6-8 propiedades destacadas/recientes visibles en la landing page sin login, con CTA de registro. Complementa el Daily Drop.
+
+**Estado:** 🔵 Backlog — implementable como iteración de LandingCTA.
+
+---
+
+*Última actualización: 2026-05-22 — Party mode: estrategia de monetización documentada (analytics freemium, Idealista vs Reinder value prop), Daily Drop y Escaparate SEO como alternativa al browse libre, 6 agujeros de producto identificados.*

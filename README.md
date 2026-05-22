@@ -114,7 +114,18 @@ Create Story → [Validate Story] → Dev Story → [QA Automation] → [Code Re
 - ✅ Design system completo en `globals.css` (tokens, glass, buttons, badges, cards, animations)
 - ✅ Public stats API (`/api/v1/public/stats`)
 
-**Siguiente:** Epic 9 (Content Optimization & A/B Testing) o verificación humana de stories BAD (`bad-to-check`)
+#### 🕳️ Agujeros Identificados (Sesión 2026-05-22)
+
+| # | Agujero | Impacto | Prioridad |
+|---|---|---|---|
+| 1 | **Onboarding post-registro vacío** — el comprador llega a `/home` sin matches, sin preferencias, sin razón para quedarse | 🔴 Crítico (retención día 1) | P1 |
+| 2 | **9 stories `bad-to-check` sin verificar** — Epics 2, 3 y 5 parcialmente sin validación humana, incluyendo el flujo completo de vínculo agente | 🔴 Crítico (deuda de producto) | P1 |
+| 3 | **Sin "next step" para compradores sin agente** — el 70% de usuarios hace match pero no tiene forma de contactar ni solicitar visita | 🔴 Crítico (utilidad) | P1 |
+| 4 | **Sin email transaccional** — no hay bienvenida, resumen semanal, ni re-engagement. Sin canal de retorno para usuarios web | 🟠 Alto (retención) | P2 |
+| 5 | **Listing detail duplicado Epic 6 vs 11** — posible divergencia entre dos implementaciones de la misma página. Necesita auditoría | 🟡 Medio (mantenimiento) | P2 |
+| 6 | **Sin concepto de "plan" en schema de agencias** — no hay campo de plan ni lógica de límites preparada para monetización futura | 🟡 Medio (timing) | P3 |
+
+**Siguiente:** Sesión de consolidación (verificar agujeros P1-P2) → luego Epic 9 (Content Optimization) o features de `future-ideas.md`
 
 
 ---
