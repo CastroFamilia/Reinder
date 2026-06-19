@@ -62,16 +62,16 @@ development_status:
   2-5-vista-detalle-propiedad-bottom-sheet: done
   2-6-match-recap-screen: done  # Not tested by human
   2-7-historial-matches-badge-nuevas-propiedades: done
-  2-8-tabbar-comprador-navegacion-rol-based: bad-to-check  # Implemented by BAD — needs human verification
-  2-9-filtros-busqueda-buyer-onboarding: bad-to-check      # Implemented by BAD — needs human verification
+  2-8-tabbar-comprador-navegacion-rol-based: done  # Verified 2026-06-18 — all ACs met
+  2-9-filtros-busqueda-buyer-onboarding: done  # Verified + price selector added + API stub fixed 2026-06-19
   epic-2-retrospective: optional
 
   # ─── Epic 3: Vínculo Comprador–Agente Representante ───────────────────────
   epic-3: done
-  3-1-generacion-link-referral-por-agente: bad-to-check      # Implemented by BAD — needs human verification
-  3-2-aceptacion-vinculo-comprador-via-referral-link: bad-to-check  # Implemented by BAD — needs human verification
-  3-3-reconfirmacion-periodica-desvinculacion-voluntaria: bad-to-check  # Implemented by BAD — needs human verification
-  3-4-sobreescritura-listing-agent-ui: bad-to-check          # Implemented by BAD — needs human verification
+  3-1-generacion-link-referral-por-agente: done  # Verified 2026-06-18 — all ACs met, comprehensive tests
+  3-2-aceptacion-vinculo-comprador-via-referral-link: done  # Verified + toast handler integrated 2026-06-19
+  3-3-reconfirmacion-periodica-desvinculacion-voluntaria: done  # Verified + BondRenewalBanner integrated in layout 2026-06-19
+  3-4-sobreescritura-listing-agent-ui: done  # Verified + AgentContactCard/NoAgentBanner integrated in listing page 2026-06-19
   epic-3-retrospective: optional
 
   # ─── Epic 4: Panel del Agente Representante ────────────────────────────────
@@ -83,11 +83,11 @@ development_status:
   epic-4-retrospective: optional
 
   # ─── Epic 5: Gestión de Listings e Integración CRM ───────────────────────────────
-  epic-5: done
+  epic-5: done  # Re-implemented on main 2026-06-19 with bug fixes
   5-1-conexion-crm-agencia-inmovilla: done
-  5-2-sincronizacion-listings-webhook-batch-desacoplados: done
-  5-3-validacion-exclusividad-deteccion-duplicados: done
-  5-4-ciclo-vida-listing-retirada-vendida: done
+  5-2-sincronizacion-listings-webhook-batch-desacoplados: done  # Re-implemented on main + 3 bug fixes 2026-06-19
+  5-3-validacion-exclusividad-deteccion-duplicados: done  # Re-implemented on main + pg_notify fix 2026-06-19
+  5-4-ciclo-vida-listing-retirada-vendida: done  # Re-implemented on main + schema fixes 2026-06-19
   epic-5-retrospective: optional
 
   # ─── Epic 6: Descubrimiento Orgánico y SEO ────────────────────────────────

@@ -44,12 +44,12 @@
 | **2.5** | Vista de Detalle de Propiedad (Bottom Sheet) | 3 | — | ✅ done |
 | **2.6** | Match Recap Screen | 3 | — | ✅ done *(pendiente test humano)* |
 | **2.7** | Historial de Matches y Badge "Nuevas Propiedades" | 3 | — | ✅ done |
-| **2.8** | TabBar de Comprador con Navegación Rol-Based | 2 | — | 🤖 bad-to-check |
-| **2.9** | Filtros de Búsqueda del Comprador — Onboarding y Edición | 4 | ☝️ Migración SQL en Supabase: columna `search_preferences` | 🤖 bad-to-check |
-| **3.1** | Generación de Link de Referral por el Agente | 2 | — | 🤖 bad-to-check |
-| **3.2** | Aceptación del Vínculo por el Comprador vía Referral Link | 3 | — | 🤖 bad-to-check |
-| **3.3** | Reconfirmación Periódica y Desvinculación Voluntaria | 3 | — | 🤖 bad-to-check |
-| **3.4** | Sobreescritura del Listing Agent en la UI | 2 | — | 🤖 bad-to-check |
+| **2.8** | TabBar de Comprador con Navegación Rol-Based | 2 | — | ✅ done — verificado 2026-06-18 |
+| **2.9** | Filtros de Búsqueda del Comprador — Onboarding y Edición | 4 | ☝️ Migración SQL en Supabase: columna `search_preferences` | ✅ done — verificado 2026-06-19 |
+| **3.1** | Generación de Link de Referral por el Agente | 2 | — | ✅ done — verificado 2026-06-18 |
+| **3.2** | Aceptación del Vínculo por el Comprador vía Referral Link | 3 | — | ✅ done — verificado 2026-06-19 |
+| **3.3** | Reconfirmación Periódica y Desvinculación Voluntaria | 3 | — | ✅ done — verificado 2026-06-19 |
+| **3.4** | Sobreescritura del Listing Agent en la UI | 2 | — | ✅ done — verificado 2026-06-19 |
 | **4.1** | Lista de Clientes Vinculados en el Panel del Agente | 2 | — | ✅ done |
 | **4.2** | Notificación en Tiempo Real de Match de Cliente | 4 | ☝️ Configurar Expo Push Notifications (APNS cert iOS + FCM key Android) | ✅ done |
 | **4.3** | Historial de Matches y Rechazos por Cliente | 2 | — | ✅ done |
@@ -62,9 +62,9 @@
 | Story | Título | Complejidad | Acción humana | Estado |
 |---|---|:---:|---|---|
 | **5.1** | Conexión de CRM de Agencia (Inmovilla) | 4 | ☝️ Cuenta Inmovilla de prueba + API key para desarrollo | ✅ done |
-| **5.2** | Sincronización de Listings via Webhook y Batch Desacoplados | 5 | ☝️ Activar `pg_cron` en Supabase + deploy Edge Function `crm-webhook` | 🤖 bad-to-check |
-| **5.3** | Validación de Exclusividad y Detección de Duplicados | 4 | — | 🤖 bad-to-check |
-| **5.4** | Ciclo de Vida del Listing — Retirada y Vendida | 3 | — | 🤖 bad-to-check |
+| **5.2** | Sincronización de Listings via Webhook y Batch Desacoplados | 5 | ☝️ Activar `pg_cron` en Supabase + deploy Edge Function `crm-webhook` | ✅ done — re-implementado 2026-06-19 |
+| **5.3** | Validación de Exclusividad y Detección de Duplicados | 4 | — | ✅ done — re-implementado 2026-06-19 |
+| **5.4** | Ciclo de Vida del Listing — Retirada y Vendida | 3 | — | ✅ done — re-implementado 2026-06-19 |
 
 ---
 
@@ -131,12 +131,12 @@
 
 | # | Agujero | Impacto | Prioridad | Estado |
 |---|---|---|---|---|
-| G1 | Onboarding post-registro vacío (cold start) | 🔴 Crítico | P1 | 🔵 pendiente |
-| G2 | 9 stories `bad-to-check` sin verificación humana (Epics 2, 3, 5) | 🔴 Crítico | P1 | 🔵 pendiente |
-| G3 | Sin "next step" para compradores sin agente (70% de usuarios) | 🔴 Crítico | P1 | 🔵 pendiente |
-| G4 | Sin email transaccional ni canal de re-engagement | 🟠 Alto | P2 | 🔵 pendiente |
-| G5 | Listing detail duplicado (Epic 6 vs Epic 11) — auditoría necesaria | 🟡 Medio | P2 | 🔵 pendiente |
-| G6 | Sin concepto de "plan" en schema de agencias para monetización | 🟡 Medio | P3 | 🔵 pendiente |
+| G1 | Onboarding post-registro vacío (cold start) | 🔴 Crítico | P1 | ❌ pendiente |
+| G2 | ~~9 stories `bad-to-check` sin verificación humana~~ | ~~🔴 Crítico~~ | ~~P1~~ | ✅ **resuelto** — Epics 2, 3 verificados; Epic 5 re-implementado (2026-06-19) |
+| G3 | Sin "next step" para compradores sin agente (70% de usuarios) | 🔴 Crítico | P1 | 🟡 parcial — NoAgentBanner integrado |
+| G4 | Sin email transaccional ni canal de re-engagement | 🟠 Alto | P2 | ❌ pendiente |
+| G5 | Listing detail duplicado (Epic 6 vs Epic 11) — auditoría necesaria | 🟡 Medio | P2 | 🟡 parcial — listing detail modificado |
+| G6 | Sin concepto de "plan" en schema de agencias para monetización | 🟡 Medio | P3 | ❌ pendiente |
 
 ---
 
@@ -166,4 +166,4 @@
 
 ---
 
-*Última actualización: 2026-05-22 — Epic 11 completado. Sección de Consolidación añadida con 6 agujeros de producto identificados en party mode (P1: onboarding, bad-to-check, path sin agente; P2: email, listing dedup; P3: plan schema).*
+*Última actualización: 2026-06-19 — Epics 2, 3 verificados (bad-to-check → done). Epic 5 re-implementado en main (5.2-5.4 nunca fueron mergeados del worktree). Gap G2 resuelto. G3 parcialmente resuelto con NoAgentBanner.*

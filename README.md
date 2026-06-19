@@ -90,10 +90,10 @@ Create Story → [Validate Story] → Dev Story → [QA Automation] → [Code Re
 | Epic | Nombre | Stories | Estado |
 |------|--------|---------|--------|
 | **Epic 1** | Identidad y Acceso | 6/6 done | ✅ **Completado** |
-| **Epic 2** | Swipe Loop | 7 done · 2 🤖 bad-to-check (2.8, 2.9) | ✅ Completado — pendiente verificación humana |
-| **Epic 3** | Vínculo Comprador–Agente | 4 🤖 bad-to-check (3.1–3.4) | 🤖 Pendiente verificación humana |
+| **Epic 2** | Swipe Loop | 9/9 done | ✅ **Completado** — verificado 2026-06-18/19 |
+| **Epic 3** | Vínculo Comprador–Agente | 4/4 done | ✅ **Completado** — verificado 2026-06-18/19 |
 | **Epic 4** | Panel del Agente Representante | 4/4 done | ✅ **Completado** |
-| **Epic 5** | Gestión de Listings e Integración CRM | 5.1 ✅ · 5.2–5.4 🤖 bad-to-check | 🤖 Pendiente verificación humana |
+| **Epic 5** | Gestión de Listings e Integración CRM | 4/4 done | ✅ **Completado** — re-implementado en main 2026-06-19 |
 | **Epic 6** | Descubrimiento Orgánico y SEO | 3/3 done | ✅ **Completado** |
 | **Epic 7** | Administración de Plataforma | 4/4 done | ✅ **Completado** |
 | **Epic 8** | Engagement Intelligence | 7/7 done | ✅ **Completado** |
@@ -101,31 +101,25 @@ Create Story → [Validate Story] → Dev Story → [QA Automation] → [Code Re
 | **Epic 10** | Personalized Content Layer | 0/5 | ⬜ Backlog |
 | **Epic 11** | Experiencia Web del Comprador | 7/7 done | ✅ **Completado** |
 
-> 🤖 **bad-to-check** = Implementado por el pipeline BAD (Autonomous Development) — funcional pero pendiente de revisión y validación humana antes de considerarse definitivamente `done`.
+**🔧 Sesión 2026-06-18/19 — Consolidación: Verificación + Epic 5 Re-implementación:**
+- ✅ Epics 2 & 3: Todas las stories `bad-to-check` verificadas y promovidas a `done`
+- ✅ Story 2.8 (TabBar): Verificada — ACs cumplidos
+- ✅ Story 2.9 (Filtros): Verificada + price selector añadido + API stub fix
+- ✅ Stories 3.1–3.4 (Vínculo agente): Verificadas + toast handler, BondRenewalBanner, AgentContactCard/NoAgentBanner integrados
+- ✅ Epic 5 (5.2–5.4): Re-implementadas en main (nunca fueron mergeadas del worktree). CRM webhook reescrito, 3 migraciones SQL nuevas
 
-**🌐 Sesión 2026-05-22 — Epic 11: Web Experience (Buyer-Facing):**
-- ✅ Landing page premium con hero, features, how-it-works, live stats, CTA
-- ✅ Auth pages rediseñadas con layout split-screen (branding + formulario)
-- ✅ Buyer dashboard personalizado (`/home`) con matches, filtros, agente, stats
-- ✅ Galería de matches responsive (`/matches`) con property cards
-- ✅ Perfil del comprador (`/profile`) con preferencias, agente, logout
-- ✅ Navbar glassmorphism con mobile menu + Footer con links legales
-- ✅ Listing detail enriquecido (`/listings/[id]`) con auth-gate, share, match badge
-- ✅ Design system completo en `globals.css` (tokens, glass, buttons, badges, cards, animations)
-- ✅ Public stats API (`/api/v1/public/stats`)
+#### 🕳️ Agujeros Identificados (Sesión 2026-05-22) — Estado Actualizado
 
-#### 🕳️ Agujeros Identificados (Sesión 2026-05-22)
+| # | Agujero | Impacto | Prioridad | Estado |
+|---|---|---|---|---|
+| 1 | **Onboarding post-registro vacío** — cold start sin preferencias | 🔴 Crítico | P1 | ❌ Pendiente |
+| 2 | ~~9 stories `bad-to-check` sin verificar~~ | ~~🔴 Crítico~~ | ~~P1~~ | ✅ **Resuelto** — Epics 2, 3 verificados; Epic 5 re-implementado |
+| 3 | **Sin "next step" para compradores sin agente** | 🔴 Crítico | P1 | 🟡 Parcial — NoAgentBanner integrado en listing page |
+| 4 | **Sin email transaccional** — sin canal de retorno | 🟠 Alto | P2 | ❌ Pendiente |
+| 5 | **Listing detail Epic 6 vs 11** — auditoría | 🟡 Medio | P2 | 🟡 Parcial — listing detail modificado |
+| 6 | **Sin concepto de "plan" en schema de agencias** | 🟡 Medio | P3 | ❌ Pendiente |
 
-| # | Agujero | Impacto | Prioridad |
-|---|---|---|---|
-| 1 | **Onboarding post-registro vacío** — el comprador llega a `/home` sin matches, sin preferencias, sin razón para quedarse | 🔴 Crítico (retención día 1) | P1 |
-| 2 | **9 stories `bad-to-check` sin verificar** — Epics 2, 3 y 5 parcialmente sin validación humana, incluyendo el flujo completo de vínculo agente | 🔴 Crítico (deuda de producto) | P1 |
-| 3 | **Sin "next step" para compradores sin agente** — el 70% de usuarios hace match pero no tiene forma de contactar ni solicitar visita | 🔴 Crítico (utilidad) | P1 |
-| 4 | **Sin email transaccional** — no hay bienvenida, resumen semanal, ni re-engagement. Sin canal de retorno para usuarios web | 🟠 Alto (retención) | P2 |
-| 5 | **Listing detail duplicado Epic 6 vs 11** — posible divergencia entre dos implementaciones de la misma página. Necesita auditoría | 🟡 Medio (mantenimiento) | P2 |
-| 6 | **Sin concepto de "plan" en schema de agencias** — no hay campo de plan ni lógica de límites preparada para monetización futura | 🟡 Medio (timing) | P3 |
-
-**Siguiente:** Sesión de consolidación (verificar agujeros P1-P2) → luego Epic 9 (Content Optimization) o features de `future-ideas.md`
+**Siguiente:** Onboarding post-registro (G1) → Email transaccional (G4) → Plan schema (G6) → Epic 9
 
 
 ---
