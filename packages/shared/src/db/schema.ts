@@ -56,6 +56,8 @@ export const userProfiles = pgTable("user_profiles", {
   fullName: text("full_name"),
   avatarUrl: text("avatar_url"),
   termsAcceptedAt: timestamp("terms_accepted_at", { withTimezone: true }),
+  /** Story 5.4: links agency_admin / agent users to their agency for ownership guards */
+  agencyId: uuid("agency_id").references(() => agencies.id),
   /** SearchPreferences jsonb — Story 2.9 */
   searchPreferences: jsonb("search_preferences").$type<{
     zones: string[];
@@ -137,6 +139,8 @@ export const listings = pgTable(
     status: text("status").notNull().default("active"), // active | sold | withdrawn | pending_review
     exclusivityVerified: boolean("exclusivity_verified").notNull().default(false),
     catastralRef: text("catastral_ref"),
+    /** Story 5.4: timestamp when listing was marked as sold — used by auto_remove_sold_listings() */
+    soldAt: timestamp("sold_at", { withTimezone: true }),
     createdAt: timestamp("created_at", { withTimezone: true })
       .defaultNow()
       .notNull(),
