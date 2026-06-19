@@ -3,12 +3,16 @@
  *
  * Layout for all authenticated buyer pages.
  * Renders Navbar with user data + Footer.
+ * Includes toast notifications (Story 3.2) and bond renewal banner (Story 3.3).
  * Story 11.6
  */
+import { Suspense } from "react";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
+import { ToastHandler } from "@/components/layout/ToastHandler";
+import { BuyerBondOverlay } from "@/components/layout/BuyerBondOverlay";
 
 export default async function ProtectedLayout({
   children,
@@ -56,6 +60,16 @@ export default async function ProtectedLayout({
         {children}
       </main>
       <Footer />
+
+      {/* Story 3.2: Toast notifications (e.g., after bond acceptance) */}
+      <Suspense fallback={null}>
+        <ToastHandler />
+      </Suspense>
+
+      {/* Story 3.3: Bond renewal banner when expiring */}
+      <Suspense fallback={null}>
+        <BuyerBondOverlay />
+      </Suspense>
     </>
   );
 }

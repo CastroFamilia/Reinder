@@ -23,6 +23,10 @@ import Link from "next/link";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { ShareButton } from "@/components/listing/ShareButton";
+import {
+  AgentContactCard,
+  NoAgentBanner,
+} from "@/features/agent-link/components/listing-agent-overlay";
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -95,6 +99,7 @@ export default async function ListingDetailPage({ params }: Props) {
   // Fetch buyer-specific data if authenticated
   let isMatched = false;
   let buyerAgentName: string | null = null;
+  let buyerAgentAvatar: string | null = null;
   let userName: string | null = null;
   let avatarUrl: string | null = null;
 
@@ -111,7 +116,10 @@ export default async function ListingDetailPage({ params }: Props) {
 
     // Get buyer's agent
     const [bond] = await db
-      .select({ agentName: userProfiles.fullName })
+      .select({
+        agentName: userProfiles.fullName,
+        agentAvatarUrl: userProfiles.avatarUrl,
+      })
       .from(agentBuyerBonds)
       .leftJoin(userProfiles, eq(userProfiles.id, agentBuyerBonds.agentId))
       .where(
@@ -122,6 +130,7 @@ export default async function ListingDetailPage({ params }: Props) {
       )
       .limit(1);
     buyerAgentName = bond?.agentName ?? null;
+    buyerAgentAvatar = bond?.agentAvatarUrl ?? null;
 
     // Get user profile for navbar
     const { data: profile } = await supabase
@@ -402,38 +411,18 @@ export default async function ListingDetailPage({ params }: Props) {
                     </div>
                   )}
 
-                  {buyerAgentName && (
+                  {/* Story 3.4: Agent contact using shared component */}
+                  {buyerAgentName ? (
                     <div style={{ marginBottom: "16px" }}>
-                      <p style={{ color: "var(--text-muted)", fontSize: "12px", marginBottom: "8px", textTransform: "uppercase", letterSpacing: "0.5px", fontWeight: 500 }}>
-                        Tu agente representante
-                      </p>
-                      <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-                        <div
-                          style={{
-                            width: "40px",
-                            height: "40px",
-                            borderRadius: "50%",
-                            background: "rgba(255,107,0,0.15)",
-                            border: "2px solid rgba(255,107,0,0.3)",
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            color: "#FF6B00",
-                            fontSize: "16px",
-                            fontWeight: 700,
-                          }}
-                        >
-                          {buyerAgentName[0]?.toUpperCase() || "A"}
-                        </div>
-                        <div>
-                          <p style={{ color: "var(--text-primary)", fontWeight: 600, fontSize: "15px" }}>
-                            {buyerAgentName}
-                          </p>
-                          <p style={{ color: "var(--text-muted)", fontSize: "12px" }}>
-                            Coordina visitas por ti
-                          </p>
-                        </div>
-                      </div>
+                      <AgentContactCard
+                        name={buyerAgentName}
+                        avatarUrl={buyerAgentAvatar}
+                        isRepresentative={true}
+                      />
+                    </div>
+                  ) : (
+                    <div style={{ marginBottom: "16px" }}>
+                      <NoAgentBanner />
                     </div>
                   )}
 
