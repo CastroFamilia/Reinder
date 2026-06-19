@@ -32,6 +32,14 @@ interface SearchFiltersModalProps {
 
 const ROOM_OPTIONS = [1, 2, 3, 4];
 const SQM_OPTIONS = [40, 60, 80, 100];
+const PRICE_OPTIONS = [
+  { label: '200k', value: 200_000 },
+  { label: '400k', value: 400_000 },
+  { label: '600k', value: 600_000 },
+  { label: '800k', value: 800_000 },
+  { label: '1M', value: 1_000_000 },
+  { label: '2M', value: 2_000_000 },
+];
 
 export function SearchFiltersModal({
   visible,
@@ -149,6 +157,28 @@ export function SearchFiltersModal({
           ))}
         </View>
 
+        {/* Precio máximo */}
+        <Text style={styles.label}>Precio máximo</Text>
+        <View style={styles.pillRow}>
+          {PRICE_OPTIONS.map((p) => (
+            <Pressable
+              key={p.value}
+              onPress={() => setMaxPrice(maxPrice === p.value ? null : p.value)}
+              style={[styles.pill, maxPrice === p.value && styles.pillActive]}
+              testID={`filter-price-${p.value}`}
+            >
+              <Text style={[styles.pillText, maxPrice === p.value && styles.pillTextActive]}>
+                {p.label}
+              </Text>
+            </Pressable>
+          ))}
+        </View>
+        {maxPrice != null && (
+          <Text style={styles.priceDisplay}>
+            Hasta {new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(maxPrice)}
+          </Text>
+        )}
+
         {/* Botones */}
         <TouchableOpacity onPress={handleSave} style={styles.saveBtn} testID="filter-save-btn">
           <Text style={styles.saveBtnText}>Aplicar filtros</Text>
@@ -241,6 +271,12 @@ const styles = StyleSheet.create({
   pillActive: { backgroundColor: Colors.accentPrimary, borderColor: Colors.accentPrimary },
   pillText: { fontSize: Typography.sizeBody, color: Colors.textMuted },
   pillTextActive: { color: '#fff' },
+  priceDisplay: {
+    fontSize: Typography.sizeSmall,
+    color: Colors.accentPrimary,
+    marginTop: Spacing.xs,
+    fontWeight: `${Typography.weightMedium}`,
+  },
   saveBtn: {
     backgroundColor: Colors.accentPrimary,
     borderRadius: 14,

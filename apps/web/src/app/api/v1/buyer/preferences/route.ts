@@ -5,23 +5,40 @@
  * Guarda/actualiza las preferencias de búsqueda del comprador en Supabase.
  *
  * Story 2.9 — Task 3 (AC: 2)
- * Production: actualiza user_profiles.search_preferences via Drizzle + RLS
  *
  * Body: { zones: string[], maxPrice?: number, minRooms?: number, minSqm?: number }
  * Response: ApiResponse<SearchPreferences>
  */
 import { NextResponse } from 'next/server';
+import { createClient } from '@/lib/supabase/server';
+import { db } from '@/lib/supabase/db';
+import { userProfiles } from '@reinder/shared/db/schema';
+import { eq } from 'drizzle-orm';
 import type { SearchPreferences } from '@reinder/shared';
 
 /**
  * PATCH /api/v1/buyer/preferences
  * Body: SearchPreferences
- * Auth: Bearer JWT (Supabase)
- *
- * TODO (production): extraer buyer_id desde JWT + Drizzle update con RLS
+ * Auth: Supabase session (cookie-based)
  */
 export async function PATCH(request: Request) {
   try {
+    // Auth: require authenticated buyer
+    const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      return NextResponse.json(
+        {
+          data: null,
+          error: { code: 'UNAUTHORIZED', message: 'Autenticación requerida' },
+        },
+        { status: 401 },
+      );
+    }
+
     const body = (await request.json()) as Partial<SearchPreferences>;
 
     // Validación básica: zones es requerido
@@ -45,11 +62,11 @@ export async function PATCH(request: Request) {
       ...(body.minSqm != null && { minSqm: body.minSqm }),
     };
 
-    // TODO (production): guardar en Supabase
-    // const authHeader = request.headers.get('Authorization');
-    // const token = authHeader?.replace('Bearer ', '');
-    // const { data: { user } } = await supabase.auth.getUser(token);
-    // await db.update(userProfiles).set({ searchPreferences: prefs }).where(eq(userProfiles.id, user.id));
+    // Persist to Supabase via Drizzle
+    await db
+      .update(userProfiles)
+      .set({ searchPreferences: prefs })
+      .where(eq(userProfiles.id, user.id));
 
     return NextResponse.json({ data: prefs, error: null }, { status: 200 });
   } catch {
