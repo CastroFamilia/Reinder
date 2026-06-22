@@ -17,7 +17,7 @@ import { describe, it, expect } from "vitest";
 describe("Drizzle Schema — Experiment Tables (AC1, AC2, AC3, AC8)", () => {
   // ─── AC1: listing_experiments table ───
 
-  it.skip("[P0] T9.1-23: exports listingExperiments table from schema.ts", async () => {
+  it("[P0] T9.1-23: exports listingExperiments table from schema.ts", async () => {
     const schema = await import("./schema");
 
     expect(schema.listingExperiments).toBeDefined();
@@ -25,7 +25,7 @@ describe("Drizzle Schema — Experiment Tables (AC1, AC2, AC3, AC8)", () => {
     expect((schema.listingExperiments as any)[Symbol.for("drizzle:Name")]).toBe("listing_experiments");
   });
 
-  it.skip("[P0] T9.1-24: listing_experiments has all required columns per AC1", async () => {
+  it("[P0] T9.1-24: listing_experiments has all required columns per AC1", async () => {
     const schema = await import("./schema");
     const table = schema.listingExperiments;
     const columns = Object.keys(table);
@@ -56,7 +56,7 @@ describe("Drizzle Schema — Experiment Tables (AC1, AC2, AC3, AC8)", () => {
 
   // ─── AC1: Enums ───
 
-  it.skip("[P0] T9.1-25: exports experimentStatusEnum with correct values", async () => {
+  it("[P0] T9.1-25: exports experimentStatusEnum with correct values", async () => {
     const schema = await import("./schema");
 
     expect(schema.experimentStatusEnum).toBeDefined();
@@ -69,7 +69,7 @@ describe("Drizzle Schema — Experiment Tables (AC1, AC2, AC3, AC8)", () => {
     ]);
   });
 
-  it.skip("[P0] T9.1-26: exports experimentTypeEnum with correct values", async () => {
+  it("[P0] T9.1-26: exports experimentTypeEnum with correct values", async () => {
     const schema = await import("./schema");
 
     expect(schema.experimentTypeEnum).toBeDefined();
@@ -83,14 +83,14 @@ describe("Drizzle Schema — Experiment Tables (AC1, AC2, AC3, AC8)", () => {
 
   // ─── AC2: experiment_assignments table ───
 
-  it.skip("[P0] T9.1-27: exports experimentAssignments table from schema.ts", async () => {
+  it("[P0] T9.1-27: exports experimentAssignments table from schema.ts", async () => {
     const schema = await import("./schema");
 
     expect(schema.experimentAssignments).toBeDefined();
     expect((schema.experimentAssignments as any)[Symbol.for("drizzle:Name")]).toBe("experiment_assignments");
   });
 
-  it.skip("[P0] T9.1-28: experiment_assignments has all required columns per AC2", async () => {
+  it("[P0] T9.1-28: experiment_assignments has all required columns per AC2", async () => {
     const schema = await import("./schema");
     const columns = Object.keys(schema.experimentAssignments);
 
@@ -109,14 +109,14 @@ describe("Drizzle Schema — Experiment Tables (AC1, AC2, AC3, AC8)", () => {
 
   // ─── AC3: experiment_results table ───
 
-  it.skip("[P0] T9.1-29: exports experimentResults table from schema.ts", async () => {
+  it("[P0] T9.1-29: exports experimentResults table from schema.ts", async () => {
     const schema = await import("./schema");
 
     expect(schema.experimentResults).toBeDefined();
     expect((schema.experimentResults as any)[Symbol.for("drizzle:Name")]).toBe("experiment_results");
   });
 
-  it.skip("[P0] T9.1-30: experiment_results has all required columns per AC3", async () => {
+  it("[P0] T9.1-30: experiment_results has all required columns per AC3", async () => {
     const schema = await import("./schema");
     const columns = Object.keys(schema.experimentResults);
 
@@ -138,7 +138,7 @@ describe("Drizzle Schema — Experiment Tables (AC1, AC2, AC3, AC8)", () => {
 
   // ─── AC3: totalViewTimeMs uses bigint ───
 
-  it.skip("[P1] T9.1-31: experiment_results.totalViewTimeMs uses bigint (not integer)", async () => {
+  it("[P1] T9.1-31: experiment_results.totalViewTimeMs uses bigint (not integer)", async () => {
     const schema = await import("./schema");
     const col = (schema.experimentResults as any).totalViewTimeMs;
 
@@ -150,7 +150,7 @@ describe("Drizzle Schema — Experiment Tables (AC1, AC2, AC3, AC8)", () => {
 describe("Drizzle Schema — Experiment Types (AC8, AC11)", () => {
   // ─── AC11: Types compartidos ───
 
-  it.skip("[P1] T9.1-32: exports experiment types from @reinder/shared types", async () => {
+  it("[P1] T9.1-32: exports experiment types from @reinder/shared types", async () => {
     // This will fail until packages/shared/src/types/experiment.ts is created
     const types = await import("../types/experiment");
 

@@ -12,6 +12,16 @@ export type { Listing, ListingStatus, ListingBadge, SwipeAction } from "./types/
 export type { SwipeEvent, CreateSwipeEventPayload } from "./types/swipe-event";
 export type { SearchPreferences } from "./types/search-preferences";
 export type { AgentClient } from "./types/agent";
+export type {
+  Experiment,
+  ExperimentAssignment,
+  ExperimentResult,
+  VariantContent,
+} from "./types/experiment";
+export { ExperimentStatus, ExperimentType } from "./types/experiment";
+
+// Experiments
+export { assignVariant } from "./experiments/assign-variant";
 
 // Constants
 export {

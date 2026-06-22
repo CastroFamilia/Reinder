@@ -25,6 +25,7 @@ import {
   index,
   unique,
   char,
+  bigint,
 } from "drizzle-orm/pg-core";
 
 // ---------------------------------------------------------------------------
@@ -316,3 +317,141 @@ export const crmSyncQueue = pgTable(
   })
 );
 
+// ---------------------------------------------------------------------------
+// Enums de Experimentos A/B (Story 9.1)
+// ---------------------------------------------------------------------------
+
+/**
+ * Estados del ciclo de vida de un experimento A/B.
+ * Source: story 9-1, AC1
+ */
+export const experimentStatusEnum = pgEnum("experiment_status", [
+  "draft",
+  "running",
+  "paused",
+  "completed",
+  "cancelled",
+]);
+
+/**
+ * Tipos de contenido que se pueden testear en un experimento A/B.
+ * Source: story 9-1, AC1
+ */
+export const experimentTypeEnum = pgEnum("experiment_type", [
+  "cover_image",
+  "title",
+  "description",
+  "title_and_description",
+]);
+
+// ---------------------------------------------------------------------------
+// Tabla: listing_experiments
+// Experimentos A/B sobre contenido de listings.
+// NOTA: La restricción UNIQUE parcial (1 experimento activo por listing)
+// se crea en la migración SQL — Drizzle no soporta partial unique nativamente.
+// Source: story 9-1, AC1
+// ---------------------------------------------------------------------------
+
+export const listingExperiments = pgTable(
+  "listing_experiments",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    listingId: uuid("listing_id")
+      .notNull()
+      .references(() => listings.id),
+    agencyId: uuid("agency_id")
+      .notNull()
+      .references(() => agencies.id),
+    name: text("name").notNull(),
+    status: experimentStatusEnum("status").notNull().default("draft"),
+    experimentType: experimentTypeEnum("experiment_type").notNull(),
+    variantA: jsonb("variant_a").notNull(),
+    variantB: jsonb("variant_b").notNull(),
+    minSampleSize: integer("min_sample_size").notNull().default(100),
+    targetPValue: numeric("target_p_value", { precision: 4, scale: 3 })
+      .notNull()
+      .default("0.050"),
+    winnerVariant: text("winner_variant"), // 'a' | 'b' | null
+    startedAt: timestamp("started_at", { withTimezone: true }),
+    completedAt: timestamp("completed_at", { withTimezone: true }),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => ({
+    idxListingExperimentsListingId: index("idx_listing_experiments_listing_id").on(
+      table.listingId
+    ),
+    idxListingExperimentsAgencyId: index("idx_listing_experiments_agency_id").on(
+      table.agencyId
+    ),
+  })
+);
+
+// ---------------------------------------------------------------------------
+// Tabla: experiment_assignments
+// Asignación de variante por comprador/experimento.
+// Un comprador solo tiene una asignación por experimento (UNIQUE constraint).
+// GDPR: agencias NUNCA ven asignaciones individuales (NFR8 → RLS deny).
+// Source: story 9-1, AC2
+// ---------------------------------------------------------------------------
+
+export const experimentAssignments = pgTable(
+  "experiment_assignments",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    experimentId: uuid("experiment_id")
+      .notNull()
+      .references(() => listingExperiments.id),
+    buyerId: uuid("buyer_id").notNull(), // Referencia a auth.users.id
+    variant: text("variant").notNull(), // 'a' | 'b'
+    assignedAt: timestamp("assigned_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => ({
+    experimentAssignmentsUnique: unique("experiment_assignments_unique").on(
+      table.experimentId,
+      table.buyerId
+    ),
+    idxExperimentAssignmentsBuyerVariant: index(
+      "idx_experiment_assignments_buyer_variant"
+    ).on(table.buyerId, table.experimentId),
+  })
+);
+
+// ---------------------------------------------------------------------------
+// Tabla: experiment_results
+// Métricas agregadas por variante (2 filas por experimento: a + b).
+// Read model pre-agregado que se actualiza incrementalmente (Story 9.3).
+// Source: story 9-1, AC3
+// ---------------------------------------------------------------------------
+
+export const experimentResults = pgTable(
+  "experiment_results",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    experimentId: uuid("experiment_id")
+      .notNull()
+      .references(() => listingExperiments.id),
+    variant: text("variant").notNull(), // 'a' | 'b'
+    impressions: integer("impressions").notNull().default(0),
+    totalViewTimeMs: bigint("total_view_time_ms", { mode: "bigint" })
+      .notNull()
+      .default(0n),
+    matchCount: integer("match_count").notNull().default(0),
+    reaffirmCount: integer("reaffirm_count").notNull().default(0),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => ({
+    experimentResultsUnique: unique("experiment_results_unique").on(
+      table.experimentId,
+      table.variant
+    ),
+  })
+);

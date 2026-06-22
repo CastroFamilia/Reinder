@@ -16,7 +16,7 @@ import { describe, it, expect } from "vitest";
 
 describe("assignVariant() — AC4: Motor de asignación determinístico", () => {
   // ─── T9.1-01: Determinismo — misma entrada produce misma salida ───
-  it.skip("[P0] T9.1-01: returns consistent variant for the same buyerId + experimentId (100 invocations)", async () => {
+  it("[P0] T9.1-01: returns consistent variant for the same buyerId + experimentId (100 invocations)", async () => {
     const { assignVariant } = await import("./assign-variant");
 
     const buyerId = "550e8400-e29b-41d4-a716-446655440000";
@@ -31,7 +31,7 @@ describe("assignVariant() — AC4: Motor de asignación determinístico", () => 
   });
 
   // ─── T9.1-02: Distribución 50/50 con ±5% tolerancia ───
-  it.skip("[P0] T9.1-02: achieves ~50/50 distribution (±5%) over 10,000 random UUID pairs", async () => {
+  it("[P0] T9.1-02: achieves ~50/50 distribution (±5%) over 10,000 random UUID pairs", async () => {
     const { assignVariant } = await import("./assign-variant");
     const crypto = await import("node:crypto");
 
@@ -61,7 +61,7 @@ describe("assignVariant() — AC4: Motor de asignación determinístico", () => 
   });
 
   // ─── T9.1-03: Función pura — solo retorna 'a' o 'b', sin side effects ───
-  it.skip("[P0] T9.1-03: is a pure function — returns only 'a' or 'b', no side effects", async () => {
+  it("[P0] T9.1-03: is a pure function — returns only 'a' or 'b', no side effects", async () => {
     const { assignVariant } = await import("./assign-variant");
 
     const buyerId = "buyer-test-uuid-1234";
@@ -79,7 +79,7 @@ describe("assignVariant() — AC4: Motor de asignación determinístico", () => 
   });
 
   // ─── T9.1-04: Performance — 1000 invocaciones < 100ms total ───
-  it.skip("[P1] T9.1-04: executes 1000 invocations in under 100ms total", async () => {
+  it("[P1] T9.1-04: executes 1000 invocations in under 100ms total", async () => {
     const { assignVariant } = await import("./assign-variant");
     const crypto = await import("node:crypto");
 
@@ -102,7 +102,7 @@ describe("assignVariant() — AC4: Motor de asignación determinístico", () => 
   });
 
   // ─── T9.1-05: Uses SHA-256 hash — different inputs produce different outputs ───
-  it.skip("[P1] T9.1-05: different buyer/experiment pairs can produce different variants", async () => {
+  it("[P1] T9.1-05: different buyer/experiment pairs can produce different variants", async () => {
     const { assignVariant } = await import("./assign-variant");
 
     // Generate enough pairs to get both variants
@@ -119,7 +119,7 @@ describe("assignVariant() — AC4: Motor de asignación determinístico", () => 
   });
 
   // ─── T9.1-06: Determinismo con separador correcto ───
-  it.skip("[P1] T9.1-06: uses buyerId:experimentId concatenation (order matters)", async () => {
+  it("[P1] T9.1-06: uses buyerId:experimentId concatenation (order matters)", async () => {
     const { assignVariant } = await import("./assign-variant");
 
     const id1 = "aaaaaaaa-aaaa-4aaa-aaaa-aaaaaaaaaaaa";

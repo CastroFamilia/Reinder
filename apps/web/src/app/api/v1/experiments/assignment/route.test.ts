@@ -92,7 +92,7 @@ describe("GET /api/v1/experiments/assignment — AC5", () => {
   });
 
   // ─── T9.1-07: Returns variant when running experiment exists ───
-  it.skip("[P0] T9.1-07: returns 200 with experimentId, variant, and variantContent for a running experiment", async () => {
+  it("[P0] T9.1-07: returns 200 with experimentId, variant, and variantContent for a running experiment", async () => {
     vi.mocked(createClient).mockResolvedValue(
       makeSupabaseMock(BUYER_USER, "buyer") as any
     );
@@ -115,7 +115,7 @@ describe("GET /api/v1/experiments/assignment — AC5", () => {
   });
 
   // ─── T9.1-08: Returns null data when no active experiment ───
-  it.skip("[P0] T9.1-08: returns 200 with { data: null, error: null } when no running experiment exists", async () => {
+  it("[P0] T9.1-08: returns 200 with { data: null, error: null } when no running experiment exists", async () => {
     vi.mocked(createClient).mockResolvedValue(
       makeSupabaseMock(BUYER_USER, "buyer") as any
     );
@@ -135,7 +135,7 @@ describe("GET /api/v1/experiments/assignment — AC5", () => {
   });
 
   // ─── T9.1-09: 401 when not authenticated ───
-  it.skip("[P0] T9.1-09: returns 401 when user is not authenticated", async () => {
+  it("[P0] T9.1-09: returns 401 when user is not authenticated", async () => {
     vi.mocked(createClient).mockResolvedValue(
       makeSupabaseMock(null) as any
     );
@@ -151,7 +151,7 @@ describe("GET /api/v1/experiments/assignment — AC5", () => {
   });
 
   // ─── T9.1-10: 403 when user is not a buyer ───
-  it.skip("[P1] T9.1-10: returns 403 when user role is agency_admin (not buyer)", async () => {
+  it("[P1] T9.1-10: returns 403 when user role is agency_admin (not buyer)", async () => {
     vi.mocked(createClient).mockResolvedValue(
       makeSupabaseMock(AGENCY_USER, "agency_admin") as any
     );
@@ -166,7 +166,7 @@ describe("GET /api/v1/experiments/assignment — AC5", () => {
   });
 
   // ─── T9.1-11: Assignment is idempotent (same variant on repeat) ───
-  it.skip("[P0] T9.1-11: returns the same variant on repeated calls (deterministic assignment)", async () => {
+  it("[P0] T9.1-11: returns the same variant on repeated calls (deterministic assignment)", async () => {
     vi.mocked(createClient).mockResolvedValue(
       makeSupabaseMock(BUYER_USER, "buyer") as any
     );
@@ -189,7 +189,7 @@ describe("GET /api/v1/experiments/assignment — AC5", () => {
   });
 
   // ─── T9.1-12: Response time < 50ms (NFR11) ───
-  it.skip("[P1] T9.1-12: responds within 50ms (NFR11 — pre-computed assignment)", async () => {
+  it("[P1] T9.1-12: responds within 50ms (NFR11 — pre-computed assignment)", async () => {
     vi.mocked(createClient).mockResolvedValue(
       makeSupabaseMock(BUYER_USER, "buyer") as any
     );
@@ -209,7 +209,7 @@ describe("GET /api/v1/experiments/assignment — AC5", () => {
   });
 
   // ─── T9.1-13: Missing listing_id returns 400 ───
-  it.skip("[P1] T9.1-13: returns 400 when listing_id query param is missing", async () => {
+  it("[P1] T9.1-13: returns 400 when listing_id query param is missing", async () => {
     vi.mocked(createClient).mockResolvedValue(
       makeSupabaseMock(BUYER_USER, "buyer") as any
     );

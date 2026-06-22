@@ -120,7 +120,7 @@ describe("POST /api/v1/experiments — AC6", () => {
   });
 
   // ─── T9.1-14: Creates experiment in draft status ───
-  it.skip("[P0] T9.1-14: creates experiment in 'draft' status with auto-populated variant_a", async () => {
+  it("[P0] T9.1-14: creates experiment in 'draft' status with auto-populated variant_a", async () => {
     vi.mocked(createClient).mockResolvedValue(
       makeSupabaseMock(AGENCY_ADMIN_USER, "agency_admin", "agency-uuid-001") as any
     );
@@ -154,7 +154,7 @@ describe("POST /api/v1/experiments — AC6", () => {
   });
 
   // ─── T9.1-15: Creates experiment_results rows (a + b) ───
-  it.skip("[P0] T9.1-15: creates 2 experiment_results rows (variant a and b) with counters at 0", async () => {
+  it("[P0] T9.1-15: creates 2 experiment_results rows (variant a and b) with counters at 0", async () => {
     vi.mocked(createClient).mockResolvedValue(
       makeSupabaseMock(AGENCY_ADMIN_USER, "agency_admin") as any
     );
@@ -184,7 +184,7 @@ describe("POST /api/v1/experiments — AC6", () => {
   });
 
   // ─── T9.1-16: 409 when active experiment exists for listing ───
-  it.skip("[P0] T9.1-16: returns 409 EXPERIMENT_ALREADY_EXISTS when listing has active experiment", async () => {
+  it("[P0] T9.1-16: returns 409 EXPERIMENT_ALREADY_EXISTS when listing has active experiment", async () => {
     vi.mocked(createClient).mockResolvedValue(
       makeSupabaseMock(AGENCY_ADMIN_USER, "agency_admin") as any
     );
@@ -205,7 +205,7 @@ describe("POST /api/v1/experiments — AC6", () => {
   });
 
   // ─── T9.1-17: 403 when user is buyer ───
-  it.skip("[P0] T9.1-17: returns 403 when user role is buyer", async () => {
+  it("[P0] T9.1-17: returns 403 when user role is buyer", async () => {
     vi.mocked(createClient).mockResolvedValue(
       makeSupabaseMock(BUYER_USER, "buyer") as any
     );
@@ -218,7 +218,7 @@ describe("POST /api/v1/experiments — AC6", () => {
   });
 
   // ─── T9.1-18: 403 when user is agent ───
-  it.skip("[P1] T9.1-18: returns 403 when user role is agent", async () => {
+  it("[P1] T9.1-18: returns 403 when user role is agent", async () => {
     vi.mocked(createClient).mockResolvedValue(
       makeSupabaseMock(AGENT_USER, "agent") as any
     );
@@ -231,7 +231,7 @@ describe("POST /api/v1/experiments — AC6", () => {
   });
 
   // ─── T9.1-19: 401 when not authenticated ───
-  it.skip("[P0] T9.1-19: returns 401 when user is not authenticated", async () => {
+  it("[P0] T9.1-19: returns 401 when user is not authenticated", async () => {
     vi.mocked(createClient).mockResolvedValue(
       makeSupabaseMock(null) as any
     );
@@ -246,7 +246,7 @@ describe("POST /api/v1/experiments — AC6", () => {
   });
 
   // ─── T9.1-20: 400 when body validation fails (missing required fields) ───
-  it.skip("[P1] T9.1-20: returns 400 when required fields are missing from body", async () => {
+  it("[P1] T9.1-20: returns 400 when required fields are missing from body", async () => {
     vi.mocked(createClient).mockResolvedValue(
       makeSupabaseMock(AGENCY_ADMIN_USER, "agency_admin") as any
     );
@@ -263,7 +263,7 @@ describe("POST /api/v1/experiments — AC6", () => {
   });
 
   // ─── T9.1-21: 400 when experimentType is invalid ───
-  it.skip("[P1] T9.1-21: returns 400 when experimentType is not a valid enum value", async () => {
+  it("[P1] T9.1-21: returns 400 when experimentType is not a valid enum value", async () => {
     vi.mocked(createClient).mockResolvedValue(
       makeSupabaseMock(AGENCY_ADMIN_USER, "agency_admin") as any
     );
@@ -279,7 +279,7 @@ describe("POST /api/v1/experiments — AC6", () => {
   });
 
   // ─── T9.1-22: Response follows ApiResponse wrapper format ───
-  it.skip("[P1] T9.1-22: response body follows ApiResponse<T> wrapper format", async () => {
+  it("[P1] T9.1-22: response body follows ApiResponse<T> wrapper format", async () => {
     vi.mocked(createClient).mockResolvedValue(
       makeSupabaseMock(AGENCY_ADMIN_USER, "agency_admin") as any
     );
