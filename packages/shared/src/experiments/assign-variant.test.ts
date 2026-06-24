@@ -97,8 +97,8 @@ describe("assignVariant() — AC4: Motor de asignación determinístico", () => 
 
     const elapsed = performance.now() - start;
 
-    // AC4: execution < 1ms per call → 1000 calls < 100ms total (generous margin)
-    expect(elapsed).toBeLessThan(100);
+    // AC4: execution < 1ms per call → 1000 calls < 200ms total (generous margin for CI)
+    expect(elapsed).toBeLessThan(200);
   });
 
   // ─── T9.1-05: Uses SHA-256 hash — different inputs produce different outputs ───

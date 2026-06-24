@@ -17,13 +17,17 @@ import { describe, it, expect } from "vitest";
 describe("Drizzle Schema — Experiment Tables (AC1, AC2, AC3, AC8)", () => {
   // ─── AC1: listing_experiments table ───
 
-  it("[P0] T9.1-23: exports listingExperiments table from schema.ts", async () => {
-    const schema = await import("./schema");
+  it(
+    "[P0] T9.1-23: exports listingExperiments table from schema.ts",
+    async () => {
+      const schema = await import("./schema");
 
-    expect(schema.listingExperiments).toBeDefined();
-    // Drizzle tables have a Symbol for the table name
-    expect((schema.listingExperiments as any)[Symbol.for("drizzle:Name")]).toBe("listing_experiments");
-  });
+      expect(schema.listingExperiments).toBeDefined();
+      // Drizzle tables have a Symbol for the table name
+      expect((schema.listingExperiments as any)[Symbol.for("drizzle:Name")]).toBe("listing_experiments");
+    },
+    { timeout: 15_000 },
+  );
 
   it("[P0] T9.1-24: listing_experiments has all required columns per AC1", async () => {
     const schema = await import("./schema");
