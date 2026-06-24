@@ -77,7 +77,70 @@ export type ExperimentResult = {
   variant: "a" | "b";
   impressions: number;
   totalViewTimeMs: bigint;
+  /** Story 9.3: sum of (view_time_ms)^2 for variance calculation */
+  sumViewTimeSqMs: bigint;
   matchCount: number;
   reaffirmCount: number;
   updatedAt: string;
 };
+
+// ─── Story 9.3: Results Dashboard Types ──────────────────────────────────────
+
+export type ExperimentVariantMetrics = {
+  impressions: number;
+  avgViewTimeMs: number;
+  matchRate: number;
+  reaffirmRate: number;
+  totalViewTimeMs: number;
+  matchCount: number;
+  reaffirmCount: number;
+};
+
+export type ExperimentDeltaMetric = {
+  diff: number;
+  pctChange: number;
+  better: "a" | "b" | null;
+};
+
+export type ExperimentDeltas = {
+  avgViewTimeMs: ExperimentDeltaMetric;
+  matchRate: ExperimentDeltaMetric;
+  reaffirmRate: ExperimentDeltaMetric;
+};
+
+export type ExperimentConfidence = {
+  sampleSufficient: boolean;
+  minSampleSize: number;
+  currentMinImpressions: number;
+  preliminaryLeader: "a" | "b" | null;
+  note: string;
+};
+
+export type ExperimentBaselineMetrics = {
+  baselineAvgViewTimeMs: number;
+  baselineMatchRate: number;
+} | null;
+
+export type ExperimentTimeseriesEntry = {
+  bucketHour: string;
+  a: { impressions: number; avgViewTimeMs: number };
+  b: { impressions: number; avgViewTimeMs: number };
+};
+
+export type ExperimentResultsResponse = {
+  experiment: {
+    id: string;
+    name: string;
+    status: ExperimentStatus;
+    startedAt: string | null;
+  };
+  results: {
+    a: ExperimentVariantMetrics;
+    b: ExperimentVariantMetrics;
+  };
+  deltas: ExperimentDeltas;
+  confidence: ExperimentConfidence;
+  baselineMetrics: ExperimentBaselineMetrics;
+  timeseries: ExperimentTimeseriesEntry[];
+};
+

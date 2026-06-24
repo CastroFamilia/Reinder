@@ -442,6 +442,10 @@ export const experimentResults = pgTable(
     totalViewTimeMs: bigint("total_view_time_ms", { mode: "bigint" })
       .notNull()
       .default(0n),
+    /** Story 9.3: sum of (view_time_ms)^2 — needed for variance in Story 9.4 Welch's t-test */
+    sumViewTimeSqMs: bigint("sum_view_time_sq_ms", { mode: "bigint" })
+      .notNull()
+      .default(0n),
     matchCount: integer("match_count").notNull().default(0),
     reaffirmCount: integer("reaffirm_count").notNull().default(0),
     updatedAt: timestamp("updated_at", { withTimezone: true })
@@ -453,5 +457,41 @@ export const experimentResults = pgTable(
       table.experimentId,
       table.variant
     ),
+  })
+);
+
+// ---------------------------------------------------------------------------
+// Tabla: experiment_results_timeseries
+// Hourly cumulative snapshots per variant for time-series dashboard charts.
+// One row per (experiment, variant, hour) — upserted by aggregation job.
+// Source: story 9-3, AC3
+// ---------------------------------------------------------------------------
+
+export const experimentResultsTimeseries = pgTable(
+  "experiment_results_timeseries",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    experimentId: uuid("experiment_id")
+      .notNull()
+      .references(() => listingExperiments.id),
+    variant: text("variant").notNull(), // 'a' | 'b'
+    bucketHour: timestamp("bucket_hour", { withTimezone: true }).notNull(),
+    impressions: integer("impressions").notNull().default(0),
+    totalViewTimeMs: bigint("total_view_time_ms", { mode: "bigint" })
+      .notNull()
+      .default(0n),
+    matchCount: integer("match_count").notNull().default(0),
+    reaffirmCount: integer("reaffirm_count").notNull().default(0),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => ({
+    experimentResultsTimeseriesUnique: unique(
+      "experiment_results_timeseries_unique"
+    ).on(table.experimentId, table.variant, table.bucketHour),
+    idxExperimentResultsTimeseriesExperiment: index(
+      "idx_experiment_results_timeseries_experiment"
+    ).on(table.experimentId),
   })
 );
