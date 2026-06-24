@@ -9,9 +9,11 @@
     ".": "./src/index.ts",
     "./design-tokens": "./src/design-tokens.ts",
     "./types": "./src/types/index.ts",
+    "./types/*": "./src/types/*.ts",
     "./constants": "./src/constants/index.ts",
     "./db": "./src/db/index.ts",
-    "./db/schema": "./src/db/schema.ts"
+    "./db/schema": "./src/db/schema.ts",
+    "./experiments/*": "./src/experiments/*.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit",
