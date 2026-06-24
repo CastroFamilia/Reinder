@@ -86,7 +86,7 @@ describe("aggregateExperimentResults() — AC1: Cálculo de métricas por varian
 
   // ─── T9.3-01: Calcula impressions, view_time, match_count por variante ───
   it("[P0] T9.3-01: correctly computes impressions, total_view_time_ms, match_count, reaffirm_count per variant", async () => {
-    const { aggregateExperimentResults } = await import("./aggregate-experiment-results");
+    const { computeVariantMetrics } = await import("./aggregate-experiment-results");
 
     // Setup: 2 buyers in variant a, 2 in variant b
     const assignments = [
@@ -205,7 +205,7 @@ describe("aggregateExperimentResults() — AC1: Cálculo de métricas por varian
     expect(result.processed).toBe(2);
     expect(result.errors).toBe(1);
     expect(result.errorDetails).toHaveLength(1);
-    expect(result.errorDetails[0].experimentId).toBe("exp-bad");
+    expect(result.errorDetails[0]!.experimentId).toBe("exp-bad");
   });
 });
 
@@ -252,7 +252,7 @@ describe("API GET /api/v1/experiments/[id]/results — AC6", () => {
     });
 
     expect(result.allowed).toBe(false);
-    expect(result.statusCode).toBe(403);
+    expect(!result.allowed && result.statusCode).toBe(403);
   });
 
   // ─── T9.3-07: Responde 404 para experimento de otra agencia ───
@@ -266,7 +266,7 @@ describe("API GET /api/v1/experiments/[id]/results — AC6", () => {
     });
 
     expect(result.allowed).toBe(false);
-    expect(result.statusCode).toBe(404);
+    expect(!result.allowed && result.statusCode).toBe(404);
   });
 
   // ─── T9.3-08: Calcula deltas correctamente ───
@@ -344,15 +344,3 @@ describe("ConfidenceIndicator — AC8", () => {
   });
 });
 
-// ─── Helper: computeVariantMetrics (used in T9.3-01) ───
-// This references the pure function that computes metrics from raw data
-function computeVariantMetrics(
-  experiment: ReturnType<typeof makeExperiment>,
-  assignments: ReturnType<typeof makeAssignment>[],
-  engagementEvents: ReturnType<typeof makeEngagementEvent>[],
-  swipeEvents: Array<{ buyerId: string; listingId: string; action: string }>
-) {
-  // Import happens lazily in tests above — this is a structural placeholder
-  // The actual function is tested via dynamic import in the test body
-  throw new Error("This should not be called directly — use dynamic import in tests");
-}
