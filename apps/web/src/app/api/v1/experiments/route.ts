@@ -1,20 +1,14 @@
 /**
  * apps/web/src/app/api/v1/experiments/route.ts
  *
+ * GET  /api/v1/experiments — Lista experimentos de la agencia del usuario.
  * POST /api/v1/experiments — Crea un nuevo experimento A/B.
  *
- * Story 9.1, AC6:
- * - Auth: agency_admin requerido (401/403)
- * - Validación del body
- * - Verifica que el listing pertenece a la agencia del usuario
- * - Verifica que no existe otro experimento activo → 409
- * - Auto-pobla variant_a desde el listing actual
- * - Crea 2 filas de experiment_results en transacción
- * - Responde 201
+ * Story 9.1 (POST, AC6) + Story 9.2 (GET, AC9)
  *
- * Source: story 9-1-schema-experimentos-motor-asignacion-variantes.md (Task 8)
+ * Auth: agency_admin requerido (401/403)
  */
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { db } from "@/lib/supabase/db";
 import {
@@ -22,7 +16,108 @@ import {
   listingExperiments,
   experimentResults,
 } from "@reinder/shared/db/schema";
-import { eq, and, inArray } from "drizzle-orm";
+import { eq, and, inArray, desc } from "drizzle-orm";
+import type { ExperimentStatus } from "@reinder/shared/types/experiment";
+
+// ─── Shared auth helper ─────────────────────────────────────────────────────
+
+async function authenticateAgencyAdmin() {
+  const supabase = await createClient();
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser();
+
+  if (authError || !user) {
+    return {
+      error: NextResponse.json(
+        {
+          data: null,
+          error: { code: "UNAUTHORIZED", message: "Authentication required" },
+        },
+        { status: 401 }
+      ),
+    };
+  }
+
+  const { data: profile } = await supabase
+    .from("user_profiles")
+    .select("role, agencyId:agency_id")
+    .eq("id", user.id)
+    .single();
+
+  if (!profile || profile.role !== "agency_admin") {
+    return {
+      error: NextResponse.json(
+        {
+          data: null,
+          error: {
+            code: "FORBIDDEN",
+            message: "Only agency admins can access experiments",
+          },
+        },
+        { status: 403 }
+      ),
+    };
+  }
+
+  return { user, profile };
+}
+
+// ─── GET /api/v1/experiments ──────────────────────────────────────────────────
+
+export async function GET(request: NextRequest) {
+  const auth = await authenticateAgencyAdmin();
+  if ("error" in auth) return auth.error;
+
+  const { profile } = auth;
+
+  try {
+    const url = new URL(request.url);
+    const statusFilter = url.searchParams.get("status") as ExperimentStatus | null;
+
+    // Build query: experiments with listing data
+    const conditions = [eq(listingExperiments.agencyId, profile.agencyId)];
+    if (statusFilter && ["draft", "running", "paused", "completed", "cancelled"].includes(statusFilter)) {
+      conditions.push(eq(listingExperiments.status, statusFilter));
+    }
+
+    const experiments = await db
+      .select({
+        id: listingExperiments.id,
+        name: listingExperiments.name,
+        status: listingExperiments.status,
+        experimentType: listingExperiments.experimentType,
+        variantA: listingExperiments.variantA,
+        variantB: listingExperiments.variantB,
+        createdAt: listingExperiments.createdAt,
+        startedAt: listingExperiments.startedAt,
+        completedAt: listingExperiments.completedAt,
+        listingId: listingExperiments.listingId,
+        listingTitle: listings.title,
+        listingImages: listings.images,
+        listingAddress: listings.address,
+      })
+      .from(listingExperiments)
+      .innerJoin(listings, eq(listingExperiments.listingId, listings.id))
+      .where(and(...conditions))
+      .orderBy(desc(listingExperiments.createdAt));
+
+    return NextResponse.json({
+      data: { experiments },
+      error: null,
+    });
+  } catch (error) {
+    console.error("[experiments] GET list failed:", error);
+    return NextResponse.json(
+      {
+        data: null,
+        error: { code: "INTERNAL_ERROR", message: "Failed to fetch experiments" },
+      },
+      { status: 500 }
+    );
+  }
+}
 
 // ─── Valid experiment types ──────────────────────────────────────────────────
 
@@ -85,41 +180,12 @@ function validateBody(body: unknown): {
 // ─── POST /api/v1/experiments ─────────────────────────────────────────────────
 
 export async function POST(request: Request) {
-  // ─── 1. Auth ────────────────────────────────────────────────────────────────
+  // ─── 1–2. Auth ──────────────────────────────────────────────────────────────
 
-  const supabase = await createClient();
-  const {
-    data: { user },
-    error: authError,
-  } = await supabase.auth.getUser();
+  const auth = await authenticateAgencyAdmin();
+  if ("error" in auth) return auth.error;
 
-  if (authError || !user) {
-    return NextResponse.json(
-      {
-        data: null,
-        error: { code: "UNAUTHORIZED", message: "Authentication required" },
-      },
-      { status: 401 }
-    );
-  }
-
-  // ─── 2. Role check — agency_admin only ──────────────────────────────────────
-
-  const { data: profile } = await supabase
-    .from("user_profiles")
-    .select("role, agencyId:agency_id")
-    .eq("id", user.id)
-    .single();
-
-  if (!profile || profile.role !== "agency_admin") {
-    return NextResponse.json(
-      {
-        data: null,
-        error: { code: "FORBIDDEN", message: "Only agency admins can create experiments" },
-      },
-      { status: 403 }
-    );
-  }
+  const { profile } = auth;
 
   // ─── 3. Parse + validate body ───────────────────────────────────────────────
 
