@@ -152,102 +152,115 @@ export async function POST(request: Request) {
 
   const { listingId, name, experimentType, variantB } = validation.data;
 
-  // ─── 4. Verify listing belongs to agency ────────────────────────────────────
+  // ─── 4–8: DB operations wrapped in try/catch for structured error responses ─
 
-  const [listing] = await db
-    .select()
-    .from(listings)
-    .where(eq(listings.id, listingId))
-    .limit(1);
+  try {
+    // ─── 4. Verify listing belongs to agency ──────────────────────────────────
 
-  if (!listing || listing.agencyId !== profile.agencyId) {
-    return NextResponse.json(
-      {
-        data: null,
-        error: { code: "NOT_FOUND", message: "Listing not found or does not belong to your agency" },
-      },
-      { status: 404 }
-    );
-  }
+    const [listing] = await db
+      .select()
+      .from(listings)
+      .where(eq(listings.id, listingId))
+      .limit(1);
 
-  // ─── 5. Verify no active experiment exists for this listing ─────────────────
-
-  const [activeExperiment] = await db
-    .select()
-    .from(listingExperiments)
-    .where(
-      and(
-        eq(listingExperiments.listingId, listingId),
-        inArray(listingExperiments.status, ["draft", "running", "paused"])
-      )
-    )
-    .limit(1);
-
-  if (activeExperiment) {
-    return NextResponse.json(
-      {
-        data: null,
-        error: {
-          code: "EXPERIMENT_ALREADY_EXISTS",
-          message: "This listing already has an active experiment. Complete or cancel it first.",
+    if (!listing || listing.agencyId !== profile.agencyId) {
+      return NextResponse.json(
+        {
+          data: null,
+          error: { code: "NOT_FOUND", message: "Listing not found or does not belong to your agency" },
         },
+        { status: 404 }
+      );
+    }
+
+    // ─── 5. Verify no active experiment exists for this listing ────────────────
+
+    const [activeExperiment] = await db
+      .select()
+      .from(listingExperiments)
+      .where(
+        and(
+          eq(listingExperiments.listingId, listingId),
+          inArray(listingExperiments.status, ["draft", "running", "paused"])
+        )
+      )
+      .limit(1);
+
+    if (activeExperiment) {
+      return NextResponse.json(
+        {
+          data: null,
+          error: {
+            code: "EXPERIMENT_ALREADY_EXISTS",
+            message: "This listing already has an active experiment. Complete or cancel it first.",
+          },
+        },
+        { status: 409 }
+      );
+    }
+
+    // ─── 6. Auto-populate variant_a from current listing content ──────────────
+
+    const variantA: Record<string, unknown> = {};
+    if (experimentType === "cover_image") {
+      const images = (listing.images as string[]) ?? [];
+      variantA.coverImageUrl = images[0] ?? null;
+      variantA.coverImageIndex = 0;
+    }
+    if (experimentType === "title" || experimentType === "title_and_description") {
+      variantA.title = listing.title;
+    }
+    if (experimentType === "description" || experimentType === "title_and_description") {
+      variantA.description = listing.description;
+    }
+
+    // ─── 7. Create experiment + result rows in transaction ────────────────────
+
+    const result = await db.transaction(async (tx) => {
+      const [experiment] = await tx
+        .insert(listingExperiments)
+        .values({
+          listingId,
+          agencyId: listing.agencyId,
+          name,
+          experimentType,
+          variantA,
+          variantB,
+        })
+        .returning();
+
+      // Create 2 experiment_results rows (one per variant, counters at 0)
+      await tx.insert(experimentResults).values([
+        {
+          experimentId: experiment.id,
+          variant: "a",
+        },
+        {
+          experimentId: experiment.id,
+          variant: "b",
+        },
+      ]);
+
+      return experiment;
+    });
+
+    // ─── 8. Return response ──────────────────────────────────────────────────
+
+    return NextResponse.json(
+      {
+        data: { experiment: result },
+        error: null,
       },
-      { status: 409 }
+      { status: 201 }
+    );
+  } catch (error) {
+    console.error("[experiments] POST failed:", error);
+    return NextResponse.json(
+      {
+        data: null,
+        error: { code: "INTERNAL_ERROR", message: "Failed to create experiment" },
+      },
+      { status: 500 }
     );
   }
-
-  // ─── 6. Auto-populate variant_a from current listing content ────────────────
-
-  const variantA: Record<string, unknown> = {};
-  if (experimentType === "cover_image") {
-    const images = (listing.images as string[]) ?? [];
-    variantA.coverImageUrl = images[0] ?? null;
-    variantA.coverImageIndex = 0;
-  }
-  if (experimentType === "title" || experimentType === "title_and_description") {
-    variantA.title = listing.title;
-  }
-  if (experimentType === "description" || experimentType === "title_and_description") {
-    variantA.description = listing.description;
-  }
-
-  // ─── 7. Create experiment + result rows in transaction ──────────────────────
-
-  const result = await db.transaction(async (tx) => {
-    const [experiment] = await tx
-      .insert(listingExperiments)
-      .values({
-        listingId,
-        agencyId: listing.agencyId,
-        name,
-        experimentType,
-        variantA,
-        variantB,
-      })
-      .returning();
-
-    // Create 2 experiment_results rows (one per variant, counters at 0)
-    await tx.insert(experimentResults).values([
-      {
-        experimentId: experiment.id,
-        variant: "a",
-      },
-      {
-        experimentId: experiment.id,
-        variant: "b",
-      },
-    ]);
-
-    return experiment;
-  });
-
-  // ─── 8. Return response ────────────────────────────────────────────────────
-
-  return NextResponse.json(
-    {
-      data: { experiment: result },
-      error: null,
-    },
-    { status: 201 }
-  );
 }

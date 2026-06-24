@@ -77,56 +77,69 @@ export async function GET(request: Request) {
     );
   }
 
-  // ─── 4. Find running experiment for this listing ────────────────────────────
+  // ─── 4–7: DB operations wrapped in try/catch for structured error responses ─
 
-  const [experiment] = await db
-    .select()
-    .from(listingExperiments)
-    .where(
-      and(
-        eq(listingExperiments.listingId, listingId),
-        eq(listingExperiments.status, "running")
+  try {
+    // ─── 4. Find running experiment for this listing ──────────────────────────
+
+    const [experiment] = await db
+      .select()
+      .from(listingExperiments)
+      .where(
+        and(
+          eq(listingExperiments.listingId, listingId),
+          eq(listingExperiments.status, "running")
+        )
       )
-    )
-    .limit(1);
+      .limit(1);
 
-  if (!experiment) {
-    return NextResponse.json({ data: null, error: null });
-  }
-
-  // ─── 5. Assign variant deterministically ────────────────────────────────────
-
-  const variant = assignVariant(user.id, experiment.id);
-
-  // Select the content for the assigned variant
-  const variantContent = variant === "a" ? experiment.variantA : experiment.variantB;
-
-  // ─── 6. Fire-and-forget upsert of assignment ───────────────────────────────
-
-  // Fire-and-forget: async IIFE — don't block the response
-  void (async () => {
-    try {
-      await db
-        .insert(experimentAssignments)
-        .values({
-          experimentId: experiment.id,
-          buyerId: user.id,
-          variant,
-        })
-        .onConflictDoNothing();
-    } catch (error) {
-      console.error("[experiments] assignment upsert failed:", error);
+    if (!experiment) {
+      return NextResponse.json({ data: null, error: null });
     }
-  })();
 
-  // ─── 7. Return response ────────────────────────────────────────────────────
+    // ─── 5. Assign variant deterministically ──────────────────────────────────
 
-  return NextResponse.json({
-    data: {
-      experimentId: experiment.id,
-      variant,
-      variantContent,
-    },
-    error: null,
-  });
+    const variant = assignVariant(user.id, experiment.id);
+
+    // Select the content for the assigned variant
+    const variantContent = variant === "a" ? experiment.variantA : experiment.variantB;
+
+    // ─── 6. Fire-and-forget upsert of assignment ─────────────────────────────
+
+    // Fire-and-forget: async IIFE — don't block the response
+    void (async () => {
+      try {
+        await db
+          .insert(experimentAssignments)
+          .values({
+            experimentId: experiment.id,
+            buyerId: user.id,
+            variant,
+          })
+          .onConflictDoNothing();
+      } catch (error) {
+        console.error("[experiments] assignment upsert failed:", error);
+      }
+    })();
+
+    // ─── 7. Return response ──────────────────────────────────────────────────
+
+    return NextResponse.json({
+      data: {
+        experimentId: experiment.id,
+        variant,
+        variantContent,
+      },
+      error: null,
+    });
+  } catch (error) {
+    console.error("[experiments] GET assignment failed:", error);
+    return NextResponse.json(
+      {
+        data: null,
+        error: { code: "INTERNAL_ERROR", message: "Failed to get variant assignment" },
+      },
+      { status: 500 }
+    );
+  }
 }
