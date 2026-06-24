@@ -17,11 +17,29 @@ export type {
   ExperimentAssignment,
   ExperimentResult,
   VariantContent,
+  ExperimentVariantMetrics,
+  ExperimentDeltaMetric,
+  ExperimentDeltas,
+  ExperimentConfidence,
+  ExperimentBaselineMetrics,
+  ExperimentTimeseriesEntry,
+  ExperimentResultsResponse,
 } from "./types/experiment";
 export { ExperimentStatus, ExperimentType } from "./types/experiment";
 
 // Experiments
 export { assignVariant } from "./experiments/assign-variant";
+export {
+  computeVariantMetrics,
+  shouldProcessExperiment,
+  calculateDeltas,
+  calculateConfidence,
+  getConfidenceBadge,
+  processAllExperiments,
+} from "./experiments/aggregate-experiment-results";
+export { calculateBaseline } from "./experiments/calculate-baseline";
+export { validateExperimentResultsAccess } from "./experiments/experiment-results-access";
+export { formatMetric, formatDelta, formatDeltaPP } from "./experiments/format-metrics";
 
 // Constants
 export {
@@ -36,4 +54,5 @@ export {
   PAYOFF_DURATION_MS,
   PAYOFF_AUTOHIDE_MS,
 } from "./constants/index";
+
 
