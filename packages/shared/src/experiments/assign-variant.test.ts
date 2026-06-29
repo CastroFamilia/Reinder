@@ -33,7 +33,6 @@ describe("assignVariant() — AC4: Motor de asignación determinístico", () => 
   // ─── T9.1-02: Distribución 50/50 con ±5% tolerancia ───
   it("[P0] T9.1-02: achieves ~50/50 distribution (±5%) over 10,000 random UUID pairs", async () => {
     const { assignVariant } = await import("./assign-variant");
-    const crypto = await import("node:crypto");
 
     let countA = 0;
     let countB = 0;
@@ -81,7 +80,6 @@ describe("assignVariant() — AC4: Motor de asignación determinístico", () => 
   // ─── T9.1-04: Performance — 1000 invocaciones < 100ms total ───
   it("[P1] T9.1-04: executes 1000 invocations in under 100ms total", async () => {
     const { assignVariant } = await import("./assign-variant");
-    const crypto = await import("node:crypto");
 
     // Pre-generate UUIDs to not count generation time
     const pairs = Array.from({ length: 1000 }, () => ({
@@ -101,18 +99,18 @@ describe("assignVariant() — AC4: Motor de asignación determinístico", () => 
     expect(elapsed).toBeLessThan(200);
   });
 
-  // ─── T9.1-05: Uses SHA-256 hash — different inputs produce different outputs ───
+  // ─── T9.1-05: Uses FNV-1a hash — different inputs produce different outputs ───
   it("[P1] T9.1-05: different buyer/experiment pairs can produce different variants", async () => {
     const { assignVariant } = await import("./assign-variant");
 
-    // Generate enough pairs to get both variants
+    // Generate enough random UUID pairs to get both variants
     const results = new Set<string>();
     for (let i = 0; i < 100; i++) {
-      const result = assignVariant(`buyer-${i}`, `experiment-${i}`);
+      const result = assignVariant(crypto.randomUUID(), crypto.randomUUID());
       results.add(result);
     }
 
-    // With 100 different pairs, we should see both 'a' and 'b'
+    // With 100 different random UUID pairs, we should see both 'a' and 'b'
     expect(results.size).toBe(2);
     expect(results.has("a")).toBe(true);
     expect(results.has("b")).toBe(true);
@@ -129,7 +127,7 @@ describe("assignVariant() — AC4: Motor de asignación determinístico", () => 
     const result2 = assignVariant(id2, id1);
 
     // Swapping buyer and experiment IDs should (likely) produce different results
-    // because SHA-256("id1:id2") ≠ SHA-256("id2:id1")
+    // because FNV-1a("id1:id2") ≠ FNV-1a("id2:id1")
     // Note: There's a 50% chance they match by coincidence, so we test determinism instead
     expect(assignVariant(id1, id2)).toBe(result1);
     expect(assignVariant(id2, id1)).toBe(result2);
