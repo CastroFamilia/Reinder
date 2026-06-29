@@ -97,7 +97,7 @@ Create Story → [Validate Story] → Dev Story → [QA Automation] → [Code Re
 | **Epic 6** | Descubrimiento Orgánico y SEO | 3/3 done | ✅ **Completado** |
 | **Epic 7** | Administración de Plataforma | 4/4 done | ✅ **Completado** |
 | **Epic 8** | Engagement Intelligence | 7/7 done | ✅ **Completado** |
-| **Epic 9** | Content Optimization & A/B Testing | 0/6 | ⬜ Backlog |
+| **Epic 9** | Content Optimization & A/B Testing | 3/6 done | 🚧 **En Progreso** — stories 9.1–9.3 done (PRs #25, #32, #33) |
 | **Epic 10** | Personalized Content Layer | 0/5 | ⬜ Backlog |
 | **Epic 11** | Experiencia Web del Comprador | 7/7 done | ✅ **Completado** |
 
@@ -108,18 +108,24 @@ Create Story → [Validate Story] → Dev Story → [QA Automation] → [Code Re
 - ✅ Stories 3.1–3.4 (Vínculo agente): Verificadas + toast handler, BondRenewalBanner, AgentContactCard/NoAgentBanner integrados
 - ✅ Epic 5 (5.2–5.4): Re-implementadas en main (nunca fueron mergeadas del worktree). CRM webhook reescrito, 3 migraciones SQL nuevas
 
+**🧪 Sesión 2026-06-24/29 — Epic 9: Content Optimization & A/B Testing (3/6):**
+- ✅ Story 9.1: Schema de experimentos + motor de asignación de variantes (PR #25)
+- ✅ Story 9.2: UI de creación de experimentos para agencias — portada A/B (PR #32)
+- ✅ Story 9.3: Medición de impacto + dashboard de resultados del experimento (PR #33)
+- 🟡 Stories 9.4–9.6: ready-for-dev (auto-promoción ganadora, recomendaciones proactivas, generación IA)
+
 #### 🕳️ Agujeros Identificados (Sesión 2026-05-22) — Estado Actualizado
 
 | # | Agujero | Impacto | Prioridad | Estado |
 |---|---|---|---|---|
-| 1 | **Onboarding post-registro vacío** — cold start sin preferencias | 🔴 Crítico | P1 | ❌ Pendiente |
+| 1 | ~~Onboarding post-registro vacío — cold start~~ | ~~🔴 Crítico~~ | ~~P1~~ | ✅ **Resuelto** — Story 2.9 swipe-card onboarding sirve como tutorial + setup de preferencias |
 | 2 | ~~9 stories `bad-to-check` sin verificar~~ | ~~🔴 Crítico~~ | ~~P1~~ | ✅ **Resuelto** — Epics 2, 3 verificados; Epic 5 re-implementado |
-| 3 | **Sin "next step" para compradores sin agente** | 🔴 Crítico | P1 | 🟡 Parcial — NoAgentBanner integrado en listing page |
+| 3 | ~~Sin "next step" para compradores sin agente~~ | ~~🔴 Crítico~~ | ~~P1~~ | ✅ **Resuelto** — compradores sin bond ven al listing agent original; el bond lo reemplaza con el representante (Story 3.4) |
 | 4 | **Sin email transaccional** — sin canal de retorno | 🟠 Alto | P2 | ❌ Pendiente |
 | 5 | **Listing detail Epic 6 vs 11** — auditoría | 🟡 Medio | P2 | 🟡 Parcial — listing detail modificado |
 | 6 | **Sin concepto de "plan" en schema de agencias** | 🟡 Medio | P3 | ❌ Pendiente |
 
-**Siguiente:** Onboarding post-registro (G1) → Email transaccional (G4) → Plan schema (G6) → Epic 9
+**Siguiente:** Epic 9 stories 9.4–9.6 → Email transaccional (G4) → Plan schema (G6) → Epic 10
 
 
 ---
