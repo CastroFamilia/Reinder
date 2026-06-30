@@ -13,15 +13,19 @@
  * Source: epics.md#Story-2.5 AC1-AC5
  * Source: UX-DR10 (bottom sheet), UX-DR11 (jerarquía botones), UX-DR7 (GlassPanel)
  */
-import React from 'react';
+import React, { useCallback, useRef } from 'react';
 import {
+  Animated,
   Image,
   Modal,
+  PanResponder,
   ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
+  type GestureResponderEvent,
+  type PanResponderGestureState,
 } from 'react-native';
 import type { Listing } from '@reinder/shared';
 import { GlassPanel } from '../../../components/ui/glass-panel';
@@ -68,6 +72,9 @@ function formatDetailMeta(listing: Listing): string {
   return parts.join(' · ');
 }
 
+/** Distance in px the user must drag down to dismiss the sheet */
+const DISMISS_THRESHOLD = 120;
+
 export function PropertyDetailSheet({
   visible,
   listing,
@@ -76,25 +83,83 @@ export function PropertyDetailSheet({
   onReject,
   testID,
 }: PropertyDetailSheetProps) {
+  // ─── Swipe-down gesture ─────────────────────────────────────────────────────
+  const translateY = useRef(new Animated.Value(0)).current;
+  const backdropOpacity = useRef(new Animated.Value(1)).current;
+  /** Whether the inner ScrollView is scrolled to top (enables swipe-down) */
+  const isScrolledToTop = useRef(true);
+
+  const resetPosition = useCallback(() => {
+    Animated.spring(translateY, {
+      toValue: 0,
+      useNativeDriver: true,
+      tension: 80,
+      friction: 12,
+    }).start();
+    Animated.timing(backdropOpacity, {
+      toValue: 1,
+      duration: 150,
+      useNativeDriver: true,
+    }).start();
+  }, [translateY, backdropOpacity]);
+
+  const animateDismiss = useCallback(() => {
+    Animated.parallel([
+      Animated.timing(translateY, {
+        toValue: 800,
+        duration: 250,
+        useNativeDriver: true,
+      }),
+      Animated.timing(backdropOpacity, {
+        toValue: 0,
+        duration: 250,
+        useNativeDriver: true,
+      }),
+    ]).start(() => {
+      translateY.setValue(0);
+      backdropOpacity.setValue(1);
+      onClose();
+    });
+  }, [translateY, backdropOpacity, onClose]);
+
+  const panResponder = useRef(
+    PanResponder.create({
+      onStartShouldSetPanResponder: () => false,
+      onMoveShouldSetPanResponder: (
+        _e: GestureResponderEvent,
+        gs: PanResponderGestureState,
+      ) => {
+        // Only capture vertical downward gestures when scrolled to top
+        return isScrolledToTop.current && gs.dy > 10 && Math.abs(gs.dy) > Math.abs(gs.dx);
+      },
+      onPanResponderMove: (_e, gs) => {
+        // Only allow downward movement (clamp at 0)
+        const clampedY = Math.max(0, gs.dy);
+        translateY.setValue(clampedY);
+        // Fade backdrop as user drags
+        const opacity = Math.max(0.2, 1 - clampedY / 400);
+        backdropOpacity.setValue(opacity);
+      },
+      onPanResponderRelease: (_e, gs) => {
+        if (gs.dy > DISMISS_THRESHOLD || gs.vy > 0.5) {
+          animateDismiss();
+        } else {
+          resetPosition();
+        }
+      },
+    }),
+  ).current;
+
   if (!listing) return null;
 
   const badge = listing.status === 'sold' ? 'VENDIDA' : listing.badge;
   const heroSource = MOCK_IMAGES[listing.id] ?? { uri: listing.imageUrl };
   const accessiblePrice = `Precio: ${formatPrice(listing.price)}`;
 
-  /**
-   * Llama onMatch() — el padre (SwipeScreen.handleDetailMatch) es responsable de
-   * cerrar el sheet vía setIsDetailSheetVisible(false). NO llamar onClose() aquí:
-   * evita el doble setState y el orden de operaciones incorrecto (CR Story 2.5 H1).
-   */
   const handleMatch = () => {
     onMatch();
   };
 
-  /**
-   * Llama onReject() — mismo patrón que handleMatch.
-   * El padre cierra el sheet, este componente no lo hace.
-   */
   const handleReject = () => {
     onReject();
   };
@@ -108,8 +173,27 @@ export function PropertyDetailSheet({
       testID={testID}
     >
       {/* Backdrop semitransparente — permite ver la tarjeta detrás */}
-      <View style={styles.backdrop} testID={testID ? `${testID}-backdrop` : undefined}>
-        {/* Sheet container anclado abajo */}
+      <Animated.View
+        style={[styles.backdrop, { opacity: backdropOpacity }]}
+        testID={testID ? `${testID}-backdrop` : undefined}
+      >
+        {/* Tap on backdrop to dismiss */}
+        <TouchableOpacity
+          style={styles.backdropTouchable}
+          activeOpacity={1}
+          onPress={onClose}
+          accessibilityLabel="Cerrar detalle"
+        />
+      </Animated.View>
+
+      {/* Sheet container — animated for swipe-down */}
+      <Animated.View
+        style={[
+          styles.sheetOuter,
+          { transform: [{ translateY }] },
+        ]}
+        {...panResponder.panHandlers}
+      >
         <GlassPanel intensity="medium" style={styles.sheet}>
           {/* Handle visual superior (convención UI para bottom sheets) */}
           <View style={styles.handleWrapper} testID={testID ? `${testID}-handle` : undefined}>
