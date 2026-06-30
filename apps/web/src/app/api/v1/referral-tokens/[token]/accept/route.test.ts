@@ -167,7 +167,7 @@ describe('POST /api/v1/referral-tokens/[token]/accept', () => {
     const res = await POST(makeRequest(), { params: Promise.resolve({ token: MOCK_TOKEN_VALUE }) });
     const body = await res.json();
 
-    expect(body.data.redirectTo).toBe('/swipe');
+    expect(body.data.redirectTo).toBe('/home');
     expect(body.data.agentName).toBeDefined();
   });
 

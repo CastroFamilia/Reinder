@@ -66,7 +66,7 @@ export default async function AgentDashboardPage() {
     .limit(1);
 
   if (!profile || profile.role !== "agent") {
-    redirect("/swipe");
+    redirect("/home");
   }
 
   // ─── Load referral tokens (Story 3.1) ───────────────────────────────────────

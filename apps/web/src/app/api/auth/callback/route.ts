@@ -9,7 +9,7 @@
  * 3. Usamos el cliente Supabase autenticado para leer/escribir user_profiles
  *    (evita la instabilidad del cliente postgres.js en Route Handlers)
  * 4. Si es usuario nuevo → crear user_profile sin terms_accepted_at → /terms
- * 5. Si tiene terms_accepted_at → redirigir a `next` (si existe y es seguro) o /swipe
+ * 5. Si tiene terms_accepted_at → redirigir a `next` (si existe y es seguro) o /home
  *
  * Story 1.6 fix M1: Lee el param `?next=` que signInWithGoogle codificó
  * en la redirectTo URL. Usa getSafeNextPath() para sanitizarlo antes de usarlo.

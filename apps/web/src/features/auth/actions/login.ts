@@ -8,7 +8,7 @@
  * y devuelve la ruta de redirección correspondiente al rol (Story 1.5).
  *
  * Roles y redirecciones:
- * - buyer        → /swipe
+ * - buyer        → /home
  * - agent        → /agent
  * - agency_admin → /agency/listings
  * - platform_admin → /admin
@@ -41,12 +41,19 @@ export async function loginUser(formData: FormData): Promise<LoginResult> {
   });
 
   if (error) {
+    // Email no confirmado — mensaje específico para guiar al usuario
+    if (error.message.toLowerCase().includes("email not confirmed")) {
+      return {
+        error:
+          "Tu email aún no está confirmado. Revisa tu bandeja de entrada y haz clic en el enlace de confirmación.",
+      };
+    }
     // Mensaje genérico de seguridad — no revelar si el email existe
     return { error: "Email o contraseña incorrectos." };
   }
 
   // Leer rol desde user_profiles para determinar el destino correcto
-  let redirectTo = "/swipe"; // fallback seguro
+  let redirectTo = "/home"; // fallback seguro
   try {
     const [profile] = await db
       .select({ role: userProfiles.role })

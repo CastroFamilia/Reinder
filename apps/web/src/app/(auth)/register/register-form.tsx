@@ -153,6 +153,7 @@ export function RegisterForm({ initialNext }: RegisterFormProps = {}) {
   const [emailValue, setEmailValue] = useState("");
   const [pending, setPending] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
+  const [showEmailConfirmation, setShowEmailConfirmation] = useState(false);
 
   const safeNextFromProp = getSafeNextPath(initialNext);
 
@@ -184,6 +185,8 @@ export function RegisterForm({ initialNext }: RegisterFormProps = {}) {
 
       if (result.error) {
         setServerError(result.error);
+      } else if (result.needsEmailConfirmation) {
+        setShowEmailConfirmation(true);
       } else {
         router.refresh();
         router.push(safeNextFromProp || "/home");
@@ -194,6 +197,35 @@ export function RegisterForm({ initialNext }: RegisterFormProps = {}) {
   }
 
   const isSubmitDisabled = !acceptedTc || pending;
+
+  if (showEmailConfirmation) {
+    return (
+      <div style={styles.card}>
+        <div style={styles.logo}>Reinder</div>
+        <div style={{ textAlign: "center", marginTop: "16px" }}>
+          <div style={{ fontSize: "48px", marginBottom: "16px" }}>📧</div>
+          <h2 style={{ color: "#F5F0E8", fontSize: "20px", fontWeight: 600, marginBottom: "12px" }}>
+            Revisa tu email
+          </h2>
+          <p style={{ color: "#9E9080", fontSize: "14px", lineHeight: "1.6", marginBottom: "24px" }}>
+            Hemos enviado un enlace de confirmación a <strong style={{ color: "#F5F0E8" }}>{emailValue}</strong>.
+            Haz clic en el enlace para activar tu cuenta.
+          </p>
+          <a
+            href="/login"
+            style={{
+              ...styles.btnPrimary,
+              display: "inline-block",
+              textDecoration: "none",
+              textAlign: "center",
+            }}
+          >
+            Ir a iniciar sesión
+          </a>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div style={styles.card}>

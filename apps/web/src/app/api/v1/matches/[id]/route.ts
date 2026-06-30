@@ -2,96 +2,207 @@
  * apps/web/src/app/api/v1/matches/[id]/route.ts
  *
  * PATCH /api/v1/matches/{id}/confirm — Confirma un match desde el recap.
- *   Marca el match como confirmado y notifica al agente representante (si existe vínculo).
+ *   The {id} can be either a match_events.id OR a listing_id.
+ *   Sets confirmed_at = now() on the match_events row.
+ *   Verifies the match belongs to the authenticated buyer.
  *
  * DELETE /api/v1/matches/{id} — Descarta un match desde el recap.
- *   Elimina el match del historial del comprador.
+ *   The {id} can be either a match_events.id OR a listing_id.
+ *   Deletes the match_events row (only if it belongs to the authenticated buyer).
  *
- * NOTA: Este endpoint es un stub de confirmación. La persistencia real en Supabase
- * (UPDATE match_events SET confirmed = true) y la verificación RLS (buyer_id === userId del JWT)
- * se activarán junto con la autenticación completa en Epic 3.
+ * NOTE: The mobile recap screen passes listing IDs (not match event IDs),
+ * so we look up by both match_events.id and match_events.listing_id.
+ *
+ * Backlog Item 3: Fix — implements real persistence replacing the stub.
  *
  * Source: architecture.md#API & Communication Patterns
  * Source: epics.md#Story-2.6 (AC3, AC4)
- * Source: story 2-6-match-recap-screen.md (Task 5)
  */
-import { NextResponse } from 'next/server';
-import type { ApiResponse } from '@reinder/shared';
+import { NextResponse } from "next/server";
+import { authenticateApiRequest } from "@/lib/supabase/api-auth";
+import { db } from "@/lib/supabase/db";
+import { matchEvents } from "@reinder/shared/db/schema";
+import { eq, and, or } from "drizzle-orm";
+import type { ApiResponse } from "@reinder/shared";
 
 interface RouteParams {
   params: Promise<{ id: string }>;
 }
 
-
 /**
  * PATCH /api/v1/matches/{id}/confirm
- * Confirma un match desde el recap — marca como reforzado y notifica al agente.
+ * Confirma un match desde el recap — sets confirmed_at = now().
  */
 export async function PATCH(
   _request: Request,
-  { params }: RouteParams,
-): Promise<NextResponse<ApiResponse<{ confirmed: boolean; matchId: string }>>> {
+  { params }: RouteParams
+): Promise<
+  NextResponse<ApiResponse<{ confirmed: boolean; matchId: string }>>
+> {
   try {
     const { id } = await params;
 
     if (!id) {
       return NextResponse.json(
-        { data: null, error: { code: 'INVALID_INPUT', message: 'matchId es requerido' } },
-        { status: 400 },
+        {
+          data: null,
+          error: {
+            code: "INVALID_INPUT",
+            message: "matchId es requerido",
+          },
+        },
+        { status: 400 }
       );
     }
 
-    // TODO (Epic 3): implementar con Supabase:
-    // 1. Obtener userId del JWT: const { data: { user } } = await supabase.auth.getUser(token)
-    // 2. Verificar que match_events.buyer_id === userId (RLS protege pero conviene verificar explícitamente)
-    // 3. UPDATE match_events SET confirmed = true, confirmed_at = now() WHERE id = {id}
-    // 4. Si buyer tiene agente vinculado (leftjoin referral_tokens), emitir:
-    //    supabase.channel('agent-{agentId}').send({ type: 'broadcast', event: 'match.created', payload: { matchId: id } })
+    // Auth: supports both cookies (web) and Bearer token (mobile)
+    const auth = await authenticateApiRequest(_request);
+
+    if (!auth.user) {
+      return NextResponse.json(
+        {
+          data: null,
+          error: { code: "UNAUTHORIZED", message: auth.error },
+        },
+        { status: 401 }
+      );
+    }
+
+    const user = auth.user;
+
+    // Update match_events: set confirmed_at = now()
+    // The ID may be a match_events.id OR a listing_id (mobile recap sends listing IDs)
+    // Only update if the match belongs to this buyer
+    const [updated] = await db
+      .update(matchEvents)
+      .set({ confirmedAt: new Date() })
+      .where(
+        and(
+          or(
+            eq(matchEvents.id, id),
+            eq(matchEvents.listingId, id)
+          ),
+          eq(matchEvents.buyerId, user.id)
+        )
+      )
+      .returning({ id: matchEvents.id });
+
+    if (!updated) {
+      return NextResponse.json(
+        {
+          data: null,
+          error: {
+            code: "NOT_FOUND",
+            message: "Match no encontrado o no pertenece a este usuario",
+          },
+        },
+        { status: 404 }
+      );
+    }
 
     return NextResponse.json({
       data: { confirmed: true, matchId: id },
       error: null,
     });
-  } catch {
+  } catch (err) {
+    console.error("[matches/confirm] Error:", err);
     return NextResponse.json(
-      { data: null, error: { code: 'SERVER_ERROR', message: 'Error interno del servidor' } },
-      { status: 500 },
+      {
+        data: null,
+        error: {
+          code: "SERVER_ERROR",
+          message: "Error interno del servidor",
+        },
+      },
+      { status: 500 }
     );
   }
 }
 
 /**
  * DELETE /api/v1/matches/{id}
- * Descarta un match desde el recap — elimina del historial del comprador.
+ * Descarta un match desde el recap — deletes the match_events row.
  */
 export async function DELETE(
   _request: Request,
-  { params }: RouteParams,
-): Promise<NextResponse<ApiResponse<{ deleted: boolean; matchId: string }>>> {
+  { params }: RouteParams
+): Promise<
+  NextResponse<ApiResponse<{ deleted: boolean; matchId: string }>>
+> {
   try {
     const { id } = await params;
 
     if (!id) {
       return NextResponse.json(
-        { data: null, error: { code: 'INVALID_INPUT', message: 'matchId es requerido' } },
-        { status: 400 },
+        {
+          data: null,
+          error: {
+            code: "INVALID_INPUT",
+            message: "matchId es requerido",
+          },
+        },
+        { status: 400 }
       );
     }
 
-    // TODO (Epic 3): implementar con Supabase:
-    // 1. Obtener userId del JWT
-    // 2. DELETE FROM match_events WHERE id = {id} AND buyer_id = userId (RLS garantiza esto)
-    // 3. Verificar que se eliminó al menos 1 fila (si 0, retornar 404)
-    // 4. No emitir evento Realtime — el agente no recibe notificación de descarte
+    // Auth: supports both cookies (web) and Bearer token (mobile)
+    const auth = await authenticateApiRequest(_request);
+
+    if (!auth.user) {
+      return NextResponse.json(
+        {
+          data: null,
+          error: { code: "UNAUTHORIZED", message: auth.error },
+        },
+        { status: 401 }
+      );
+    }
+
+    const user = auth.user;
+
+    // Delete match_events row — only if it belongs to this buyer
+    // The ID may be a match_events.id OR a listing_id (mobile recap sends listing IDs)
+    const [deleted] = await db
+      .delete(matchEvents)
+      .where(
+        and(
+          or(
+            eq(matchEvents.id, id),
+            eq(matchEvents.listingId, id)
+          ),
+          eq(matchEvents.buyerId, user.id)
+        )
+      )
+      .returning({ id: matchEvents.id });
+
+    if (!deleted) {
+      return NextResponse.json(
+        {
+          data: null,
+          error: {
+            code: "NOT_FOUND",
+            message: "Match no encontrado o no pertenece a este usuario",
+          },
+        },
+        { status: 404 }
+      );
+    }
 
     return NextResponse.json({
       data: { deleted: true, matchId: id },
       error: null,
     });
-  } catch {
+  } catch (err) {
+    console.error("[matches/delete] Error:", err);
     return NextResponse.json(
-      { data: null, error: { code: 'SERVER_ERROR', message: 'Error interno del servidor' } },
-      { status: 500 },
+      {
+        data: null,
+        error: {
+          code: "SERVER_ERROR",
+          message: "Error interno del servidor",
+        },
+      },
+      { status: 500 }
     );
   }
 }

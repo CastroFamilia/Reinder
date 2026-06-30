@@ -46,11 +46,11 @@ export default async function ExperimentsPage() {
     // Redirect based on role
     if (profile?.role === "agent") redirect("/agent");
     if (profile?.role === "platform_admin") redirect("/admin");
-    redirect("/swipe");
+    redirect("/home");
   }
 
   if (!profile.agencyId) {
-    redirect("/swipe");
+    redirect("/home");
   }
 
   // Fetch experiments with listing data

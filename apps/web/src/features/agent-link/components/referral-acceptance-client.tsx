@@ -52,9 +52,9 @@ export function ReferralAcceptanceClient({
         return;
       }
 
-      // Redirect to swipe with toast info
+      // Redirect to home with toast info
       const agentName = body.data.agentName ?? 'Tu agente';
-      router.push(`/swipe?toast=bond_accepted&agent=${encodeURIComponent(agentName)}`);
+      router.push(`/home?toast=bond_accepted&agent=${encodeURIComponent(agentName)}`);
     } catch {
       setError('Error de conexión. Intenta de nuevo.');
       setIsLoading(false);
@@ -62,7 +62,7 @@ export function ReferralAcceptanceClient({
   }
 
   function handleReject() {
-    router.push('/swipe');
+    router.push('/home');
   }
 
   return (

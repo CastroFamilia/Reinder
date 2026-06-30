@@ -8,8 +8,8 @@ import { describe, it, expect } from "vitest";
 import { getRedirectPathForRole } from "./login.lib";
 
 describe("getRedirectPathForRole", () => {
-  it("redirige buyer a /swipe", () => {
-    expect(getRedirectPathForRole("buyer")).toBe("/swipe");
+  it("redirige buyer a /home", () => {
+    expect(getRedirectPathForRole("buyer")).toBe("/home");
   });
 
   it("redirige agent a /agent", () => {
@@ -24,8 +24,8 @@ describe("getRedirectPathForRole", () => {
     expect(getRedirectPathForRole("platform_admin")).toBe("/admin");
   });
 
-  it("usa /swipe como fallback cuando role es undefined (sin perfil en DB)", () => {
-    expect(getRedirectPathForRole(undefined)).toBe("/swipe");
+  it("usa /home como fallback cuando role es undefined (sin perfil en DB)", () => {
+    expect(getRedirectPathForRole(undefined)).toBe("/home");
   });
 
   it("el resultado siempre empieza con '/' (path interno seguro)", () => {

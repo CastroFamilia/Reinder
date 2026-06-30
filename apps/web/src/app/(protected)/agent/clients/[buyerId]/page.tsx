@@ -69,7 +69,7 @@ export default async function ClientHistoryRoute({
     .limit(1);
 
   if (!profile || profile.role !== "agent") {
-    redirect("/swipe");
+    redirect("/home");
   }
 
   const [bond] = await db
