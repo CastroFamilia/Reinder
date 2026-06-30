@@ -114,6 +114,12 @@ Create Story → [Validate Story] → Dev Story → [QA Automation] → [Code Re
 - ✅ Story 9.3: Medición de impacto + dashboard de resultados del experimento (PR #33)
 - 🟡 Stories 9.4–9.6: ready-for-dev (auto-promoción ganadora, recomendaciones proactivas, generación IA)
 
+**🧪 Sesión 2026-06-30 — Registro Web, Redirects y Swipe Mobile View Modes:**
+- ✅ **Flujo de Registro & Callbacks**: Corregida redirección y visualización de pantalla de confirmación de email; mejorada la robustez al usar el cliente Supabase autenticado en API Route Handlers.
+- ✅ **Modos de Vista Swipe Mobile**: Agregada alternancia entre vistas `cover` (foto completa) y `detail` (tarjeta dividida con datos visibles directamente: m², habitaciones, ubicación, descripción) en el feed móvil con un toggle persistente (Zustand/AsyncStorage). Removidos mocks y agregada resiliencia nativa con empty/error states.
+- ✅ **Realtime en Web**: Integrado `RealtimeMatchesListener` en la sección de matches de la web para sincronización en tiempo real.
+- ✅ **Base de Datos & Semillas**: Creada migración SQL para vincular `agency_id` en `user_profiles` e implementado script de seed para Listings de RE/MAX.
+
 #### 🕳️ Agujeros Identificados (Sesión 2026-05-22) — Estado Actualizado
 
 | # | Agujero | Impacto | Prioridad | Estado |
@@ -125,7 +131,7 @@ Create Story → [Validate Story] → Dev Story → [QA Automation] → [Code Re
 | 5 | **Listing detail Epic 6 vs 11** — auditoría | 🟡 Medio | P2 | 🟡 Parcial — listing detail modificado |
 | 6 | **Sin concepto de "plan" en schema de agencias** | 🟡 Medio | P3 | ❌ Pendiente |
 
-**Siguiente:** Epic 9 stories 9.4–9.6 → Email transaccional (G4) → Plan schema (G6) → Epic 10
+**Siguiente:** Continuar con Epic 9 stories 9.4–9.6 → Email transaccional (G4) → Plan schema (G6) → Epic 10
 
 
 ---

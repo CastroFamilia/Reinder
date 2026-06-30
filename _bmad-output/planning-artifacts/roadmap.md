@@ -166,4 +166,4 @@
 
 ---
 
-*Última actualización: 2026-06-29 — Epic 9 en progreso (3/6 done: stories 9.1–9.3, PRs #25 #32 #33). Gaps G1 y G3 resueltos. Stories 9.4–9.6 ready-for-dev.*
+*Última actualización: 2026-06-30 — Epic 9 en progreso (3/6 done: stories 9.1–9.3). Sesión 2026-06-30: Registro web corregido (email check modal y client Supabase), realtime listener en matches de la web, view modes 'cover'/'detail' con toggle persistente en app móvil, script de semilla RE/MAX, migración de base de datos de agencias.*
