@@ -18,6 +18,7 @@ import {
 import { eq, and, desc, count } from "drizzle-orm";
 import type { Metadata } from "next";
 import Link from "next/link";
+import { RealtimeMatchesListener } from "@/features/matches/components/realtime-matches-listener";
 
 export const metadata: Metadata = {
   title: "Inicio — Reinder",
@@ -104,6 +105,7 @@ export default async function BuyerHomePage() {
 
   return (
     <div className="bg-gradient-radial" style={{ minHeight: "100vh", padding: "40px 24px" }}>
+      <RealtimeMatchesListener userId={user.id} />
       <div style={{ maxWidth: "var(--max-width)", margin: "0 auto" }}>
         {/* Welcome header */}
         <section className="animate-fade-in" style={{ opacity: 0, marginBottom: "48px" }}>

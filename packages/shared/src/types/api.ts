@@ -28,4 +28,11 @@ export type MatchHistoryItem = {
   listingStatus: 'active' | 'sold' | 'withdrawn';
   matchedAt: string; // ISO 8601
   confirmed: boolean;
+  // Extended listing fields for detail view (optional for backward compat)
+  title?: string;
+  description?: string;
+  rooms?: number;
+  squareMeters?: number;
+  floor?: string;
+  imageUrls?: string[];
 };

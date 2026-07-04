@@ -42,7 +42,7 @@ export function useAuthSession(): AuthSessionState {
       if (event === 'SIGNED_OUT') {
         useSearchStore.getState().reset();
         useSwipeStore.getState().fullClear();
-        useMatchHistoryStore.getState().clearHistory();
+        useMatchHistoryStore.getState().fullClear();
       }
     });
 

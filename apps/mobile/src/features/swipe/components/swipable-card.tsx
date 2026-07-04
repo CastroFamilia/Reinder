@@ -26,6 +26,8 @@ interface SwipableCardProps {
   onReject: () => void;
   /** Callback para abrir el bottom sheet de detalle (Story 2.5). */
   onInfo?: () => void;
+  /** View mode: 'cover' (fullscreen photo) or 'detail' (photo + data panel) */
+  viewMode?: 'cover' | 'detail';
   testID?: string;
 }
 
@@ -39,7 +41,7 @@ interface SwipableCardProps {
  *
  * La tarjeta ocupa todo el espacio disponible del contenedor padre.
  */
-export function SwipableCard({ listing, onMatch, onReject, onInfo, testID }: SwipableCardProps) {
+export function SwipableCard({ listing, onMatch, onReject, onInfo, viewMode, testID }: SwipableCardProps) {
   const { panGesture, animatedCardStyle, translateX } = useSwipeGesture({
     onMatch,
     onReject,
@@ -91,7 +93,7 @@ export function SwipableCard({ listing, onMatch, onReject, onInfo, testID }: Swi
     <GestureDetector gesture={composed}>
       <Animated.View style={[styles.container, animatedCardStyle]} testID={testID}>
         {/* Tarjeta de propiedad */}
-        <PropertyCard listing={listing} />
+        <PropertyCard listing={listing} viewMode={viewMode} />
 
         {/* Overlay verde — match (swipe derecho) */}
         <Animated.View

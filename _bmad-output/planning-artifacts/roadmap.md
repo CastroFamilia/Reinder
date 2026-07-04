@@ -95,12 +95,12 @@
 | **8.5** | Dashboard de Analytics por Listing para Agencias | 4 | ☝️ Activar `pg_cron` jobs de aggregation en Supabase | ✅ done |
 | **8.6** | Buyer Intent Score en Panel del Agente | 3 | — | ✅ done |
 | **8.7** | Aggregation Jobs para Read Models de Analytics | 3 | — | ✅ done |
-| **9.1** | Schema de Experimentos y Motor de Asignación de Variantes | 4 | ☝️ Migración SQL: tablas `listing_experiments`, `experiment_assignments` | 🔵 backlog |
-| **9.2** | UI de Creación de Experimento para Agencias (Portada A/B) | 3 | — | 🔵 backlog |
-| **9.3** | Medición de Impacto y Dashboard de Resultados del Experimento | 3 | — | 🔵 backlog |
-| **9.4** | Auto-promoción de Variante Ganadora al Alcanzar Significancia | 4 | — | 🔵 backlog |
-| **9.5** | Recomendaciones Proactivas de Experimentos para Listings Underperforming | 2 | — | 🔵 backlog |
-| **9.6** | Generación de Variantes de Título y Descripción con IA (Human-in-the-loop) | 5 | ☝️ Integración OpenAI GPT-4o: API key + prompt engineering + UI de aprobación | 🔵 backlog |
+| **9.1** | Schema de Experimentos y Motor de Asignación de Variantes | 4 | ☝️ Migración SQL: tablas `listing_experiments`, `experiment_assignments` | ✅ done — PR #25 |
+| **9.2** | UI de Creación de Experimento para Agencias (Portada A/B) | 3 | — | ✅ done — PR #32 |
+| **9.3** | Medición de Impacto y Dashboard de Resultados del Experimento | 3 | — | ✅ done — PR #33 |
+| **9.4** | Auto-promoción de Variante Ganadora al Alcanzar Significancia | 4 | — | 🟡 ready-for-dev |
+| **9.5** | Recomendaciones Proactivas de Experimentos para Listings Underperforming | 2 | — | 🟡 ready-for-dev |
+| **9.6** | Generación de Variantes de Título y Descripción con IA (Human-in-the-loop) | 5 | ☝️ Integración OpenAI GPT-4o: API key + prompt engineering + UI de aprobación | 🟡 ready-for-dev |
 | **10.1** | Buyer Preference Vector — Generación y Persistencia | 5 | ☝️ Migración SQL: tabla `buyer_preference_vectors` + evaluación legal GDPR | 🔵 backlog |
 | **10.2** | Listing Fit Score — Cálculo de Afinidad Listing × Comprador | 4 | — | 🔵 backlog |
 | **10.3** | Personalización de Foto de Portada en Swipe Feed | 4 | — | 🔵 backlog |
@@ -131,9 +131,9 @@
 
 | # | Agujero | Impacto | Prioridad | Estado |
 |---|---|---|---|---|
-| G1 | Onboarding post-registro vacío (cold start) | 🔴 Crítico | P1 | ❌ pendiente |
+| G1 | ~~Onboarding post-registro vacío (cold start)~~ | ~~🔴 Crítico~~ | ~~P1~~ | ✅ **ya resuelto** — Story 2.9 swipe-card onboarding sirve como tutorial + setup de preferencias |
 | G2 | ~~9 stories `bad-to-check` sin verificación humana~~ | ~~🔴 Crítico~~ | ~~P1~~ | ✅ **resuelto** — Epics 2, 3 verificados; Epic 5 re-implementado (2026-06-19) |
-| G3 | Sin "next step" para compradores sin agente (70% de usuarios) | 🔴 Crítico | P1 | 🟡 parcial — NoAgentBanner integrado |
+| G3 | ~~Sin "next step" para compradores sin agente (70% de usuarios)~~ | ~~🔴 Crítico~~ | ~~P1~~ | ✅ **ya resuelto** — compradores sin bond ven al listing agent original; el bond lo reemplaza con el representante (Story 3.4) |
 | G4 | Sin email transaccional ni canal de re-engagement | 🟠 Alto | P2 | ❌ pendiente |
 | G5 | Listing detail duplicado (Epic 6 vs Epic 11) — auditoría necesaria | 🟡 Medio | P2 | 🟡 parcial — listing detail modificado |
 | G6 | Sin concepto de "plan" en schema de agencias para monetización | 🟡 Medio | P3 | ❌ pendiente |
@@ -166,4 +166,4 @@
 
 ---
 
-*Última actualización: 2026-06-19 — Epics 2, 3 verificados (bad-to-check → done). Epic 5 re-implementado en main (5.2-5.4 nunca fueron mergeados del worktree). Gap G2 resuelto. G3 parcialmente resuelto con NoAgentBanner.*
+*Última actualización: 2026-06-30 — Epic 9 en progreso (3/6 done: stories 9.1–9.3). Sesión 2026-06-30: Registro web corregido (email check modal y client Supabase), realtime listener en matches de la web, view modes 'cover'/'detail' con toggle persistente en app móvil, script de semilla RE/MAX, migración de base de datos de agencias.*

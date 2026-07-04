@@ -39,7 +39,7 @@ export default async function AgencyListingsPage() {
 
   if (!profile || profile.role !== "agency_admin") {
     // Buyer, agent o platform_admin no deben acceder a /agency/listings
-    redirect("/swipe");
+    redirect("/home");
   }
 
   return (

@@ -123,7 +123,7 @@ export async function POST(_req: NextRequest, { params }: RouteParams) {
           bondId: result.bond!.id,
           agentId: result.agentId,
           agentName,
-          redirectTo: '/swipe',
+          redirectTo: '/home',
           toastMessage: `${agentName} es ahora tu agente representante`,
         },
         error: null,

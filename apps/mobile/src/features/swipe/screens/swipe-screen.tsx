@@ -42,6 +42,8 @@ import { supabase } from '../../../lib/supabase';
 import { useSearchStore } from '../../../stores/use-search-store';
 import { SearchOnboardingModal } from '../../search/components/search-onboarding-modal';
 import { SearchFiltersModal } from '../../search/components/search-filters-modal';
+import { ViewModeToggle } from '../components/view-mode-toggle';
+import { useViewModeStore } from '../../../stores/use-view-mode-store';
 import type { SearchPreferences } from '@reinder/shared';
 
 export function SwipeScreen({
@@ -78,6 +80,9 @@ export function SwipeScreen({
   // Story 2.9: search preferences store
   const { preferences, hasCompletedOnboarding, setPreferences, markOnboardingDone } = useSearchStore();
   const [isFiltersModalVisible, setIsFiltersModalVisible] = useState(false);
+
+  // View mode: cover (fullscreen photo) or detail (photo + data panel)
+  const { viewMode, setViewMode } = useViewModeStore();
 
   const [isMatchPayoffVisible, setIsMatchPayoffVisible] = useState(false);
   /**
@@ -249,8 +254,13 @@ export function SwipeScreen({
     <ScreenBackground>
       <View style={styles.container} testID={testID}>
 
-        {/* Story 2.9: botón ⚙️ para editar filtros (AC4) */}
+        {/* Story 2.9: botón ⚙️ para editar filtros (AC4) + View mode toggle */}
         <View style={styles.headerRow}>
+          <ViewModeToggle
+            viewMode={viewMode}
+            onToggle={setViewMode}
+            testID="view-mode-toggle"
+          />
           <TouchableOpacity
             onPress={() => setIsFiltersModalVisible(true)}
             style={styles.filterBtn}
@@ -288,7 +298,7 @@ export function SwipeScreen({
               {/* Tarjeta siguiente — fija detrás, ligeramente más pequeña */}
               {prefetchQueue[0] && (
                 <View style={styles.backCard}>
-                  <PropertyCard listing={prefetchQueue[0]} />
+                  <PropertyCard listing={prefetchQueue[0]} viewMode={viewMode} />
                 </View>
               )}
               {/* Tarjeta activa — gesturable. key=listing.id fuerza remount en cada tarjeta
@@ -300,6 +310,7 @@ export function SwipeScreen({
                 onMatch={handleMatch}
                 onReject={handleReject}
                 onInfo={handleInfo}
+                viewMode={viewMode}
                 testID="swipe-card"
               />
             </View>
@@ -406,6 +417,9 @@ const styles = StyleSheet.create({
     top: 48,
     right: Spacing.md,
     zIndex: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
   },
   filterBtn: {
     width: 36,

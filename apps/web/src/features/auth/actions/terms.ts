@@ -48,5 +48,5 @@ export async function acceptTerms(): Promise<void> {
     redirect("/terms?error=update_failed");
   }
 
-  redirect("/swipe");
+  redirect("/home");
 }

@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RE/MAX ALTITUD — API Test · Reinder</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0d0f14;
+      --surface: #161a22;
+      --surface2: #1e2330;
+      --border: #252c3d;
+      --accent: #e53535;
+      --accent2: #ff6b35;
+      --gold: #f5c842;
+      --text: #f0f2f7;
+      --muted: #7a8299;
+      --green: #22c55e;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* ── Header ── */
+    header {
+      background: linear-gradient(135deg, #1a0a0a 0%, #0d0f14 60%, #0a1020 100%);
+      border-bottom: 1px solid var(--border);
+      padding: 20px 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      backdrop-filter: blur(20px);
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .logo-badge {
+      background: var(--accent);
+      color: #fff;
+      font-weight: 700;
+      font-size: 12px;
+      padding: 4px 10px;
+      border-radius: 6px;
+      letter-spacing: 1px;
+    }
+
+    .logo-title {
+      font-size: 18px;
+      font-weight: 600;
+    }
+
+    .logo-sub {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+
+    .api-status {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--green);
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: .4; }
+    }
+
+    /* ── Stats bar ── */
+    .stats-bar {
+      display: flex;
+      gap: 24px;
+      padding: 16px 32px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      overflow-x: auto;
+    }
+
+    .stat {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      white-space: nowrap;
+    }
+
+    .stat-val {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .stat-val.accent { color: var(--accent); }
+    .stat-val.gold { color: var(--gold); }
+    .stat-val.green { color: var(--green); }
+
+    .stat-label {
+      font-size: 11px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .5px;
+    }
+
+    /* ── Filters ── */
+    .filters {
+      padding: 16px 32px;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .filter-btn {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      color: var(--muted);
+      padding: 7px 16px;
+      border-radius: 100px;
+      font-size: 13px;
+      cursor: pointer;
+      transition: all .2s;
+    }
+
+    .filter-btn:hover, .filter-btn.active {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+    }
+
+    .search-input {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 7px 16px;
+      border-radius: 100px;
+      font-size: 13px;
+      font-family: inherit;
+      outline: none;
+      transition: border-color .2s;
+      min-width: 220px;
+    }
+
+    .search-input:focus { border-color: var(--accent); }
+    .search-input::placeholder { color: var(--muted); }
+
+    /* ── Grid ── */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+      gap: 20px;
+      padding: 24px 32px;
+    }
+
+    /* ── Card ── */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+      transition: transform .25s, box-shadow .25s, border-color .25s;
+      display: flex;
+      flex-direction: column;
+      animation: fadeIn .4s ease both;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 20px 60px rgba(0,0,0,.5);
+      border-color: rgba(229,53,53,.35);
+    }
+
+    /* Image */
+    .card-img-wrap {
+      position: relative;
+      height: 210px;
+      overflow: hidden;
+      background: var(--surface2);
+    }
+
+    .card-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform .4s;
+    }
+
+    .card:hover .card-img { transform: scale(1.04); }
+
+    .card-type {
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      background: rgba(13,15,20,.75);
+      backdrop-filter: blur(8px);
+      color: var(--text);
+      font-size: 11px;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 100px;
+      border: 1px solid rgba(255,255,255,.1);
+      letter-spacing: .5px;
+    }
+
+    .img-count {
+      position: absolute;
+      bottom: 10px;
+      right: 10px;
+      background: rgba(13,15,20,.75);
+      backdrop-filter: blur(8px);
+      color: var(--muted);
+      font-size: 11px;
+      padding: 3px 8px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    /* Body */
+    .card-body {
+      padding: 16px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .card-price {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--gold);
+      letter-spacing: -.5px;
+    }
+
+    .card-title {
+      font-size: 14px;
+      font-weight: 500;
+      line-height: 1.5;
+      color: var(--text);
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .card-location {
+      font-size: 12px;
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .card-specs {
+      display: flex;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
+
+    .spec {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .spec strong { color: var(--text); font-weight: 600; }
+
+    .card-footer {
+      padding: 12px 16px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .agent {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .agent strong { color: var(--text); }
+
+    .card-id {
+      font-size: 11px;
+      color: var(--border);
+      font-family: monospace;
+    }
+
+    /* Loading / empty */
+    .loading-wrap, .empty-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 80px 32px;
+      color: var(--muted);
+      gap: 16px;
+    }
+
+    .spinner {
+      width: 44px;
+      height: 44px;
+      border: 3px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .error-box {
+      background: rgba(229,53,53,.1);
+      border: 1px solid rgba(229,53,53,.3);
+      border-radius: 12px;
+      padding: 20px 24px;
+      margin: 24px 32px;
+      color: #ff8080;
+      font-size: 14px;
+    }
+
+    /* Tag chips */
+    .tags {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .tag {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 100px;
+    }
+
+    .tag.green { background: rgba(34,197,94,.1); border-color: rgba(34,197,94,.3); color: var(--green); }
+    .tag.red   { background: rgba(229,53,53,.1);  border-color: rgba(229,53,53,.3);  color: #ff8080; }
+
+    /* Raw JSON panel */
+    .raw-btn {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      color: var(--muted);
+      padding: 7px 16px;
+      border-radius: 8px;
+      font-size: 12px;
+      cursor: pointer;
+      font-family: monospace;
+      margin: 0 32px 24px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: .2s;
+    }
+    .raw-btn:hover { border-color: var(--accent); color: var(--text); }
+
+    .raw-panel {
+      display: none;
+      background: #0a0b0f;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      margin: 0 32px 32px;
+      padding: 20px;
+      overflow-x: auto;
+    }
+
+    .raw-panel pre {
+      font-size: 11px;
+      color: #7aba8a;
+      white-space: pre-wrap;
+      font-family: 'Courier New', monospace;
+      line-height: 1.6;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-badge">REMAX</div>
+    <div>
+      <div class="logo-title">RE/MAX ALTITUD</div>
+      <div class="logo-sub">API Test — Reinder Integration</div>
+    </div>
+  </div>
+  <div class="api-status">
+    <div class="status-dot" id="statusDot"></div>
+    <span id="statusText">Conectando...</span>
+  </div>
+</header>
+
+<div class="stats-bar" id="statsBar" style="display:none;">
+  <div class="stat">
+    <span class="stat-val accent" id="totalCount">—</span>
+    <span class="stat-label">Propiedades</span>
+  </div>
+  <div class="stat">
+    <span class="stat-val gold" id="avgPrice">—</span>
+    <span class="stat-label">Precio Promedio</span>
+  </div>
+  <div class="stat">
+    <span class="stat-val green" id="minPrice">—</span>
+    <span class="stat-label">Precio Mínimo</span>
+  </div>
+  <div class="stat">
+    <span class="stat-val" id="maxPrice">—</span>
+    <span class="stat-label">Precio Máximo</span>
+  </div>
+  <div class="stat">
+    <span class="stat-val" id="houseCount">—</span>
+    <span class="stat-label">Casas/Villas</span>
+  </div>
+  <div class="stat">
+    <span class="stat-val" id="landCount">—</span>
+    <span class="stat-label">Terrenos</span>
+  </div>
+  <div class="stat">
+    <span class="stat-val" id="officeId">218</span>
+    <span class="stat-label">Office ID</span>
+  </div>
+</div>
+
+<div class="filters" id="filtersRow" style="display:none;">
+  <input class="search-input" id="searchInput" type="text" placeholder="🔍  Buscar por título, ubicación..." />
+  <button class="filter-btn active" data-filter="all" id="btn-all">Todos</button>
+  <button class="filter-btn" data-filter="House/Villa" id="btn-house">🏡 Casas</button>
+  <button class="filter-btn" data-filter="Lot/Land" id="btn-land">🌿 Terrenos</button>
+  <button class="filter-btn" data-filter="pool" id="btn-pool">🏊 Con piscina</button>
+  <button class="filter-btn" data-filter="view" id="btn-view">🏔️ Con vista</button>
+</div>
+
+<div id="root">
+  <div class="loading-wrap">
+    <div class="spinner"></div>
+    <div>Cargando propiedades desde RE/MAX CCA API...</div>
+  </div>
+</div>
+
+<button class="raw-btn" id="rawToggle" style="display:none;">
+  { } Ver JSON crudo
+</button>
+<div class="raw-panel" id="rawPanel">
+  <pre id="rawPre"></pre>
+</div>
+
+<script>
+  const API_URL = 'https://api.remax-cca.com/api/PropertiesPerOffice/FEA8746D-CC1D-41B8-89F3-D04AC98274AF';
+
+  const fmt = (n) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(n);
+  const fmtK = (n) => n >= 1000000 ? `$${(n/1000000).toFixed(1)}M` : n >= 1000 ? `$${(n/1000).toFixed(0)}K` : fmt(n);
+
+  let allData = [];
+  let activeFilter = 'all';
+  let searchQuery = '';
+
+  // Icon SVGs inline
+  const icons = {
+    bed:  `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 9V4h20v5M2 22V9m20 13V9M2 14h20"/></svg>`,
+    bath: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6 C9 4.34 10.34 3 12 3 S15 4.34 15 6 v6H9V6z M4 12h16v3a6 6 0 0 1-6 6H10a6 6 0 0 1-6-6v-3z"/></svg>`,
+    lot:  `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>`,
+    loc:  `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/><circle cx="12" cy="9" r="2.5"/></svg>`,
+    img:  `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>`,
+  };
+
+  function renderStats(data) {
+    const prices = data.map(d => d.ListPrice).filter(Boolean);
+    document.getElementById('totalCount').textContent = data.length;
+    document.getElementById('avgPrice').textContent = fmtK(prices.reduce((a,b) => a+b, 0) / prices.length);
+    document.getElementById('minPrice').textContent = fmtK(Math.min(...prices));
+    document.getElementById('maxPrice').textContent = fmtK(Math.max(...prices));
+    document.getElementById('houseCount').textContent = data.filter(d => d.PropertyTypeName_en === 'House/Villa').length;
+    document.getElementById('landCount').textContent = data.filter(d => d.PropertyTypeName_en === 'Lot/Land').length;
+    document.getElementById('statsBar').style.display = 'flex';
+    document.getElementById('filtersRow').style.display = 'flex';
+    document.getElementById('rawToggle').style.display = 'inline-flex';
+  }
+
+  function getFiltered() {
+    return allData.filter(p => {
+      const typeOk =
+        activeFilter === 'all' ? true :
+        activeFilter === 'pool' ? p.PoolPrivate === 'Y' :
+        activeFilter === 'view' ? p.Viewyn === 'Y' :
+        p.PropertyTypeName_en === activeFilter;
+
+      const q = searchQuery.toLowerCase();
+      const searchOk = !q ||
+        (p.ListingTitle_en || '').toLowerCase().includes(q) ||
+        (p.ListingTitle_es || '').toLowerCase().includes(q) ||
+        (p.Location || '').toLowerCase().includes(q) ||
+        (p.UnparsedAddress || '').toLowerCase().includes(q);
+
+      return typeOk && searchOk;
+    });
+  }
+
+  function buildCard(p, index) {
+    const imgs = p.Images ? p.Images.split('|') : [];
+    const mainImg = imgs[0] || '';
+    const imgCount = imgs.length;
+    const isHouse = p.PropertyTypeName_en === 'House/Villa';
+
+    const tags = [];
+    if (p.PoolPrivate === 'Y') tags.push({ label: '🏊 Piscina', cls: 'green' });
+    if (p.Viewyn === 'Y') tags.push({ label: '🏔️ Vista', cls: '' });
+    if (p.GatedCommunity === 'Y') tags.push({ label: '🔒 Cerrado', cls: '' });
+    if (p.Cooling === 'Y') tags.push({ label: '❄️ A/C', cls: '' });
+
+    const tagsHtml = tags.map(t => `<span class="tag ${t.cls}">${t.label}</span>`).join('');
+
+    const specsHtml = [
+      isHouse && p.BedroomsTotal ? `<div class="spec">${icons.bed} <strong>${p.BedroomsTotal}</strong> hab.</div>` : '',
+      isHouse && p.BathroomsFull ? `<div class="spec">${icons.bath} <strong>${p.BathroomsFull}</strong> baños</div>` : '',
+      p.LotSizeArea ? `<div class="spec">${icons.lot} <strong>${p.LotSizeArea.toLocaleString()}</strong> m²</div>` : '',
+      p.ConstructionSize > 0 ? `<div class="spec">${icons.lot} <strong>${p.ConstructionSize}</strong> m² const.</div>` : '',
+    ].join('');
+
+    return `
+      <div class="card" style="animation-delay:${index * 0.04}s">
+        <div class="card-img-wrap">
+          ${mainImg ? `<img class="card-img" src="${mainImg}" alt="${p.ListingTitle_en}" loading="lazy" onerror="this.parentElement.style.background='#1e2330'" />` : ''}
+          <div class="card-type">${p.PropertyTypeName_es || p.PropertyTypeName_en}</div>
+          ${imgCount > 1 ? `<div class="img-count">${icons.img} ${imgCount}</div>` : ''}
+        </div>
+        <div class="card-body">
+          <div class="card-price">${fmt(p.ListPrice)}</div>
+          <div class="card-title">${p.ListingTitle_es || p.ListingTitle_en || 'Sin título'}</div>
+          <div class="card-location">${icons.loc} ${p.Location || ''}, ${p.StateDepProv || ''}, ${p.Country || ''}</div>
+          ${tagsHtml ? `<div class="tags">${tagsHtml}</div>` : ''}
+          <div class="card-specs">${specsHtml}</div>
+        </div>
+        <div class="card-footer">
+          <div class="agent">Agente: <strong>${p.FirstName || ''} ${p.LastName || ''}</strong></div>
+          <div class="card-id">#${p.ListingId}</div>
+        </div>
+      </div>
+    `;
+  }
+
+  function render() {
+    const filtered = getFiltered();
+    const root = document.getElementById('root');
+
+    if (filtered.length === 0) {
+      root.innerHTML = `<div class="empty-wrap"><div style="font-size:48px">🏠</div><div>No hay propiedades que coincidan.</div></div>`;
+      return;
+    }
+
+    root.innerHTML = `<div class="grid">${filtered.map((p, i) => buildCard(p, i)).join('')}</div>`;
+  }
+
+  // Filter buttons
+  document.querySelectorAll('.filter-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      activeFilter = btn.dataset.filter;
+      render();
+    });
+  });
+
+  // Search
+  let searchTimer;
+  document.getElementById('searchInput').addEventListener('input', e => {
+    clearTimeout(searchTimer);
+    searchTimer = setTimeout(() => {
+      searchQuery = e.target.value;
+      render();
+    }, 200);
+  });
+
+  // Raw toggle
+  document.getElementById('rawToggle').addEventListener('click', () => {
+    const panel = document.getElementById('rawPanel');
+    if (panel.style.display === 'block') {
+      panel.style.display = 'none';
+      document.getElementById('rawToggle').textContent = '{ } Ver JSON crudo';
+    } else {
+      panel.style.display = 'block';
+      document.getElementById('rawPre').textContent = JSON.stringify(allData.slice(0,3), null, 2) + '\n\n// ... ' + allData.length + ' items total';
+      document.getElementById('rawToggle').textContent = '✕ Ocultar JSON';
+    }
+  });
+
+  // Fetch data
+  async function load() {
+    try {
+      const res = await fetch(API_URL);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      allData = await res.json();
+
+      document.getElementById('statusDot').style.background = 'var(--green)';
+      document.getElementById('statusText').textContent = `API activa · ${allData.length} propiedades`;
+
+      renderStats(allData);
+      render();
+    } catch (err) {
+      document.getElementById('statusDot').style.background = 'var(--accent)';
+      document.getElementById('statusText').textContent = 'Error de conexión';
+      document.getElementById('root').innerHTML = `
+        <div class="error-box">
+          <strong>❌ Error al conectar con la API</strong><br/><br/>
+          ${err.message}<br/><br/>
+          <code style="font-size:12px;opacity:.7">${API_URL}</code><br/><br/>
+          <small>Tip: Si hay un error CORS, abre este archivo desde un servidor local.</small>
+        </div>
+      `;
+    }
+  }
+
+  load();
+</script>
+</body>
+</html>

@@ -35,7 +35,7 @@ export default async function CreateExperimentPage() {
     .limit(1);
 
   if (!profile || profile.role !== "agency_admin" || !profile.agencyId) {
-    redirect("/swipe");
+    redirect("/home");
   }
 
   // Fetch active listings for this agency

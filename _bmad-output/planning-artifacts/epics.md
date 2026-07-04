@@ -362,16 +362,22 @@ La plataforma ofrece a las agencias un motor de A/B testing para sus portadas, t
 ---
 
 ### Story 9.1: Schema de Experimentos y Motor de Asignación de Variantes
+**GH Issue:** #25
 
 ### Story 9.2: UI de Creación de Experimento para Agencias (Portada A/B)
+**GH Issue:** #26
 
 ### Story 9.3: Medición de Impacto y Dashboard de Resultados del Experimento
+**GH Issue:** #27
 
 ### Story 9.4: Auto-promoción de Variante Ganadora al Alcanzar Significancia
+**GH Issue:** #28
 
 ### Story 9.5: Recomendaciones Proactivas de Experimentos para Listings Underperforming
+**GH Issue:** #29
 
 ### Story 9.6: Generación de Variantes de Título y Descripción con IA (Human-in-the-loop)
+**GH Issue:** #30
 
 > 📝 *Stories 9.1–9.6 pendientes de desarrollo completo de Acceptance Criteria — ejecutar `create story [id]` cuando la Epic 8 esté completada al 80%.*
 

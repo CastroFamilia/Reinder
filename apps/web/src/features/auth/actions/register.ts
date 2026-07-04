@@ -16,6 +16,7 @@ import { userProfiles } from "@reinder/shared/db/schema";
 
 export interface RegisterResult {
   success?: true;
+  needsEmailConfirmation?: true;
   error?: string;
 }
 
@@ -47,6 +48,24 @@ export async function registerUser(formData: FormData): Promise<RegisterResult> 
     return { error: error.message };
   }
 
+  // Detectar si Supabase requiere confirmación de email.
+  // Cuando está habilitado, signUp devuelve data.user (para insertar el perfil)
+  // pero NO devuelve data.session (el usuario no puede navegar a rutas protegidas).
+  // También detectar "fake user" (identities vacías) que Supabase devuelve
+  // cuando el email ya existe y email confirmation está habilitado.
+  const needsEmailConfirmation = !data.session;
+  const isFakeUser =
+    data.user && (!data.user.identities || data.user.identities.length === 0);
+
+  if (isFakeUser) {
+    // Email ya registrado pero Supabase no revela eso por seguridad.
+    // El usuario "fake" no debe insertarse en user_profiles.
+    return {
+      error:
+        "Ya existe una cuenta con este email. ¿Quieres iniciar sesión?",
+    };
+  }
+
   if (data.user) {
     try {
       await db.insert(userProfiles).values({
@@ -62,6 +81,10 @@ export async function registerUser(formData: FormData): Promise<RegisterResult> 
           "No se pudo completar el registro. Por favor, inténtalo de nuevo.",
       };
     }
+  }
+
+  if (needsEmailConfirmation) {
+    return { success: true, needsEmailConfirmation: true };
   }
 
   return { success: true };

@@ -11,7 +11,7 @@
  * Source: epics.md#Story-2.6
  * Source: ux-design-specification.md#Component-Strategy (MatchRecapScreen, UX-DR5)
  */
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef } from 'react';
 import {
   FlatList,
   SafeAreaView,
@@ -45,32 +45,37 @@ export function MatchRecapScreen({ listings, testID }: MatchRecapScreenProps) {
   const { session } = useAuthSession();
   const { recapMatchIds, confirmRecapMatch, discardRecapMatch, dismissRecap } =
     useSwipeStore();
-  const [processingId, setProcessingId] = useState<string | null>(null);
+  /**
+   * Track which items are currently being processed.
+   * Using a ref + Set (not state) to avoid recreating callbacks on each change,
+   * which caused the stale-closure bug where FlatList items kept old callbacks
+   * that blocked all confirms after the first one.
+   */
+  const processingIds = useRef(new Set<string>());
 
   // Filtramos listings para mostrar solo los que aún están en recapMatchIds
   const activeListings = listings.filter((l) => recapMatchIds.includes(l.id));
 
   const handleConfirm = useCallback(
     async (listingId: string) => {
-      if (processingId) return;
-      setProcessingId(listingId);
+      if (processingIds.current.has(listingId)) return; // Only block same item
+      processingIds.current.add(listingId);
       const token = session?.access_token ?? '';
       await confirmRecapMatch(listingId, token);
-      setProcessingId(null);
-      // Si no quedan más items, dismissRecap se llama desde el efecto de vaciado
+      processingIds.current.delete(listingId);
     },
-    [processingId, session?.access_token, confirmRecapMatch],
+    [session?.access_token, confirmRecapMatch],
   );
 
   const handleDiscard = useCallback(
     async (listingId: string) => {
-      if (processingId) return;
-      setProcessingId(listingId);
+      if (processingIds.current.has(listingId)) return; // Only block same item
+      processingIds.current.add(listingId);
       const token = session?.access_token ?? '';
       await discardRecapMatch(listingId, token);
-      setProcessingId(null);
+      processingIds.current.delete(listingId);
     },
-    [processingId, session?.access_token, discardRecapMatch],
+    [session?.access_token, discardRecapMatch],
   );
 
   /**
@@ -80,13 +85,13 @@ export function MatchRecapScreen({ listings, testID }: MatchRecapScreenProps) {
    * H2 fix — CR Story 2.6.
    */
   useEffect(() => {
-    if (recapMatchIds.length === 0 && !processingId) {
+    if (recapMatchIds.length === 0) {
       const timer = setTimeout(() => {
         dismissRecap();
       }, 1500);
       return () => clearTimeout(timer);
     }
-  }, [recapMatchIds.length, processingId, dismissRecap]);
+  }, [recapMatchIds.length, dismissRecap]);
 
   const isEmpty = activeListings.length === 0;
 
@@ -130,7 +135,7 @@ export function MatchRecapScreen({ listings, testID }: MatchRecapScreenProps) {
                   listing={item}
                   onConfirm={(id) => void handleConfirm(id)}
                   onDiscard={(id) => void handleDiscard(id)}
-                  isProcessing={processingId === item.id}
+                  isProcessing={processingIds.current.has(item.id)}
                   testID={`recap-card-${item.id}`}
                 />
               )}

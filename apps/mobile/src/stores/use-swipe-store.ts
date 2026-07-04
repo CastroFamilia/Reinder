@@ -14,7 +14,7 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import type { Listing, SwipeEvent, SearchPreferences } from '@reinder/shared';
 import { MAX_SWIPE_PREFETCH, MATCH_RECAP_MIN_COUNT } from '@reinder/shared';
-import { fetchListings, MOCK_LISTINGS } from '../lib/api/listings';
+import { fetchListings } from '../lib/api/listings';
 import { postSwipeEvent } from '../lib/api/swipe-events';
 import { confirmMatch, discardMatch } from '../lib/api/matches';
 
@@ -46,24 +46,6 @@ function safeAsyncStorage() {
   };
 }
 
-/**
- * Crea un array de mocks con IDs únicos para el feed de desarrollo.
- * Evita el error "duplicate key" de React cuando se ciclan los mocks.
- * [DEV ONLY]
- */
-function makeCycledMocks(count: number): Listing[] {
-  const result: Listing[] = [];
-  for (let i = 0; i < count; i++) {
-    const base = MOCK_LISTINGS[i % MOCK_LISTINGS.length]!;
-    const cycle = Math.floor(i / MOCK_LISTINGS.length);
-    result.push(
-      cycle === 0
-        ? base
-        : { ...base, id: `${base.id}-c${cycle}` },
-    );
-  }
-  return result;
-}
 
 /**
  * Estado e interfaz del SwipeStore.
@@ -189,13 +171,11 @@ export const useSwipeStore = create<SwipeStore>()(
           const result = await fetchListings(token, undefined, filters);
 
           if (result.error) {
-            // Fallback a mock data si el backend no está disponible
-            const mocks = makeCycledMocks(MAX_SWIPE_PREFETCH);
             set({
-              currentCard: mocks[0] ?? null,
-              prefetchQueue: mocks.slice(1),
+              currentCard: null,
+              prefetchQueue: [],
               isLoading: false,
-              error: null,
+              error: result.error.message,
               cursor: undefined,
             });
             return;
@@ -208,13 +188,12 @@ export const useSwipeStore = create<SwipeStore>()(
             isLoading: false,
             error: null,
           });
-        } catch {
-          const mocks = makeCycledMocks(MAX_SWIPE_PREFETCH);
+        } catch (err) {
           set({
-            currentCard: mocks[0] ?? null,
-            prefetchQueue: mocks.slice(1),
+            currentCard: null,
+            prefetchQueue: [],
             isLoading: false,
-            error: null,
+            error: 'Sin conexión — intenta de nuevo',
             cursor: undefined,
           });
         }
@@ -224,12 +203,11 @@ export const useSwipeStore = create<SwipeStore>()(
         const { prefetchQueue, loadMore, currentCard, recentlySwiped } = get();
         const [next, ...rest] = prefetchQueue;
 
-        // [DEV] Si el buffer se agota y no hay backend, rellenar con mocks únicos
+        // Si el buffer se agota, mostrar empty state
         if (!next && rest.length === 0) {
-          const mocks = makeCycledMocks(MAX_SWIPE_PREFETCH * 2);
           set({
-            currentCard: mocks[0] ?? null,
-            prefetchQueue: mocks.slice(1),
+            currentCard: null,
+            prefetchQueue: [],
             recentlySwiped: currentCard ? [currentCard, ...recentlySwiped].slice(0, 10) : recentlySwiped,
           });
           return;

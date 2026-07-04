@@ -365,4 +365,49 @@ Compradores swipean (gratis)
 
 ---
 
-*Última actualización: 2026-05-22 — Party mode: estrategia de monetización documentada (analytics freemium, Idealista vs Reinder value prop), Daily Drop y Escaparate SEO como alternativa al browse libre, 6 agujeros de producto identificados.*
+## 🟢 Web Experience — Ideas Validadas en Party Mode (2026-06-30)
+
+### Buyer FOMO & Web Decision Hub (Propuesta de Nueva Épica)
+
+**Concepto:** Transformar la web privada del comprador de un simple "login vacío" a un **Centro de Decisión** impulsado por datos de mercado, FOMO (Fear Of Missing Out) y prueba social. 
+
+**El problema a resolver (Cold Start):** Actualmente, cuando un comprador nuevo se registra en la web y aún no tiene matches desde la app móvil, encuentra un panel vacío que solo le pide descargar la app, lo cual rompe la retención.
+
+**La Solución Estructural:**
+1. **El "Empty State" Educacional:** Si el usuario tiene 0 matches, se le muestra un mensaje empático que educa sobre el modelo de uso: *"Tu centro de evaluación está esperando. Aún no tienes matches. Descarga la app, haz unos cuantos swipes y vuelve aquí para analizarlos a fondo. Mientras tanto, mira lo que se están llevando los demás..."*
+2. **El "Pulso del Mercado" (FOMO Dashboard):** En lugar de ver un panel vacío, el usuario ve una galería premium de propiedades basada en 5 categorías de datos dinámicos que generan urgencia extrema:
+   - **Propiedades con más matches:** Prueba social (lo que todos quieren).
+   - **Propiedades con mejor ratio de match:** La joya oculta (alta conversión).
+   - **Propiedades recientes:** Novedad absoluta para usuarios recurrentes.
+   - **Propiedades vendidas recientemente:** Máximo generador de urgencia (demuestra que el mercado es real y rápido).
+   - **Propiedades que se van en X días:** Escasez temporal.
+
+**Valor Estratégico:**
+- **Para el Comprador (B2C):** Recibe valor inmediato al entrar a la web, descubre la dinámica del mercado y entiende que la App es para "Descubrir" y la Web para "Evaluar".
+- **Para la Agencia (B2B):** Es el argumento de ventas definitivo. Si les mostramos que sus propiedades se exponen de esta manera y generan esta urgencia en los compradores, querrán darnos todas sus exclusivas.
+- **Para SEO:** El contenido puede volverse público/semi-público como "Las más deseadas de Madrid".
+
+**Dónde surgió:** Sesión Party Mode 2026-06-30.
+
+**Estado:** 🔵 Propuesta documentada para futura Épica (posible Epic 12), para desarrollo post-Epic 9.
+
+---
+
+### Galería de Fotos por Listing (Multi-foto Swipe)
+
+**Qué es:** Actualmente cada listing solo muestra una foto. Los usuarios necesitan ver múltiples fotos de la propiedad antes de tomar una decisión. La DB ya almacena un array `images` (jsonb) por listing y el tipo `Listing` tiene `imageUrls?: string[]`.
+
+**Implementación sugerida:**
+- **Opción A — Carrusel horizontal en la card:** Dots indicadores + swipe horizontal para navegar fotos sin salir de la card. Conflicto potencial con el swipe vertical/horizontal del feed.
+- **Opción B — Galería en el Detail Sheet:** Al abrir el bottom sheet de detalle (Story 2.5), mostrar un carrusel horizontal o grid de fotos. Más limpio, sin conflictos de gestos.
+- **Opción C — Tap en la foto abre galería fullscreen:** Al hacer tap en la imagen, se abre un lightbox fullscreen con swipe entre fotos y zoom pinch.
+
+**Datos disponibles:** El campo `imageUrls` del tipo `Listing` ya contiene las URLs. El seed de RE/MAX importa todas las fotos disponibles (pipe-delimited en la API → JSON array en DB). Los listings reales tienen entre 5-30 fotos.
+
+**Dónde surgió:** Testing manual del feed con listings reales de RE/MAX — 2026-06-30.
+
+**Estado:** 🔵 Propuesta para futura mejora del feed. Requisito previo: ninguno (los datos ya están en la DB).
+
+---
+
+*Última actualización: 2026-06-30 — Galería multi-foto por listing.*

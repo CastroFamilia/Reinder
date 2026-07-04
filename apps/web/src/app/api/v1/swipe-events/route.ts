@@ -17,7 +17,7 @@
  * Source: architecture.md#API & Communication Patterns
  */
 import { NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { authenticateApiRequest } from "@/lib/supabase/api-auth";
 import { db } from "@/lib/supabase/db";
 import {
   swipeEvents,
@@ -34,21 +34,19 @@ import { notifyAgent } from "@/features/agent-link/lib/notify-agent";
 export async function POST(request: Request): Promise<NextResponse<ApiResponse<SwipeEvent>>> {
   // ─── 1. Auth ────────────────────────────────────────────────────────────────
 
-  const supabase = await createClient();
-  const {
-    data: { user },
-    error: authError,
-  } = await supabase.auth.getUser();
+  const auth = await authenticateApiRequest(request);
 
-  if (authError || !user) {
+  if (!auth.user) {
     return NextResponse.json(
       {
         data: null,
-        error: { code: "UNAUTHORIZED", message: "Authentication required" },
+        error: { code: "UNAUTHORIZED", message: auth.error },
       },
       { status: 401 }
     );
   }
+
+  const user = auth.user;
 
   // ─── 2. Parse + validate body ───────────────────────────────────────────────
 

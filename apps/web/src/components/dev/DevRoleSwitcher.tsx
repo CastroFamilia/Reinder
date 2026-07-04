@@ -24,8 +24,8 @@ export function DevRoleSwitcher({ initialRole, isDev }: DevRoleSwitcherProps) {
     switch(role) {
       case "agent": return "/agent";
       case "agency_admin": return "/agency/listings";
-      case "platform_admin": return "/swipe"; // Admin panel not built yet, fallback to swipe
-      default: return "/swipe";
+      case "platform_admin": return "/home"; // Admin panel not built yet, fallback to home
+      default: return "/home";
     }
   };
 

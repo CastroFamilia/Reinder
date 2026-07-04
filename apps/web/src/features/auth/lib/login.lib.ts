@@ -22,6 +22,6 @@ export function getRedirectPathForRole(role: AppRole | undefined): string {
     case "platform_admin":
       return "/admin";
     default:
-      return "/swipe"; // buyer y fallback
+      return "/home"; // buyer y fallback
   }
 }

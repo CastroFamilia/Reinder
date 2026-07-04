@@ -4,62 +4,96 @@
  * GET /api/v1/matches — Retorna el historial completo de matches del comprador autenticado.
  * Ordenado por fecha descendente (más recientes primero).
  *
- * NOTA: Este endpoint es un stub. La consulta real a Supabase (match_events JOIN listings)
- * y verificación RLS (buyer_id === auth.uid()) se activarán en Epic 3.
+ * Consulta match_events JOIN listings para construir MatchHistoryItem[].
+ * Filtra por buyer_id = authenticated user.
  *
  * Source: architecture.md#API & Communication Patterns
  * Source: story 2-7-historial-matches-badge-nuevas-propiedades.md (Task 1)
  */
 import { NextResponse } from 'next/server';
+import { authenticateApiRequest } from '@/lib/supabase/api-auth';
+import { db } from '@/lib/supabase/db';
+import { matchEvents, listings } from '@reinder/shared/db/schema';
+import { eq, desc } from 'drizzle-orm';
 import type { ApiResponse, MatchHistoryItem } from '@reinder/shared';
-
-/** Datos de prueba — sustituir por consulta Supabase en Epic 3 */
-const MOCK_MATCHES: MatchHistoryItem[] = [
-  {
-    matchId: 'match-1',
-    listingId: 'listing-1',
-    imageUrl: 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=800',
-    price: 285000,
-    address: 'Calle Gran Vía 45, Madrid',
-    listingStatus: 'active',
-    matchedAt: new Date(Date.now() - 1000 * 60 * 60 * 2).toISOString(),
-    confirmed: true,
-  },
-  {
-    matchId: 'match-2',
-    listingId: 'listing-2',
-    imageUrl: 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=800',
-    price: 420000,
-    address: 'Paseo de la Castellana 120, Madrid',
-    listingStatus: 'sold',
-    matchedAt: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString(),
-    confirmed: true,
-  },
-  {
-    matchId: 'match-3',
-    listingId: 'listing-3',
-    imageUrl: 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800',
-    price: 195000,
-    address: 'Calle Serrano 22, Madrid',
-    listingStatus: 'active',
-    matchedAt: new Date(Date.now() - 1000 * 60 * 60 * 48).toISOString(),
-    confirmed: false,
-  },
-];
 
 /**
  * GET /api/v1/matches
  * Retorna el historial de matches del comprador autenticado, por fecha descendente.
  */
 export async function GET(
-  _request: Request,
+  request: Request,
 ): Promise<NextResponse<ApiResponse<MatchHistoryItem[]>>> {
   try {
-    // TODO (Epic 3): implementar con Supabase join match_events + listings
-    return NextResponse.json({ data: MOCK_MATCHES, error: null });
-  } catch {
+    // Auth: supports both cookies (web) and Bearer token (mobile)
+    const auth = await authenticateApiRequest(request);
+
+    if (!auth.user) {
+      return NextResponse.json(
+        {
+          data: null,
+          error: { code: 'UNAUTHORIZED', message: auth.error },
+        },
+        { status: 401 },
+      );
+    }
+
+    const user = auth.user;
+
+    // Query: match_events JOIN listings, filtered by buyer_id
+    const rows = await db
+      .select({
+        matchId: matchEvents.id,
+        listingId: matchEvents.listingId,
+        confirmedAt: matchEvents.confirmedAt,
+        matchedAt: matchEvents.createdAt,
+        // Listing fields
+        title: listings.title,
+        description: listings.description,
+        price: listings.price,
+        address: listings.address,
+        city: listings.city,
+        status: listings.status,
+        images: listings.images,
+        bedrooms: listings.bedrooms,
+        sizeSqm: listings.sizeSqm,
+      })
+      .from(matchEvents)
+      .innerJoin(listings, eq(matchEvents.listingId, listings.id))
+      .where(eq(matchEvents.buyerId, user.id))
+      .orderBy(desc(matchEvents.createdAt));
+
+    // Map DB rows → MatchHistoryItem type
+    const data: MatchHistoryItem[] = rows.map((row) => {
+      const images = (row.images as string[] | null) ?? [];
+      const firstImage = images.length > 0 ? images[0]! : '';
+
+      return {
+        matchId: row.matchId,
+        listingId: row.listingId,
+        imageUrl: firstImage,
+        price: row.price ? Number(row.price) : 0,
+        address: [row.address, row.city].filter(Boolean).join(', ') || row.title,
+        listingStatus: row.status as 'active' | 'sold' | 'withdrawn',
+        matchedAt: row.matchedAt.toISOString(),
+        confirmed: row.confirmedAt !== null,
+        // Extended fields for detail view
+        title: row.title,
+        description: row.description ?? undefined,
+        rooms: row.bedrooms ?? undefined,
+        squareMeters: row.sizeSqm ? Number(row.sizeSqm) : undefined,
+        imageUrls: images.length > 0 ? images : undefined,
+      };
+    });
+
+    return NextResponse.json({ data, error: null });
+  } catch (err) {
+    console.error('[matches] Error:', err);
     return NextResponse.json(
-      { data: null, error: { code: 'SERVER_ERROR', message: 'Error interno del servidor' } },
+      {
+        data: null,
+        error: { code: 'SERVER_ERROR', message: 'Error interno del servidor' },
+      },
       { status: 500 },
     );
   }

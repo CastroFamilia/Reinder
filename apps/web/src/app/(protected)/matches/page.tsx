@@ -11,6 +11,7 @@ import { matchEvents, listings } from "@reinder/shared/db/schema";
 import { eq, desc } from "drizzle-orm";
 import type { Metadata } from "next";
 import Link from "next/link";
+import { RealtimeMatchesListener } from "@/features/matches/components/realtime-matches-listener";
 
 export const metadata: Metadata = {
   title: "Mis Matches — Reinder",
@@ -45,6 +46,7 @@ export default async function MatchesPage() {
 
   return (
     <div className="bg-gradient-radial" style={{ minHeight: "100vh", padding: "40px 24px" }}>
+      <RealtimeMatchesListener userId={user.id} />
       <div style={{ maxWidth: "var(--max-width)", margin: "0 auto" }}>
         {/* Header */}
         <section className="animate-fade-in" style={{ opacity: 0, marginBottom: "40px" }}>
