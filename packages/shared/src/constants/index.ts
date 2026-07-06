@@ -42,3 +42,9 @@ export const PAYOFF_DURATION_MS = 600 as const;
  */
 export const PAYOFF_AUTOHIDE_MS = 450 as const;
 
+/**
+ * Maximum number of AI variant generations per agency per 24-hour rolling window.
+ * Story 9.6 — rate limiting
+ */
+export const MAX_AI_GENERATIONS_PER_DAY = 10 as const;
+

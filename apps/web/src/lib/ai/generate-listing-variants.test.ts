@@ -21,17 +21,16 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 const mockParse = vi.fn();
 
 vi.mock("openai", () => {
-  return {
-    default: vi.fn().mockImplementation((_opts: any) => ({
-      beta: {
-        chat: {
-          completions: {
-            parse: mockParse,
-          },
+  const MockOpenAI = vi.fn(function (this: any, _opts: any) {
+    this.beta = {
+      chat: {
+        completions: {
+          parse: mockParse,
         },
       },
-    })),
-  };
+    };
+  });
+  return { default: MockOpenAI };
 });
 
 vi.mock("openai/helpers/zod", () => ({

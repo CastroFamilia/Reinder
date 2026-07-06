@@ -30,6 +30,13 @@ export default defineConfig({
         ),
       },
       {
+        find: "@reinder/shared/types/ai-variant",
+        replacement: path.resolve(
+          __dirname,
+          "../../packages/shared/src/types/ai-variant.ts"
+        ),
+      },
+      {
         find: "@reinder/shared/constants",
         replacement: path.resolve(
           __dirname,

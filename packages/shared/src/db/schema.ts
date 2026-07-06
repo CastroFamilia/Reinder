@@ -495,3 +495,35 @@ export const experimentResultsTimeseries = pgTable(
     ).on(table.experimentId),
   })
 );
+
+// ---------------------------------------------------------------------------
+// Tabla: ai_generation_usage
+// Tracks AI variant generation calls per agency for rate limiting and billing.
+// Source: story 9-6, AC4
+// ---------------------------------------------------------------------------
+
+export const aiGenerationUsage = pgTable(
+  "ai_generation_usage",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    agencyId: uuid("agency_id")
+      .notNull()
+      .references(() => agencies.id),
+    listingId: uuid("listing_id")
+      .notNull()
+      .references(() => listings.id),
+    userId: uuid("user_id").notNull(),
+    model: text("model").notNull(),
+    promptTokens: integer("prompt_tokens").notNull().default(0),
+    completionTokens: integer("completion_tokens").notNull().default(0),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => ({
+    idxAiGenerationUsageAgencyCreated: index(
+      "idx_ai_generation_usage_agency_created"
+    ).on(table.agencyId, table.createdAt),
+  })
+);
+
