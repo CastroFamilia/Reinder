@@ -53,38 +53,35 @@ vi.mock("@/lib/supabase/server", () => ({
   }),
 }));
 
-const mockDbSelect = vi.fn();
-const mockDbUpdate = vi.fn();
+vi.mock("@/lib/supabase/db", () => {
+  const defaultSelectChain = () => ({
+    from: vi.fn().mockReturnValue({
+      innerJoin: vi.fn().mockReturnValue({
+        where: vi.fn().mockReturnValue({
+          orderBy: vi.fn().mockResolvedValue([]),
+        }),
+      }),
+      where: vi.fn().mockReturnValue({
+        limit: vi.fn().mockResolvedValue([]),
+      }),
+    }),
+  });
 
-vi.mock("@/lib/supabase/db", () => ({
-  db: {
-    select: (...args: unknown[]) => {
-      mockDbSelect(...args);
-      return {
-        from: vi.fn().mockReturnValue({
-          innerJoin: vi.fn().mockReturnValue({
-            where: vi.fn().mockReturnValue({
-              orderBy: vi.fn().mockResolvedValue([]),
-            }),
-          }),
-          where: vi.fn().mockReturnValue({
-            limit: vi.fn().mockResolvedValue([]),
-          }),
-        }),
-      };
+  const defaultUpdateChain = () => ({
+    set: vi.fn().mockReturnValue({
+      where: vi.fn().mockReturnValue({
+        returning: vi.fn().mockResolvedValue([]),
+      }),
+    }),
+  });
+
+  return {
+    db: {
+      select: vi.fn().mockImplementation(() => defaultSelectChain()),
+      update: vi.fn().mockImplementation(() => defaultUpdateChain()),
     },
-    update: (...args: unknown[]) => {
-      mockDbUpdate(...args);
-      return {
-        set: vi.fn().mockReturnValue({
-          where: vi.fn().mockReturnValue({
-            returning: vi.fn().mockResolvedValue([]),
-          }),
-        }),
-      };
-    },
-  },
-}));
+  };
+});
 
 // ─── Fixtures ─────────────────────────────────────────────────────────────────
 
@@ -400,7 +397,7 @@ describe("PATCH /api/v1/agency/recommendations/:id — AC7", () => {
     setupAuth(AGENCY_ADMIN_USER, "agency_admin", "agency-uuid-001");
 
     const recId = "rec-uuid-002";
-    const experimentId = "exp-uuid-new-001";
+    const experimentId = "a1b2c3d4-e5f6-7890-abcd-ef1234567890";
     const { db } = await import("@/lib/supabase/db");
 
     vi.mocked(db.select as any).mockReturnValue({

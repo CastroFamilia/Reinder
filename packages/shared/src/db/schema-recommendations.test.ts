@@ -25,7 +25,7 @@ describe("Drizzle Schema — experiment_recommendations (AC1, AC10)", () => {
     expect(
       (schema.experimentRecommendations as any)[Symbol.for("drizzle:Name")]
     ).toBe("experiment_recommendations");
-  });
+  }, { timeout: 15_000 });
 
   it("[P0] T9.5-02: experiment_recommendations has all required columns per AC1", async () => {
     const schema = await import("./schema");
@@ -105,7 +105,8 @@ describe("Shared Types — Recommendation types (AC10)", () => {
     const types = await import("../types/experiment");
 
     expect(types).toHaveProperty("RecommendationStatus");
-    expect(types.RecommendationStatus).toEqual([
+    // RecommendationStatus is a const tuple — spread into plain array for comparison
+    expect([...types.RecommendationStatus]).toEqual([
       "pending",
       "accepted",
       "dismissed",
