@@ -150,7 +150,9 @@ export function calculateVariance(
 ): number {
   if (n <= 1) return 0;
   const mean = total / n;
-  const popVariance = sumSq / n - mean * mean;
+  // Clamp to 0: floating-point arithmetic can produce tiny negative values
+  // when sumSq/n ≈ mean² (e.g. nearly-uniform data)
+  const popVariance = Math.max(0, sumSq / n - mean * mean);
   // Bessel's correction: multiply by n/(n-1) for sample variance
   return (popVariance * n) / (n - 1);
 }

@@ -76,6 +76,9 @@ CREATE POLICY "platform_admin_full_access_promotion_logs"
   TO authenticated
   USING (
     (SELECT role FROM user_profiles WHERE id = auth.uid()) = 'platform_admin'
+  )
+  WITH CHECK (
+    (SELECT role FROM user_profiles WHERE id = auth.uid()) = 'platform_admin'
   );
 
 -- Only service_role can insert (system operations, not direct user access)
