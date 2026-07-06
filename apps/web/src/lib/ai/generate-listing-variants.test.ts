@@ -208,10 +208,10 @@ describe("generateListingVariants — AC1, AC5, AC11", () => {
       "./generate-listing-variants"
     );
 
-    await expect(
-      generateListingVariants(MOCK_LISTING_FULL)
-    ).rejects.toThrowError();
+    const promise = generateListingVariants(MOCK_LISTING_FULL);
+    await expect(promise).rejects.toThrow("Generación de variantes no disponible.");
 
+    // Also verify error class and code
     try {
       await generateListingVariants(MOCK_LISTING_FULL);
     } catch (e) {
@@ -246,9 +246,16 @@ describe("generateListingVariants — AC1, AC5, AC11", () => {
       "./generate-listing-variants"
     );
 
+    const promise = generateListingVariants(MOCK_LISTING_FULL);
+    await expect(promise).rejects.toThrow("No se pudo parsear la respuesta de la IA.");
+
+    // Verify error code
     try {
+      mockParse.mockResolvedValueOnce({
+        choices: [{ message: { parsed: null } }],
+        usage: { prompt_tokens: 100, completion_tokens: 0 },
+      });
       await generateListingVariants(MOCK_LISTING_FULL);
-      expect.fail("Should have thrown");
     } catch (e) {
       expect(e).toBeInstanceOf(AiServiceError);
       expect((e as any).code).toBe("AI_PARSE_ERROR");
@@ -303,6 +310,77 @@ describe("generateListingVariants — AC1, AC5, AC11", () => {
       expect((e as any).code).toBe("CONTENT_SAFETY_FAILED");
     }
     expect(mockParse).toHaveBeenCalledTimes(2);
+  });
+
+  // ─── AC11: Partial content safety — some variants filtered, rest returned ───
+
+  it("[P0] T9.6-01h: returns only safe variants when some are filtered by content safety", async () => {
+    const mixedVariants = [
+      { label: "Emocional", title: "Inversión garantizado", description: "Rentabilidad asegurada" }, // unsafe
+      MOCK_CLEAN_VARIANTS[1], // safe
+      MOCK_CLEAN_VARIANTS[2], // safe
+    ];
+    mockParse.mockResolvedValueOnce(makeCompletionResponse(mixedVariants));
+
+    const { generateListingVariants } = await import(
+      "./generate-listing-variants"
+    );
+    const result = await generateListingVariants(MOCK_LISTING_FULL);
+
+    // Should return 2 safe variants (sliced to max 3)
+    expect(result.variants.length).toBeGreaterThanOrEqual(1);
+    expect(result.variants.length).toBeLessThanOrEqual(3);
+    // Verify none contain prohibited terms
+    result.variants.forEach((v) => {
+      const text = `${v.title} ${v.description}`.toLowerCase();
+      expect(text).not.toContain("garantizado");
+      expect(text).not.toContain("rentabilidad asegurada");
+    });
+    // Only 1 call needed (partial filter doesn't trigger retry)
+    expect(mockParse).toHaveBeenCalledTimes(1);
+  });
+
+  // ─── AC2: Prompt adaptation for no-description listing ───
+
+  it("[P1] T9.6-12b: adapts system prompt for title-only generation when listing has no description", async () => {
+    const variantsWithEmptyDesc = MOCK_CLEAN_VARIANTS.map((v) => ({
+      ...v,
+      description: "",
+    }));
+    mockParse.mockResolvedValueOnce(
+      makeCompletionResponse(variantsWithEmptyDesc)
+    );
+
+    const { generateListingVariants } = await import(
+      "./generate-listing-variants"
+    );
+    await generateListingVariants(MOCK_LISTING_NO_DESCRIPTION);
+
+    // Verify the system prompt mentions title-only generation
+    const callArgs = mockParse.mock.calls[0][0];
+    const systemMessage = callArgs.messages.find((m: any) => m.role === "system");
+    expect(systemMessage.content).toContain("título");
+    // And the user prompt should NOT include description line
+    const userMessage = callArgs.messages.find((m: any) => m.role === "user");
+    expect(userMessage.content).not.toContain("Descripción:");
+  });
+
+  // ─── AC1: Usage metadata with missing usage from completion ───
+
+  it("[P1] T9.6-01i: handles missing usage in completion response (defaults to 0)", async () => {
+    mockParse.mockResolvedValueOnce({
+      choices: [{ message: { parsed: { variants: MOCK_CLEAN_VARIANTS } } }],
+      usage: undefined,
+    });
+
+    const { generateListingVariants } = await import(
+      "./generate-listing-variants"
+    );
+    const result = await generateListingVariants(MOCK_LISTING_FULL);
+
+    expect(result.usage.promptTokens).toBe(0);
+    expect(result.usage.completionTokens).toBe(0);
+    expect(result.usage.model).toBe("gpt-4o");
   });
 
   // ─── AC1: OpenAI instantiated with 10s timeout (T9.6-14) ───

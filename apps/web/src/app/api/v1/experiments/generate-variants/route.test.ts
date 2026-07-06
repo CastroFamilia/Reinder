@@ -381,6 +381,98 @@ describe("POST /api/v1/experiments/generate-variants — AC2, AC3, AC5", () => {
     expect(recordUsage).not.toHaveBeenCalled();
   });
 
+  // ─── AC11: CONTENT_SAFETY_FAILED error → 422 ───
+
+  it("[P0] T9.6-05a: returns 422 CONTENT_SAFETY_FAILED when all variants fail safety checks", async () => {
+    vi.mocked(createClient).mockResolvedValue(
+      makeSupabaseMock(AGENCY_ADMIN_USER, "agency_admin", AGENCY_ID) as any
+    );
+
+    const { db } = await import("@/lib/supabase/db");
+    vi.mocked(db.select().from(null as any).where(null as any).limit as any)
+      .mockResolvedValueOnce([MOCK_LISTING]);
+
+    vi.mocked(checkRateLimit).mockResolvedValueOnce({
+      allowed: true,
+      remaining: 5,
+    });
+
+    const { AiServiceError: AiSvcErr } = await import("@/lib/ai/generate-listing-variants");
+    vi.mocked(generateListingVariants).mockRejectedValueOnce(
+      new AiSvcErr("CONTENT_SAFETY_FAILED", "No se pudieron generar variantes que cumplan las políticas de contenido.")
+    );
+
+    const { POST } = await import(
+      "@/app/api/v1/experiments/generate-variants/route"
+    );
+    const res = await POST(makeRequest({ listingId: LISTING_ID }) as any);
+    const body = await res.json();
+
+    expect(res.status).toBe(422);
+    expect(body.error.code).toBe("CONTENT_SAFETY_FAILED");
+    expect(recordUsage).not.toHaveBeenCalled();
+  });
+
+  // ─── AC5: AI_PARSE_ERROR → 503 ───
+
+  it("[P0] T9.6-08b: returns 503 AI_PARSE_ERROR when OpenAI response cannot be parsed", async () => {
+    vi.mocked(createClient).mockResolvedValue(
+      makeSupabaseMock(AGENCY_ADMIN_USER, "agency_admin", AGENCY_ID) as any
+    );
+
+    const { db } = await import("@/lib/supabase/db");
+    vi.mocked(db.select().from(null as any).where(null as any).limit as any)
+      .mockResolvedValueOnce([MOCK_LISTING]);
+
+    vi.mocked(checkRateLimit).mockResolvedValueOnce({
+      allowed: true,
+      remaining: 5,
+    });
+
+    const { AiServiceError: AiSvcErr } = await import("@/lib/ai/generate-listing-variants");
+    vi.mocked(generateListingVariants).mockRejectedValueOnce(
+      new AiSvcErr("AI_PARSE_ERROR", "No se pudo parsear la respuesta de la IA.")
+    );
+
+    const { POST } = await import(
+      "@/app/api/v1/experiments/generate-variants/route"
+    );
+    const res = await POST(makeRequest({ listingId: LISTING_ID }) as any);
+    const body = await res.json();
+
+    expect(res.status).toBe(503);
+    expect(body.error.code).toBe("AI_PARSE_ERROR");
+  });
+
+  // ─── AC3: Retry-After header is numeric string ───
+
+  it("[P1] T9.6-06b: Retry-After header value is a numeric string in 429 response", async () => {
+    vi.mocked(createClient).mockResolvedValue(
+      makeSupabaseMock(AGENCY_ADMIN_USER, "agency_admin", AGENCY_ID) as any
+    );
+
+    const { db } = await import("@/lib/supabase/db");
+    vi.mocked(db.select().from(null as any).where(null as any).limit as any)
+      .mockResolvedValueOnce([MOCK_LISTING]);
+
+    vi.mocked(checkRateLimit).mockResolvedValueOnce({
+      allowed: false,
+      remaining: 0,
+      retryAfterSeconds: 1800,
+    });
+
+    const { POST } = await import(
+      "@/app/api/v1/experiments/generate-variants/route"
+    );
+    const res = await POST(makeRequest({ listingId: LISTING_ID }) as any);
+
+    expect(res.status).toBe(429);
+    const retryAfter = res.headers.get("Retry-After");
+    expect(retryAfter).toBeDefined();
+    expect(Number(retryAfter)).toBeGreaterThan(0);
+    expect(Number(retryAfter)).toBe(1800);
+  });
+
   // ─── AC2: Response follows ApiResponse<T> format ───
 
   it("[P1] T9.6-02b: response follows ApiResponse wrapper { data, error }", async () => {

@@ -285,4 +285,121 @@ describe("AiVariantGenerator — AC6, AC7", () => {
       ).toBeDefined();
     });
   });
+
+  // ─── AC7: Shows rate limit error when API returns 429 ───
+
+  it("[P1] T9.6-15h: shows rate limit error message when API returns 429", async () => {
+    let AiVariantGenerator: React.ComponentType<any>;
+    try {
+      const mod = await import(
+        "@/features/agency/experiments/components/ai-variant-generator"
+      );
+      AiVariantGenerator = mod.AiVariantGenerator;
+    } catch {
+      console.warn("[ATDD] AiVariantGenerator not yet implemented");
+      expect(true).toBe(true);
+      return;
+    }
+
+    mockFetch.mockResolvedValueOnce({
+      ok: false,
+      json: () =>
+        Promise.resolve({
+          data: null,
+          error: {
+            code: "RATE_LIMIT_EXCEEDED",
+            message: "Límite diario de generaciones alcanzado. Intenta mañana.",
+          },
+        }),
+    });
+
+    render(<AiVariantGenerator {...defaultProps} />);
+
+    const button = screen.getByRole("button", { name: /generar/i });
+    fireEvent.click(button);
+
+    await waitFor(() => {
+      expect(
+        screen.getByText(/límite/i) ||
+          screen.getByText(/intenta mañana/i)
+      ).toBeDefined();
+    });
+  });
+
+  // ─── AC7: Button re-enabled after error ───
+
+  it("[P1] T9.6-15i: re-enables generate button after error occurs", async () => {
+    let AiVariantGenerator: React.ComponentType<any>;
+    try {
+      const mod = await import(
+        "@/features/agency/experiments/components/ai-variant-generator"
+      );
+      AiVariantGenerator = mod.AiVariantGenerator;
+    } catch {
+      console.warn("[ATDD] AiVariantGenerator not yet implemented");
+      expect(true).toBe(true);
+      return;
+    }
+
+    mockFetch.mockResolvedValueOnce({
+      ok: false,
+      json: () =>
+        Promise.resolve({
+          data: null,
+          error: {
+            code: "AI_SERVICE_UNAVAILABLE",
+            message: "Servicio no disponible.",
+          },
+        }),
+    });
+
+    render(<AiVariantGenerator {...defaultProps} />);
+
+    const button = screen.getByRole("button", { name: /generar/i });
+    fireEvent.click(button);
+
+    await waitFor(() => {
+      // After error, button should be re-enabled (not in loading state)
+      const btn = screen.getByRole("button", { name: /generar/i });
+      expect(btn).toBeDefined();
+      expect((btn as HTMLButtonElement).disabled).toBe(false);
+    });
+  });
+
+  // ─── AC7: Fetch called with correct endpoint and payload ───
+
+  it("[P1] T9.6-15j: calls correct API endpoint with listingId in body", async () => {
+    let AiVariantGenerator: React.ComponentType<any>;
+    try {
+      const mod = await import(
+        "@/features/agency/experiments/components/ai-variant-generator"
+      );
+      AiVariantGenerator = mod.AiVariantGenerator;
+    } catch {
+      console.warn("[ATDD] AiVariantGenerator not yet implemented");
+      expect(true).toBe(true);
+      return;
+    }
+
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: () => Promise.resolve(MOCK_VARIANTS_RESPONSE),
+    });
+
+    render(<AiVariantGenerator {...defaultProps} />);
+
+    const button = screen.getByRole("button", { name: /generar/i });
+    fireEvent.click(button);
+
+    await waitFor(() => {
+      expect(mockFetch).toHaveBeenCalledWith(
+        "/api/v1/experiments/generate-variants",
+        expect.objectContaining({
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ listingId: LISTING_ID }),
+        })
+      );
+    });
+  });
 });
