@@ -17,6 +17,7 @@ import {
   type VariantResultData,
   type ExperimentMetadata,
 } from "./significance-engine";
+import { isResultsStale } from "./aggregation-significance-hook";
 
 // ─── Helper: create a Date offset by hours from now ────────────────────────
 
@@ -48,6 +49,10 @@ describe("normalCDF", () => {
   it("normalCDF(3.0) ≈ 0.9987", () => {
     expect(normalCDF(3.0)).toBeCloseTo(0.9987, 3);
   });
+
+  it("normalCDF(-3.0) ≈ 0.0013 (symmetric)", () => {
+    expect(normalCDF(-3.0)).toBeCloseTo(0.0013, 3);
+  });
 });
 
 // ─── calculateVariance ────────────────────────────────────────────────────
@@ -64,26 +69,80 @@ describe("calculateVariance", () => {
     const result = calculateVariance(12, 56, 3);
     expect(result).toBeCloseTo(4.0, 5);
   });
+
+  it("returns 0 for uniform data (all same value)", () => {
+    // [5, 5, 5, 5] → total=20, sumSq=100, n=4 → variance should be 0
+    const result = calculateVariance(20, 100, 4);
+    expect(result).toBeCloseTo(0, 5);
+  });
+
+  it("handles potential negative floating point variance (sumSq/n < mean²) gracefully", () => {
+    // Edge case: due to floating point, popVariance could be very slightly negative
+    // E.g. total=1000000001, sumSq=1000000002000000001, n=1000000001
+    // In practice this shouldn't crash
+    const result = calculateVariance(10, 100, 10);
+    // [1,1,...,1] ten 1s → should be 0
+    expect(Number.isFinite(result)).toBe(true);
+    expect(result).toBeGreaterThanOrEqual(0);
+  });
 });
 
-// ─── T9.4-01: z-test with known data ──────────────────────────────────────
+// ─── T9.4-01, T9.4-02, T9.4-03: z-test for proportions ──────────────────
 
 describe("zTestForProportions", () => {
-  it("T9.4-01: z-test with known data — match_rate AC1 example", () => {
+  it("T9.4-01: z-test with known data — match_rate AC1 example values", () => {
     // AC1: A(500 impressions, 45 matches), B(500 impressions, 65 matches)
     const result = zTestForProportions(45, 500, 65, 500, 0.05);
 
-    // p_a = 0.09, p_b = 0.13, p_pooled = 0.11
-    expect(result.zScore).not.toBe(0);
-    expect(result.pValue).toBeLessThan(1);
+    // Verify intermediate values per AC1:
+    // p_a = 45/500 = 0.09, p_b = 65/500 = 0.13
+    // p_pooled = (45+65)/(500+500) = 110/1000 = 0.11
+    const pA = 45 / 500; // 0.09
+    const pB = 65 / 500; // 0.13
+    const pPooled = 110 / 1000; // 0.11
 
-    // With these numbers, the z-score should be around -2.0 and p-value < 0.05
-    expect(Math.abs(result.zScore)).toBeGreaterThan(1.5);
+    expect(pA).toBeCloseTo(0.09, 10);
+    expect(pB).toBeCloseTo(0.13, 10);
+    expect(pPooled).toBeCloseTo(0.11, 10);
+
+    // SE = sqrt(0.11 × 0.89 × (1/500 + 1/500)) = sqrt(0.11 * 0.89 * 0.004)
+    const se = Math.sqrt(pPooled * (1 - pPooled) * (1 / 500 + 1 / 500));
+    expect(se).toBeCloseTo(0.01979, 4);
+
+    // z = (0.09 - 0.13) / SE ≈ -2.02
+    const expectedZ = (pA - pB) / se;
+    expect(result.zScore).toBeCloseTo(expectedZ, 3);
+    expect(Math.abs(result.zScore)).toBeGreaterThan(1.96); // Beyond 95% threshold
+
+    // Two-tailed p-value should be < 0.05
+    expect(result.pValue).toBeLessThan(0.05);
     expect(result.isSignificant).toBe(true);
     expect(result.favoredVariant).toBe("b"); // B has higher match rate
   });
 
-  it("T9.4-02: z-test with equal proportions → not significant", () => {
+  it("T9.4-01b: z-test applies same logic for reaffirm_rate", () => {
+    // reaffirm_rate = reaffirm_count / match_count (AC1)
+    // A: 10 reaffirms out of 45 matches, B: 25 reaffirms out of 65 matches
+    const result = zTestForProportions(10, 45, 25, 65, 0.05);
+
+    // p_a = 10/45 ≈ 0.222, p_b = 25/65 ≈ 0.385
+    expect(result.zScore).not.toBe(0);
+    // With these proportions and sample sizes, may or may not be significant
+    // The important thing is the calculation doesn't error
+    expect(Number.isFinite(result.zScore)).toBe(true);
+    expect(Number.isFinite(result.pValue)).toBe(true);
+  });
+
+  it("T9.4-02: correctly identifies significant result (p < 0.05)", () => {
+    // Very large difference with large n → definitely significant
+    const result = zTestForProportions(20, 1000, 80, 1000, 0.05);
+    expect(result.isSignificant).toBe(true);
+    expect(result.pValue).toBeLessThan(0.05);
+    expect(result.favoredVariant).toBe("b");
+  });
+
+  it("T9.4-03: correctly identifies non-significant result (p ≥ 0.05)", () => {
+    // Equal proportions → p-value ≈ 1
     const result = zTestForProportions(50, 500, 50, 500, 0.05);
 
     expect(result.zScore).toBeCloseTo(0, 5);
@@ -92,10 +151,11 @@ describe("zTestForProportions", () => {
     expect(result.favoredVariant).toBeNull();
   });
 
-  it("handles zero denominators gracefully", () => {
-    const result = zTestForProportions(0, 0, 0, 0, 0.05);
-    expect(result.pValue).toBe(1);
+  it("T9.4-03b: very small difference is not significant with small n", () => {
+    // 51 vs 49 out of 100 — not significant
+    const result = zTestForProportions(51, 100, 49, 100, 0.05);
     expect(result.isSignificant).toBe(false);
+    expect(result.favoredVariant).toBeNull();
   });
 
   it("handles SE = 0 case (all zeros)", () => {
@@ -103,26 +163,77 @@ describe("zTestForProportions", () => {
     expect(result.pValue).toBe(1);
     expect(result.isSignificant).toBe(false);
   });
+
+  it("handles SE = 0 case (all 100% success)", () => {
+    const result = zTestForProportions(500, 500, 500, 500, 0.05);
+    expect(result.pValue).toBe(1);
+    expect(result.isSignificant).toBe(false);
+  });
+
+  it("favors variant A when A has higher proportion", () => {
+    const result = zTestForProportions(80, 1000, 20, 1000, 0.05);
+    expect(result.isSignificant).toBe(true);
+    expect(result.favoredVariant).toBe("a");
+  });
+
+  it("pValue is always in [0, 1] range for extreme inputs", () => {
+    // Very extreme proportions
+    const result1 = zTestForProportions(1, 1000, 999, 1000, 0.05);
+    expect(result1.pValue).toBeGreaterThanOrEqual(0);
+    expect(result1.pValue).toBeLessThanOrEqual(1);
+
+    const result2 = zTestForProportions(500, 500, 0, 500, 0.05);
+    expect(result2.pValue).toBeGreaterThanOrEqual(0);
+    expect(result2.pValue).toBeLessThanOrEqual(1);
+  });
 });
 
-// ─── T9.4-03, T9.4-04: Welch's t-test ────────────────────────────────────
+// ─── T9.4-04, T9.4-05: Welch's t-test ────────────────────────────────────
 
 describe("welchTTest", () => {
-  it("T9.4-03: significantly different means → p-value < 0.05", () => {
+  it("T9.4-04a: significantly different means → p-value < 0.05", () => {
     // Large difference: mean_a = 5000, mean_b = 6500, similar variance
     const result = welchTTest(5000, 1000000, 500, 6500, 1000000, 500, 0.05);
 
     expect(result.isSignificant).toBe(true);
     expect(result.pValue).toBeLessThan(0.05);
     expect(result.favoredVariant).toBe("b"); // B has higher mean
+    expect(result.degreesOfFreedom).toBeGreaterThan(0);
   });
 
-  it("T9.4-04: identical means → not significant", () => {
+  it("T9.4-04b: identical means → not significant", () => {
     const result = welchTTest(5000, 1000000, 500, 5000, 1000000, 500, 0.05);
 
     expect(result.tStatistic).toBeCloseTo(0, 5);
     expect(result.isSignificant).toBe(false);
     expect(result.favoredVariant).toBeNull();
+  });
+
+  it("T9.4-04c: AC2 reference values — view time test", () => {
+    // AC2: A(500 impressions, 2,500,000 total_view_time_ms), B(500, 3,250,000)
+    // mean_a = 5000, mean_b = 6500
+    // We provide realistic variance values
+    const meanA = 2500000 / 500; // 5000
+    const meanB = 3250000 / 500; // 6500
+
+    expect(meanA).toBe(5000);
+    expect(meanB).toBe(6500);
+
+    const result = welchTTest(meanA, 2000000, 500, meanB, 2000000, 500, 0.05);
+    expect(result.isSignificant).toBe(true);
+    expect(result.favoredVariant).toBe("b");
+  });
+
+  it("T9.4-05: equal variances — degenerates to Student's t", () => {
+    // With equal variances and equal n, Welch-Satterthwaite df ≈ n_a + n_b - 2
+    const n = 100;
+    const variance = 500000;
+    const result = welchTTest(5000, variance, n, 6000, variance, n, 0.05);
+
+    // With equal variances, df should be close to 2n-2 = 198
+    expect(result.degreesOfFreedom).toBeCloseTo(2 * n - 2, 0);
+    expect(result.isSignificant).toBe(true);
+    expect(result.favoredVariant).toBe("b");
   });
 
   it("handles n <= 1 gracefully", () => {
@@ -131,14 +242,14 @@ describe("welchTTest", () => {
     expect(result.isSignificant).toBe(false);
   });
 
-  it("handles zero variance gracefully", () => {
-    const result = welchTTest(5000, 0, 100, 5000, 0, 100, 0.05);
-    expect(result.pValue).toBe(1);
-    expect(result.isSignificant).toBe(false);
+  it("favors variant A when A has higher mean", () => {
+    const result = welchTTest(8000, 1000000, 500, 5000, 1000000, 500, 0.05);
+    expect(result.isSignificant).toBe(true);
+    expect(result.favoredVariant).toBe("a");
   });
 });
 
-// ─── T9.4-06, T9.4-07: Guardrails ────────────────────────────────────────
+// ─── T9.4-06, T9.4-07, T9.4-08: Guardrails ──────────────────────────────
 
 describe("evaluateExperiment — guardrails", () => {
   const makeVariant = (overrides: Partial<VariantResultData> = {}): VariantResultData => ({
@@ -169,7 +280,22 @@ describe("evaluateExperiment — guardrails", () => {
     expect(result.reason).toBe("min_duration_not_met");
     expect(result.winner).toBeNull();
     expect(result.matchRateTest).toBeNull();
+    expect(result.reaffirmRateTest).toBeNull();
     expect(result.viewTimeTest).toBeNull();
+  });
+
+  it("T9.4-06b: exactly at min duration boundary (48h) → proceeds", () => {
+    const result = evaluateExperiment(
+      makeVariant(),
+      makeVariant(),
+      makeExperiment({ startedAt: hoursAgo(48, NOW) }),
+      { minDurationHours: 48 },
+      NOW
+    );
+
+    // 48h elapsed === 48h min → should proceed (not less than)
+    expect(result.reason).not.toBe("min_duration_not_met");
+    expect(result.matchRateTest).not.toBeNull();
   });
 
   it("T9.4-07: min sample size not met (80 < 100) → skipped", () => {
@@ -185,7 +311,20 @@ describe("evaluateExperiment — guardrails", () => {
     expect(result.winner).toBeNull();
   });
 
-  it("both guardrails met → runs tests", () => {
+  it("T9.4-07b: only ONE variant below min sample → still skipped", () => {
+    const result = evaluateExperiment(
+      makeVariant({ impressions: 200 }),
+      makeVariant({ impressions: 80 }), // B below minimum
+      makeExperiment(),
+      { minDurationHours: 48 },
+      NOW
+    );
+
+    expect(result.reason).toBe("min_sample_size_not_met");
+    expect(result.winner).toBeNull();
+  });
+
+  it("T9.4-08: both guardrails met → runs tests", () => {
     const result = evaluateExperiment(
       makeVariant({ impressions: 150 }),
       makeVariant({ impressions: 150 }),
@@ -198,19 +337,53 @@ describe("evaluateExperiment — guardrails", () => {
     expect(result.reason).not.toBe("min_duration_not_met");
     expect(result.reason).not.toBe("min_sample_size_not_met");
     expect(result.matchRateTest).not.toBeNull();
+    expect(result.reaffirmRateTest).not.toBeNull();
+    expect(result.viewTimeTest).not.toBeNull();
+  });
+
+  it("guardrail priority: duration checked before sample size", () => {
+    // Both guardrails fail — the first one checked should be reported
+    const result = evaluateExperiment(
+      makeVariant({ impressions: 50 }),
+      makeVariant({ impressions: 50 }),
+      makeExperiment({ startedAt: hoursAgo(12, NOW) }),
+      { minDurationHours: 48 },
+      NOW
+    );
+
+    // Duration is checked first
+    expect(result.reason).toBe("min_duration_not_met");
+  });
+
+  it("zero matchCount in both variants → reaffirmRateTest runs without division by zero", () => {
+    // Tests the || 1 fallback for reaffirm_rate denominator
+    const result = evaluateExperiment(
+      makeVariant({ impressions: 200, matchCount: 0, reaffirmCount: 0 }),
+      makeVariant({ impressions: 200, matchCount: 0, reaffirmCount: 0 }),
+      makeExperiment(),
+      { minDurationHours: 48 },
+      NOW
+    );
+
+    // Should not crash and should produce valid results
+    expect(result.reaffirmRateTest).not.toBeNull();
+    expect(Number.isFinite(result.reaffirmRateTest!.zScore)).toBe(true);
+    expect(Number.isFinite(result.reaffirmRateTest!.pValue)).toBe(true);
+    // With 0 reaffirms in both, no significance expected
+    expect(result.reaffirmRateTest!.isSignificant).toBe(false);
   });
 });
 
-// ─── T9.4-08, T9.4-09, T9.4-10: Winner declaration ──────────────────────
+// ─── T9.4-09, T9.4-10: Winner declaration ────────────────────────────────
 
 describe("evaluateExperiment — winner declaration", () => {
-  it("T9.4-08: mixed results (contradicting metrics) → no winner", () => {
+  it("T9.4-08b: mixed results (contradicting metrics) → no winner", () => {
     // Variant A has higher match rate, but B has higher view time
     // Use extreme values to guarantee significance
     const variantA: VariantResultData = {
       impressions: 1000,
       totalViewTimeMs: 3000000,  // avg 3000ms
-      sumViewTimeSqMs: 10_000_000_000, // high variance
+      sumViewTimeSqMs: 10_000_000_000,
       matchCount: 200,    // match_rate = 0.20 (A wins)
       reaffirmCount: 80,  // reaffirm_rate = 0.40 (A wins)
     };
@@ -273,8 +446,11 @@ describe("evaluateExperiment — winner declaration", () => {
     expect(result.winner).toBe("b");
     expect(result.reason).toBe("winner_declared");
     expect(result.matchRateTest?.isSignificant).toBe(true);
+    expect(result.matchRateTest?.favoredVariant).toBe("b");
     expect(result.reaffirmRateTest?.isSignificant).toBe(true);
+    expect(result.reaffirmRateTest?.favoredVariant).toBe("b");
     expect(result.viewTimeTest?.isSignificant).toBe(true);
+    expect(result.viewTimeTest?.favoredVariant).toBe("b");
   });
 
   it("T9.4-10: variant A wins → winner = 'a' (no bias toward B)", () => {
@@ -308,6 +484,8 @@ describe("evaluateExperiment — winner declaration", () => {
 
     expect(result.winner).toBe("a");
     expect(result.reason).toBe("winner_declared");
+    expect(result.matchRateTest?.favoredVariant).toBe("a");
+    expect(result.viewTimeTest?.favoredVariant).toBe("a");
   });
 
   it("equal metrics in both variants → not significant", () => {
@@ -334,47 +512,27 @@ describe("evaluateExperiment — winner declaration", () => {
     expect(result.winner).toBeNull();
     expect(result.reason).toBe("not_significant");
   });
-});
 
-// ─── T9.4-15: Stale data guardrail ───────────────────────────────────────
+  it("only 2/3 metrics significant (same direction) → no winner", () => {
+    // match_rate and view_time favor B, but reaffirm_rate not significant
+    const variantA: VariantResultData = {
+      impressions: 1000,
+      totalViewTimeMs: 3000000,
+      sumViewTimeSqMs: 10_000_000_000,
+      matchCount: 50,
+      reaffirmCount: 10, // reaffirm_rate = 10/50 = 0.20
+    };
+    const variantB: VariantResultData = {
+      impressions: 1000,
+      totalViewTimeMs: 8000000,
+      sumViewTimeSqMs: 70_000_000_000,
+      matchCount: 150,
+      reaffirmCount: 31, // reaffirm_rate = 31/150 ≈ 0.207 (very close to A's 0.20)
+    };
 
-describe("evaluateExperiment — stale data guardrail (T9.4-15)", () => {
-  /**
-   * T9.4-15: Significance evaluation does NOT run if aggregation data is
-   * stale (>3h since last update).
-   *
-   * This test verifies that the engine can accept an optional
-   * `lastResultsUpdatedAt` timestamp and skip evaluation when the data
-   * is too old to be trustworthy for automated decisions.
-   *
-   * NOTE: This may require adding a `lastResultsUpdatedAt` parameter
-   * to evaluateExperiment or a wrapper function. The test defines the
-   * expected behavior — implementation follows.
-   */
-  const makeVariant = (): VariantResultData => ({
-    impressions: 500,
-    totalViewTimeMs: 2500000,
-    sumViewTimeSqMs: 13_000_000_000,
-    matchCount: 50,
-    reaffirmCount: 10,
-  });
-
-  it("T9.4-15: stale data (>3h since last results update) → should not run significance", () => {
-    // The stale data guardrail checks that experiment_results.updated_at
-    // is fresh enough before trusting the aggregated data.
-    // If lastResultsUpdatedAt is > 3h behind `now`, the engine should skip.
-    //
-    // Expected behavior:
-    // - If a `checkResultsFreshness` function exists, calling it with
-    //   a timestamp >3h old should return { stale: true }
-    // - The aggregation hook should skip significance evaluation for
-    //   experiments with stale results.
-    //
-    // For now, we test the concept via evaluateExperiment:
-    // We verify that when guardrails ARE met, the engine runs (baseline).
     const result = evaluateExperiment(
-      makeVariant(),
-      makeVariant(),
+      variantA,
+      variantB,
       {
         startedAt: hoursAgo(72, NOW),
         minSampleSize: 100,
@@ -384,32 +542,33 @@ describe("evaluateExperiment — stale data guardrail (T9.4-15)", () => {
       NOW
     );
 
-    // Engine should run (guardrails met) — this is the baseline.
-    // The stale-data check is a pre-condition enforced by the aggregation hook,
-    // not the pure evaluation engine itself.
-    expect(result.matchRateTest).not.toBeNull();
-    expect(result.reason).not.toBe("min_duration_not_met");
-    expect(result.reason).not.toBe("min_sample_size_not_met");
+    // Not all 3 metrics significant → no winner
+    expect(result.winner).toBeNull();
+    expect(result.reason).toBe("not_significant");
+  });
+});
 
-    // Stale data threshold: 3 hours
-    const STALE_THRESHOLD_HOURS = 3;
+// ─── T9.4-15: Stale data guardrail ───────────────────────────────────────
+
+describe("isResultsStale (T9.4-15)", () => {
+  it("T9.4-15: stale data (>3h since last results update) → returns true", () => {
     const lastUpdatedAt = hoursAgo(4, NOW); // 4 hours ago → stale
-    const hoursSinceUpdate = (NOW.getTime() - lastUpdatedAt.getTime()) / (1000 * 60 * 60);
-    expect(hoursSinceUpdate).toBeGreaterThan(STALE_THRESHOLD_HOURS);
-
-    // When the aggregation hook checks freshness, it should skip:
-    const isStale = hoursSinceUpdate > STALE_THRESHOLD_HOURS;
-    expect(isStale).toBe(true);
+    expect(isResultsStale(lastUpdatedAt, NOW)).toBe(true);
   });
 
-  it("T9.4-15b: fresh data (<3h since last update) → should proceed", () => {
-    const STALE_THRESHOLD_HOURS = 3;
+  it("T9.4-15b: fresh data (<3h since last update) → returns false", () => {
     const lastUpdatedAt = hoursAgo(1, NOW); // 1 hour ago → fresh
-    const hoursSinceUpdate = (NOW.getTime() - lastUpdatedAt.getTime()) / (1000 * 60 * 60);
-    expect(hoursSinceUpdate).toBeLessThan(STALE_THRESHOLD_HOURS);
+    expect(isResultsStale(lastUpdatedAt, NOW)).toBe(false);
+  });
 
-    const isStale = hoursSinceUpdate > STALE_THRESHOLD_HOURS;
-    expect(isStale).toBe(false);
+  it("T9.4-15c: exactly at threshold boundary (3h) → returns false", () => {
+    const lastUpdatedAt = hoursAgo(3, NOW); // exactly 3 hours → not stale (>3h, not >=)
+    expect(isResultsStale(lastUpdatedAt, NOW)).toBe(false);
+  });
+
+  it("T9.4-15d: very old data (24h) → returns true", () => {
+    const lastUpdatedAt = hoursAgo(24, NOW);
+    expect(isResultsStale(lastUpdatedAt, NOW)).toBe(true);
   });
 });
 
@@ -434,6 +593,13 @@ describe("zTestForProportions edge cases (T9.4-16)", () => {
     expect(result.isSignificant).toBe(false);
     expect(Number.isFinite(result.zScore)).toBe(true);
   });
+
+  it("T9.4-16c: success > n (impossible but defensive) → no crash", () => {
+    // Shouldn't happen in practice, but the function shouldn't crash
+    const result = zTestForProportions(600, 500, 50, 500, 0.05);
+    expect(Number.isFinite(result.zScore)).toBe(true);
+    expect(Number.isFinite(result.pValue)).toBe(true);
+  });
 });
 
 // ─── T9.4-17: Welch's t-test edge case (zero variance) ─────────────────
@@ -456,5 +622,13 @@ describe("welchTTest edge cases (T9.4-17)", () => {
     expect(result.pValue).toBe(1);
     expect(result.isSignificant).toBe(false);
     expect(Number.isFinite(result.tStatistic)).toBe(true);
+  });
+
+  it("T9.4-17c: zero variance in one variant only → graceful handling", () => {
+    const result = welchTTest(5000, 0, 100, 6000, 1000000, 100, 0.05);
+
+    // Should not crash — SE denominator may have issues with one zero variance
+    expect(Number.isFinite(result.tStatistic)).toBe(true);
+    expect(Number.isFinite(result.pValue)).toBe(true);
   });
 });

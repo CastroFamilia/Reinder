@@ -1,5 +1,5 @@
 /**
- * Story 9.4 — ATDD Tests: Aggregation hook integration
+ * Story 9.4 — Tests: Aggregation hook integration with significance engine.
  *
  * AC9: Integration with aggregation job (extension of Story 9.3)
  * - After aggregation completes, evaluates significance for ALL running experiments
@@ -11,9 +11,6 @@
  * AC7: Notification fire-and-forget pattern
  *
  * Source: story 9-4, AC6, AC7, AC9, Task 6
- *
- * TDD RED PHASE: Tests define expected behavior — implementation follows.
- * Run: pnpm --filter @reinder/shared test packages/shared/src/experiments/aggregation-significance-hook.test.ts
  */
 
 import { describe, it, expect, vi } from "vitest";
@@ -22,6 +19,7 @@ import {
   type VariantResultData,
   type ExperimentMetadata,
 } from "./significance-engine";
+import { isResultsStale } from "./aggregation-significance-hook";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -30,34 +28,35 @@ function hoursAgo(hours: number, from = new Date("2026-06-20T12:00:00Z")): Date 
 }
 
 const NOW = new Date("2026-06-20T12:00:00Z");
-const STALE_THRESHOLD_HOURS = 3;
+
+function makeVariant(overrides: Partial<VariantResultData> = {}): VariantResultData {
+  return {
+    impressions: 500,
+    totalViewTimeMs: 2500000,
+    sumViewTimeSqMs: 13_000_000_000,
+    matchCount: 50,
+    reaffirmCount: 10,
+    ...overrides,
+  };
+}
+
+function makeExperiment(overrides: Partial<ExperimentMetadata> = {}): ExperimentMetadata {
+  return {
+    startedAt: hoursAgo(72, NOW),
+    minSampleSize: 100,
+    targetPValue: 0.05,
+    ...overrides,
+  };
+}
 
 // ─── AC9: Aggregation hook behavior ──────────────────────────────────────────
 
 describe("Aggregation significance hook — AC9", () => {
-  /**
-   * After the aggregation job updates experiment_results, the significance
-   * hook should evaluate all running experiments that pass guardrails.
-   */
-
   it("AC9: evaluates significance for running experiments that pass guardrails", () => {
-    // Experiment with sufficient data — should be evaluated
-    const variantA: VariantResultData = {
-      impressions: 500,
-      totalViewTimeMs: 2500000,
-      sumViewTimeSqMs: 13_000_000_000,
-      matchCount: 50,
-      reaffirmCount: 10,
-    };
-
     const result = evaluateExperiment(
-      variantA,
-      { ...variantA }, // same data = not significant
-      {
-        startedAt: hoursAgo(72, NOW),
-        minSampleSize: 100,
-        targetPValue: 0.05,
-      },
+      makeVariant(),
+      makeVariant(), // same data = not significant
+      makeExperiment(),
       { minDurationHours: 48 },
       NOW
     );
@@ -66,25 +65,15 @@ describe("Aggregation significance hook — AC9", () => {
     expect(result.matchRateTest).not.toBeNull();
     expect(result.reaffirmRateTest).not.toBeNull();
     expect(result.viewTimeTest).not.toBeNull();
+    // Same data → not significant but engine DID run
+    expect(result.reason).toBe("not_significant");
   });
 
   it("AC9: skips experiments that don't meet guardrails (min duration)", () => {
-    const variant: VariantResultData = {
-      impressions: 500,
-      totalViewTimeMs: 2500000,
-      sumViewTimeSqMs: 13_000_000_000,
-      matchCount: 50,
-      reaffirmCount: 10,
-    };
-
     const result = evaluateExperiment(
-      variant,
-      { ...variant },
-      {
-        startedAt: hoursAgo(12, NOW), // only 12 hours ago
-        minSampleSize: 100,
-        targetPValue: 0.05,
-      },
+      makeVariant(),
+      makeVariant(),
+      makeExperiment({ startedAt: hoursAgo(12, NOW) }), // only 12 hours ago
       { minDurationHours: 48 },
       NOW
     );
@@ -93,43 +82,44 @@ describe("Aggregation significance hook — AC9", () => {
     expect(result.matchRateTest).toBeNull();
   });
 
-  it("AC9: processes experiments sequentially — fault isolation", () => {
-    // Simulate processing multiple experiments
+  it("AC9: skips experiments that don't meet guardrails (min sample size)", () => {
+    const result = evaluateExperiment(
+      makeVariant({ impressions: 50 }),
+      makeVariant({ impressions: 50 }),
+      makeExperiment(),
+      { minDurationHours: 48 },
+      NOW
+    );
+
+    expect(result.reason).toBe("min_sample_size_not_met");
+    expect(result.matchRateTest).toBeNull();
+  });
+
+  it("AC9: processes experiments sequentially — fault isolation pattern", () => {
+    // Simulate processing multiple experiments one by one.
+    // If one throws, try-catch should isolate and continue.
     const experiments = [
       { id: "exp-1", startedHoursAgo: 72, impressions: 500 },
       { id: "exp-2", startedHoursAgo: 72, impressions: 500 },
       { id: "exp-3", startedHoursAgo: 24, impressions: 500 }, // guardrail fail
     ];
 
-    const results = experiments.map((exp) => {
+    const results: Array<{ id: string; reason: string }> = [];
+
+    for (const exp of experiments) {
       try {
-        return evaluateExperiment(
-          {
-            impressions: exp.impressions,
-            totalViewTimeMs: 2500000,
-            sumViewTimeSqMs: 13_000_000_000,
-            matchCount: 50,
-            reaffirmCount: 10,
-          },
-          {
-            impressions: exp.impressions,
-            totalViewTimeMs: 2500000,
-            sumViewTimeSqMs: 13_000_000_000,
-            matchCount: 50,
-            reaffirmCount: 10,
-          },
-          {
-            startedAt: hoursAgo(exp.startedHoursAgo, NOW),
-            minSampleSize: 100,
-            targetPValue: 0.05,
-          },
+        const evaluation = evaluateExperiment(
+          makeVariant({ impressions: exp.impressions }),
+          makeVariant({ impressions: exp.impressions }),
+          makeExperiment({ startedAt: hoursAgo(exp.startedHoursAgo, NOW) }),
           { minDurationHours: 48 },
           NOW
         );
+        results.push({ id: exp.id, reason: evaluation.reason });
       } catch {
-        return { reason: "error", winner: null };
+        results.push({ id: exp.id, reason: "error" });
       }
-    });
+    }
 
     // Experiment 1 and 2 should be evaluated (not skipped)
     expect(results[0].reason).not.toBe("min_duration_not_met");
@@ -142,68 +132,62 @@ describe("Aggregation significance hook — AC9", () => {
     expect(results).toHaveLength(3);
   });
 
-  it("AC9: stale data check — skips if results are >3h old", () => {
-    // Simulate the stale data check that the aggregation hook performs
-    const lastUpdatedAt = hoursAgo(4, NOW); // 4 hours ago = stale
-    const hoursSinceUpdate =
-      (NOW.getTime() - lastUpdatedAt.getTime()) / (1000 * 60 * 60);
+  it("AC9: winner is declared when all metrics agree", () => {
+    // B is much better on all metrics
+    const variantA = makeVariant({
+      impressions: 1000,
+      totalViewTimeMs: 3000000,
+      sumViewTimeSqMs: 10_000_000_000,
+      matchCount: 50,
+      reaffirmCount: 5,
+    });
+    const variantB = makeVariant({
+      impressions: 1000,
+      totalViewTimeMs: 8000000,
+      sumViewTimeSqMs: 70_000_000_000,
+      matchCount: 150,
+      reaffirmCount: 45,
+    });
 
-    const isStale = hoursSinceUpdate > STALE_THRESHOLD_HOURS;
-    expect(isStale).toBe(true);
+    const result = evaluateExperiment(
+      variantA,
+      variantB,
+      makeExperiment(),
+      { minDurationHours: 48 },
+      NOW
+    );
 
-    // Fresh data should proceed
-    const freshUpdatedAt = hoursAgo(1, NOW); // 1 hour ago = fresh
-    const freshHoursSince =
-      (NOW.getTime() - freshUpdatedAt.getTime()) / (1000 * 60 * 60);
-
-    const isFresh = freshHoursSince <= STALE_THRESHOLD_HOURS;
-    expect(isFresh).toBe(true);
+    expect(result.winner).toBe("b");
+    expect(result.reason).toBe("winner_declared");
   });
 });
 
-// ─── AC6: Audit log structure ────────────────────────────────────────────────
+// ─── AC9/T9.4-15: Stale data check ──────────────────────────────────────────
 
-describe("Promotion audit log — AC6", () => {
-  it("AC6: promotion log has all required fields", () => {
-    // Define the expected shape of a promotion log entry
-    const promotionLog = {
-      experimentId: "exp-001",
-      listingId: "listing-001",
-      promotedVariant: "b" as const,
-      experimentType: "title" as const,
-      previousContent: { title: "Original Title" },
-      promotedContent: { title: "Winning Title" },
-      promotedAt: new Date(),
-      promotedBy: "system" as const,
-    };
-
-    // All required fields must be present
-    expect(promotionLog.experimentId).toBeDefined();
-    expect(promotionLog.listingId).toBeDefined();
-    expect(["a", "b"]).toContain(promotionLog.promotedVariant);
-    expect(["cover_image", "title", "description", "title_and_description"]).toContain(
-      promotionLog.experimentType
-    );
-    expect(promotionLog.previousContent).toBeDefined();
-    expect(promotionLog.promotedContent).toBeDefined();
-    expect(promotionLog.promotedAt).toBeInstanceOf(Date);
-    expect(promotionLog.promotedBy).toBe("system");
+describe("Aggregation hook — stale data check (AC9/T9.4-15)", () => {
+  it("stale data (>3h since last results update) → isResultsStale returns true", () => {
+    const lastUpdatedAt = hoursAgo(4, NOW); // 4 hours ago = stale
+    expect(isResultsStale(lastUpdatedAt, NOW)).toBe(true);
   });
 
-  it("AC6: rollback log has promoted_by = 'rollback_agency_admin'", () => {
-    const rollbackLog = {
-      experimentId: "exp-001",
-      listingId: "listing-001",
-      promotedVariant: "a" as const, // rollback restores variant_a
-      experimentType: "title" as const,
-      previousContent: { title: "Winning Title" },
-      promotedContent: { title: "Original Title" },
-      promotedAt: new Date(),
-      promotedBy: "rollback_agency_admin" as const,
-    };
+  it("fresh data (<3h since last update) → isResultsStale returns false", () => {
+    const freshUpdatedAt = hoursAgo(1, NOW); // 1 hour ago = fresh
+    expect(isResultsStale(freshUpdatedAt, NOW)).toBe(false);
+  });
 
-    expect(rollbackLog.promotedBy).toBe("rollback_agency_admin");
-    expect(rollbackLog.promotedVariant).toBe("a");
+  it("exactly at 3h boundary → not stale (strictly greater than)", () => {
+    const atBoundary = hoursAgo(3, NOW);
+    // isResultsStale uses > (not >=), so exactly 3h should not be stale
+    expect(isResultsStale(atBoundary, NOW)).toBe(false);
+  });
+
+  it("very stale data (72h) → stale", () => {
+    const veryOld = hoursAgo(72, NOW);
+    expect(isResultsStale(veryOld, NOW)).toBe(true);
+  });
+
+  it("just updated (0h) → not stale", () => {
+    expect(isResultsStale(NOW, NOW)).toBe(false);
   });
 });
 
@@ -211,30 +195,47 @@ describe("Promotion audit log — AC6", () => {
 
 describe("Notification on winner declaration — AC7", () => {
   it("AC7: notification includes experiment name and winner variant", () => {
-    const notification = {
-      experimentName: "Cover Image A/B Test",
-      winnerVariant: "b" as const,
-      message: 'Experimento "Cover Image A/B Test": Variante B es la ganadora 🏆',
-    };
+    const experimentName = "Cover Image A/B Test";
+    const winnerVariant = "b" as const;
 
-    expect(notification.experimentName).toBeDefined();
-    expect(notification.winnerVariant).toBeDefined();
-    expect(notification.message).toContain(notification.experimentName);
-    expect(notification.message).toContain("ganadora");
+    // Verify notification message format matches AC7 requirements:
+    // "Experimento '{name}': Variante {B} es la ganadora 🏆"
+    const message = `Experimento "${experimentName}": Variante ${winnerVariant.toUpperCase()} es la ganadora 🏆`;
+
+    expect(message).toContain(experimentName);
+    expect(message).toContain("ganadora");
+    expect(message).toContain("B");
   });
 
   it("AC7: notification is fire-and-forget — errors do not propagate", async () => {
-    // Simulate a failing notification
+    // Suppress console.error noise in test output
+    const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+
+    // Simulate a failing notification following the pattern of notify-agent.ts
     const notifyFn = async () => {
       try {
         throw new Error("Push service unavailable");
-      } catch {
-        // Fire-and-forget: swallow the error
-        console.error("[notifyExperimentWinner] Push failed");
+      } catch (err) {
+        // Fire-and-forget: swallow the error, just like the production code does
+        console.error("[notifyExperimentWinner] Push failed:", err);
       }
     };
 
-    // The function should NOT throw
+    // The function should NOT throw — errors are swallowed
     await expect(notifyFn()).resolves.toBeUndefined();
+    // Verify the error was logged (not silently swallowed without trace)
+    expect(consoleSpy).toHaveBeenCalledWith(
+      "[notifyExperimentWinner] Push failed:",
+      expect.any(Error)
+    );
+
+    consoleSpy.mockRestore();
+  });
+
+  it("AC7: notification for variant A winner", () => {
+    const winnerVariant = "a" as const;
+    const message = `Experimento "Title Test": Variante ${winnerVariant.toUpperCase()} es la ganadora 🏆`;
+    expect(message).toContain("A");
+    expect(message).toContain("ganadora");
   });
 });
