@@ -227,16 +227,16 @@ describe("POST /api/v1/experiments/:id/rollback — AC8", () => {
     const expectedStatus = "completed";
     expect(expectedStatus).toBe("completed");
 
-    // 3. Response shape
+    // 3. Expected response shape for the rollback API
     const expectedResponse = {
       data: {
-        experiment: expect.objectContaining({
+        experiment: {
           id: EXPERIMENT_ID,
           status: "completed",
-        }),
-        listing: expect.objectContaining({
+        },
+        listing: {
           title: "Original Title",
-        }),
+        },
       },
       error: null,
     };
