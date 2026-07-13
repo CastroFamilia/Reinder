@@ -205,6 +205,10 @@ export function PropertyDetailSheet({
             contentContainerStyle={styles.scrollContent}
             showsVerticalScrollIndicator={false}
             bounces={false}
+            scrollEventThrottle={16}
+            onScroll={(e) => {
+              isScrolledToTop.current = e.nativeEvent.contentOffset.y <= 0;
+            }}
           >
             {/* Hero image */}
             <Image
@@ -333,26 +337,42 @@ export function PropertyDetailSheet({
             <Text style={styles.closeButtonText}>Volver</Text>
           </TouchableOpacity>
         </GlassPanel>
-      </View>
+      </Animated.View>
     </Modal>
   );
 }
 
 const styles = StyleSheet.create({
-  // Backdrop semitransparente
+  // Backdrop — covers entire screen, animated opacity
   backdrop: {
-    flex: 1,
-    justifyContent: 'flex-end',
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
     backgroundColor: 'rgba(0, 0, 0, 0.55)',
   },
 
-  // Sheet — anclado en la parte inferior, máximo 88% de pantalla
+  // Invisible touchable covering the backdrop area above the sheet
+  backdropTouchable: {
+    flex: 1,
+  },
+
+  // Outer wrapper for the sheet — positioned at bottom, animated translateY
+  sheetOuter: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    maxHeight: '88%',
+  },
+
+  // Sheet glass panel
   sheet: {
     borderTopLeftRadius: Radius.card,
     borderTopRightRadius: Radius.card,
     borderBottomLeftRadius: 0,
     borderBottomRightRadius: 0,
-    maxHeight: '88%',
     overflow: 'hidden',
   },
 
