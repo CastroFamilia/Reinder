@@ -356,7 +356,7 @@ export function evaluateExperiment(
     };
   }
 
-  const winner = allTests[0].favoredVariant!;
+  const winner = [...favoredVariants][0] as "a" | "b";
 
   return {
     matchRateTest,

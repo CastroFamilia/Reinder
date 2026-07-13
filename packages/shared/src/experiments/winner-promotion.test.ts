@@ -64,7 +64,7 @@ function computeListingUpdate(
       const targetIndex = (content as Record<string, unknown>).coverImageIndex as number ?? 0;
       if (variant === "winner" && targetIndex > 0 && targetIndex < images.length) {
         const [img] = images.splice(targetIndex, 1);
-        images.unshift(img);
+        if (img !== undefined) images.unshift(img);
       }
       update.images = images;
       break;

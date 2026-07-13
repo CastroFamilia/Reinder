@@ -121,15 +121,15 @@ describe("Aggregation significance hook — AC9", () => {
       }
     }
 
-    // Experiment 1 and 2 should be evaluated (not skipped)
-    expect(results[0].reason).not.toBe("min_duration_not_met");
-    expect(results[1].reason).not.toBe("min_duration_not_met");
-
-    // Experiment 3 should be skipped (guardrail)
-    expect(results[2].reason).toBe("min_duration_not_met");
-
     // All experiments should have results (no unhandled crashes)
     expect(results).toHaveLength(3);
+
+    // Experiment 1 and 2 should be evaluated (not skipped)
+    expect(results[0]!.reason).not.toBe("min_duration_not_met");
+    expect(results[1]!.reason).not.toBe("min_duration_not_met");
+
+    // Experiment 3 should be skipped (guardrail)
+    expect(results[2]!.reason).toBe("min_duration_not_met");
   });
 
   it("AC9: winner is declared when all metrics agree", () => {

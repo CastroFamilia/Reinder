@@ -129,7 +129,7 @@ export async function POST(_request: NextRequest, { params }: RouteParams) {
         const originalIndex = originalContent.coverImageIndex ?? 0;
         if (originalIndex > 0 && images.length > originalIndex) {
           const [img] = images.splice(0, 1);
-          images.splice(originalIndex, 0, img);
+          if (img !== undefined) images.splice(originalIndex, 0, img);
         }
         listingUpdate.images = images;
         break;

@@ -118,7 +118,7 @@ export async function promoteWinner(
       const targetIndex = winnerContent.coverImageIndex ?? 0;
       if (targetIndex > 0 && targetIndex < images.length) {
         const [img] = images.splice(targetIndex, 1);
-        images.unshift(img);
+        if (img !== undefined) images.unshift(img);
       }
       listingUpdate.images = images;
       break;
@@ -175,7 +175,8 @@ export async function promoteWinner(
  *
  * @param db - Drizzle database instance
  * @param experimentId - UUID of the experiment
- * @returns RollbackResult or null if experiment not found
+ * @returns RollbackResult with restored content details
+ * @throws Error if experiment not found
  * @throws Error if experiment status is not 'winner_promoted'
  */
 export async function rollbackPromotion(
@@ -220,7 +221,7 @@ export async function rollbackPromotion(
       // Move current first image back to its original position
       if (originalIndex > 0 && images.length > originalIndex) {
         const [img] = images.splice(0, 1);
-        images.splice(originalIndex, 0, img);
+        if (img !== undefined) images.splice(originalIndex, 0, img);
       }
       listingUpdate.images = images;
       break;
