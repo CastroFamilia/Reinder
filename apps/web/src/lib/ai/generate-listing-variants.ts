@@ -26,7 +26,7 @@ function sanitizeInput(value: string): string {
   return value
     // Remove common prompt injection delimiters
     .replace(/```/g, "")
-    .replace(/<\/?\w+>/g, "") // strip HTML-like tags
+    .replace(/<\/?[\w-][^>]*>/g, "") // strip HTML-like tags (incl. attributes)
     // Collapse multiple newlines and normalize whitespace
     .replace(/\n{3,}/g, "\n\n")
     .replace(/\s{2,}/g, " ")
@@ -114,7 +114,7 @@ export async function generateListingVariants(listing: ListingInput): Promise<{
         "listing_variants"
       ),
       temperature: 0.8,
-      max_tokens: 2000,
+      max_completion_tokens: 2000,
     });
 
     const parsed = completion.choices[0].message.parsed;
@@ -143,7 +143,7 @@ export async function generateListingVariants(listing: ListingInput): Promise<{
     lastVariants = safeVariants;
 
     if (safeVariants.length > 0) {
-      // Ensure we return exactly 3 (pad with originals if some were filtered)
+      // Return up to 3 safe variants (some may have been filtered)
       const finalVariants = safeVariants.slice(0, 3);
       return {
         variants: finalVariants,

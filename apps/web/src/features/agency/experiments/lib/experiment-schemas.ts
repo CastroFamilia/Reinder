@@ -9,15 +9,6 @@
  */
 import { z } from "zod";
 
-// ─── Experiment types ────────────────────────────────────────────────────────
-
-const experimentTypeValues = [
-  "cover_image",
-  "title",
-  "description",
-  "title_and_description",
-] as const;
-
 // ─── Cover image variant schema ─────────────────────────────────────────────
 
 const coverImageVariantSchema = z.object({

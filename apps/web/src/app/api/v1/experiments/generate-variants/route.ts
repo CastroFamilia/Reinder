@@ -175,15 +175,19 @@ export async function POST(req: NextRequest) {
       price: listing.price,
     });
 
-    // 8. Record usage (post-success)
-    await recordUsage({
-      agencyId: profile.agency_id,
-      listingId,
-      userId: user.id,
-      model: result.usage.model,
-      promptTokens: result.usage.promptTokens,
-      completionTokens: result.usage.completionTokens,
-    });
+    // 8. Record usage (post-success, non-fatal — don't lose variants on tracking failure)
+    try {
+      await recordUsage({
+        agencyId: profile.agency_id,
+        listingId,
+        userId: user.id,
+        model: result.usage.model,
+        promptTokens: result.usage.promptTokens,
+        completionTokens: result.usage.completionTokens,
+      });
+    } catch (usageError) {
+      console.error("[ai-variants] Failed to record usage (non-fatal):", usageError);
+    }
 
     // 9. Return variants
     return NextResponse.json({
