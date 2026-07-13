@@ -97,7 +97,7 @@ Create Story → [Validate Story] → Dev Story → [QA Automation] → [Code Re
 | **Epic 6** | Descubrimiento Orgánico y SEO | 3/3 done | ✅ **Completado** |
 | **Epic 7** | Administración de Plataforma | 4/4 done | ✅ **Completado** |
 | **Epic 8** | Engagement Intelligence | 7/7 done | ✅ **Completado** |
-| **Epic 9** | Content Optimization & A/B Testing | 3/6 done | 🚧 **En Progreso** — stories 9.1–9.3 done (PRs #25, #32, #33) |
+| **Epic 9** | Content Optimization & A/B Testing | 6/6 done | ✅ **Completado** — stories 9.1–9.3 merged, 9.4–9.6 PRs #34/#35/#36 |
 | **Epic 10** | Personalized Content Layer | 0/5 | ⬜ Backlog |
 | **Epic 11** | Experiencia Web del Comprador | 7/7 done | ✅ **Completado** |
 
@@ -112,7 +112,12 @@ Create Story → [Validate Story] → Dev Story → [QA Automation] → [Code Re
 - ✅ Story 9.1: Schema de experimentos + motor de asignación de variantes (PR #25)
 - ✅ Story 9.2: UI de creación de experimentos para agencias — portada A/B (PR #32)
 - ✅ Story 9.3: Medición de impacto + dashboard de resultados del experimento (PR #33)
-- 🟡 Stories 9.4–9.6: ready-for-dev (auto-promoción ganadora, recomendaciones proactivas, generación IA)
+- ✅ Stories 9.4–9.6: done — auto-promoción ganadora (PR #34), recomendaciones proactivas (PR #36), generación IA (PR #35)
+
+**🧪 Sesión 2026-07-06/13 — Epic 9 Completado (6/6):**
+- ✅ Story 9.4: Motor de significancia estadística (z-test, Welch's t-test), auto-promoción + rollback API (PR #34)
+- ✅ Story 9.5: Detector de underperformance (z-score), motor de recomendaciones con caps semanales, API + UI (PR #36)
+- ✅ Story 9.6: Generación de variantes con IA (OpenAI GPT-4o), content safety, rate limiting, UI (PR #35)
 
 **🧪 Sesión 2026-06-30 — Registro Web, Redirects y Swipe Mobile View Modes:**
 - ✅ **Flujo de Registro & Callbacks**: Corregida redirección y visualización de pantalla de confirmación de email; mejorada la robustez al usar el cliente Supabase autenticado en API Route Handlers.
@@ -131,7 +136,7 @@ Create Story → [Validate Story] → Dev Story → [QA Automation] → [Code Re
 | 5 | **Listing detail Epic 6 vs 11** — auditoría | 🟡 Medio | P2 | 🟡 Parcial — listing detail modificado |
 | 6 | **Sin concepto de "plan" en schema de agencias** | 🟡 Medio | P3 | ❌ Pendiente |
 
-**Siguiente:** Continuar con Epic 9 stories 9.4–9.6 → Email transaccional (G4) → Plan schema (G6) → Epic 10
+**Siguiente:** Email transaccional (G4) → Plan schema (G6) → Epic 10
 
 
 ---
