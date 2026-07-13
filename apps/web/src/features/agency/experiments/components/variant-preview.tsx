@@ -232,6 +232,15 @@ export function VariantPreview({
           )}
         </div>
       </div>
+
+      {/* Responsive: stack vertically on mobile (AC9) */}
+      <style>{`
+        @media (max-width: 640px) {
+          #variant-text-preview {
+            grid-template-columns: 1fr !important;
+          }
+        }
+      `}</style>
     </div>
   );
 }

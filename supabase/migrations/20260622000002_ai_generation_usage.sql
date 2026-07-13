@@ -48,4 +48,10 @@ CREATE POLICY "platform_admin_full_access_ai_usage"
       SELECT 1 FROM user_profiles
       WHERE id = auth.uid() AND role = 'platform_admin'
     )
+  )
+  WITH CHECK (
+    EXISTS (
+      SELECT 1 FROM user_profiles
+      WHERE id = auth.uid() AND role = 'platform_admin'
+    )
   );

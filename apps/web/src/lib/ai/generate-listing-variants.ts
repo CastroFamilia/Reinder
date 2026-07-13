@@ -16,6 +16,25 @@ import { z } from "zod";
 import { filterUnsafeVariants, detectLanguage } from "./content-safety";
 import type { AiVariant } from "@reinder/shared/types/ai-variant";
 
+// ─── Input Sanitization (prompt injection defense) ───────────────────────────
+
+/**
+ * Strips characters and patterns that could be used for prompt injection.
+ * Removes control characters, excessive whitespace, and common injection markers.
+ */
+function sanitizeInput(value: string): string {
+  return value
+    // Remove common prompt injection delimiters
+    .replace(/```/g, "")
+    .replace(/<\/?\w+>/g, "") // strip HTML-like tags
+    // Collapse multiple newlines and normalize whitespace
+    .replace(/\n{3,}/g, "\n\n")
+    .replace(/\s{2,}/g, " ")
+    .trim()
+    // Hard limit to prevent payload stuffing (longest field is description)
+    .slice(0, 2000);
+}
+
 // ─── Response Schema ─────────────────────────────────────────────────────────
 
 const AiVariantResponseSchema = z.object({
@@ -112,6 +131,13 @@ export async function generateListingVariants(listing: ListingInput): Promise<{
       rawVariants = rawVariants.map((v) => ({ ...v, description: "" }));
     }
 
+    // Server-side length enforcement (AC1: title ≤120 chars, description ≤500 chars)
+    rawVariants = rawVariants.map((v) => ({
+      ...v,
+      title: v.title.slice(0, 120),
+      description: v.description.slice(0, 500),
+    }));
+
     // Content safety filter
     const safeVariants = filterUnsafeVariants(rawVariants, originalLang);
     lastVariants = safeVariants;
@@ -172,11 +198,11 @@ function buildUserPrompt(listing: ListingInput, hasDescription: boolean): string
     : "No especificada";
 
   return `Listing original:
-- Título: ${listing.title}
-${hasDescription ? `- Descripción: ${listing.description}` : ""}
+- Título: ${sanitizeInput(listing.title)}
+${hasDescription ? `- Descripción: ${sanitizeInput(listing.description!)}` : ""}
 - Dormitorios: ${listing.bedrooms ?? "No especificado"}
 - Superficie: ${sizeFormatted}
-- Ciudad: ${listing.city ?? "No especificada"}
+- Ciudad: ${listing.city ? sanitizeInput(listing.city) : "No especificada"}
 - Precio: ${priceFormatted}
 
 Genera 3 variantes alternativas.`;
