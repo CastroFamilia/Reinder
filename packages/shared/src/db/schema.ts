@@ -331,6 +331,7 @@ export const experimentStatusEnum = pgEnum("experiment_status", [
   "paused",
   "completed",
   "cancelled",
+  "winner_promoted",
 ]);
 
 /**
@@ -456,6 +457,41 @@ export const experimentResults = pgTable(
     experimentResultsUnique: unique("experiment_results_unique").on(
       table.experimentId,
       table.variant
+    ),
+  })
+);
+
+// ---------------------------------------------------------------------------
+// Tabla: experiment_promotion_logs
+// Audit log para auto-promoción y rollback de variantes ganadoras.
+// Source: story 9-4, AC6
+// ---------------------------------------------------------------------------
+
+export const experimentPromotionLogs = pgTable(
+  "experiment_promotion_logs",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    experimentId: uuid("experiment_id")
+      .notNull()
+      .references(() => listingExperiments.id),
+    listingId: uuid("listing_id")
+      .notNull()
+      .references(() => listings.id),
+    promotedVariant: text("promoted_variant").notNull(), // 'a' | 'b'
+    experimentType: text("experiment_type").notNull(),
+    previousContent: jsonb("previous_content").notNull(),
+    promotedContent: jsonb("promoted_content").notNull(),
+    promotedAt: timestamp("promoted_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    promotedBy: text("promoted_by").notNull().default("system"),
+  },
+  (table) => ({
+    idxPromotionLogsExperimentId: index("idx_promotion_logs_experiment_id").on(
+      table.experimentId
+    ),
+    idxPromotionLogsListingId: index("idx_promotion_logs_listing_id").on(
+      table.listingId
     ),
   })
 );

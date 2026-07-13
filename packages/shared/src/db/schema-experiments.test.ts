@@ -70,6 +70,7 @@ describe("Drizzle Schema — Experiment Tables (AC1, AC2, AC3, AC8)", () => {
       "paused",
       "completed",
       "cancelled",
+      "winner_promoted",
     ]);
   });
 
