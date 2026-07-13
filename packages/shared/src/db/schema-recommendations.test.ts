@@ -120,7 +120,7 @@ describe("Shared Types — Recommendation types (AC10)", () => {
     const types = await import("../types/experiment");
 
     // Verify the type exists by checking it's exported
-    const rec: types.ExperimentRecommendation = {
+    const rec: import("../types/experiment").ExperimentRecommendation = {
       id: "test",
       agencyId: "test",
       listingId: "test",
@@ -249,8 +249,8 @@ describe("Recommendation Limits (AC4)", () => {
       .slice(0, MAX_PER_AGENCY);
 
     expect(selected).toHaveLength(3);
-    expect(selected[0].priorityScore).toBe(90);
-    expect(selected[2].priorityScore).toBe(80);
+    expect(selected[0]!.priorityScore).toBe(90);
+    expect(selected[2]!.priorityScore).toBe(80);
   });
 });
 

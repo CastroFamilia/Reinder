@@ -76,6 +76,11 @@ export function determineExperimentType(zScores: ZScores): ExperimentType {
   const worst = candidates[0];
   const secondWorst = candidates.length > 1 ? candidates[1] : null;
 
+  // Guard: should never happen since we always add matchRate + viewTime
+  if (!worst) {
+    return "title_and_description";
+  }
+
   // Check if 2+ metrics are equally bad (within 0.01 tolerance)
   if (secondWorst && Math.abs(worst.z - secondWorst.z) < 0.01) {
     return "title_and_description";

@@ -284,8 +284,8 @@ describe("Recommendation Engine — AC4: Limit 3 per Agency per Week", () => {
     expect(selected).toHaveLength(3);
     // Should be ordered by priority_score descending
     for (let i = 0; i < selected.length - 1; i++) {
-      expect(selected[i].priorityScore).toBeGreaterThanOrEqual(
-        selected[i + 1].priorityScore
+      expect(selected[i]!.priorityScore).toBeGreaterThanOrEqual(
+        selected[i + 1]!.priorityScore
       );
     }
   });

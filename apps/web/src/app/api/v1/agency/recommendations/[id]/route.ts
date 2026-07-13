@@ -23,6 +23,11 @@ type ValidAction = (typeof VALID_ACTIONS)[number];
 const UUID_REGEX =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
+/** Validates that a string is a valid UUID v4 format */
+function isValidUuid(value: string): boolean {
+  return UUID_REGEX.test(value);
+}
+
 function validatePatchBody(body: unknown):
   | { valid: true; action: ValidAction; experimentId?: string }
   | { valid: false; message: string } {
@@ -72,6 +77,17 @@ export async function PATCH(
   { params }: { params: { id: string } },
 ) {
   const { id } = await (params instanceof Promise ? params : Promise.resolve(params));
+
+  // ─── 0. Validate path parameter ─────────────────────────────────────────
+  if (!isValidUuid(id)) {
+    return NextResponse.json(
+      {
+        data: null,
+        error: { code: "INVALID_INPUT", message: "Invalid recommendation ID format" },
+      },
+      { status: 400 },
+    );
+  }
 
   // ─── 1. Auth check ──────────────────────────────────────────────────────
 
