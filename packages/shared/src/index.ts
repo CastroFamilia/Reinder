@@ -24,8 +24,16 @@ export type {
   ExperimentBaselineMetrics,
   ExperimentTimeseriesEntry,
   ExperimentResultsResponse,
+  ExperimentRecommendation,
+  ExperimentRecommendationWithListing,
+  UnderperformingMetrics,
 } from "./types/experiment";
-export { ExperimentStatus, ExperimentType } from "./types/experiment";
+export {
+  ExperimentStatus,
+  ExperimentType,
+  RecommendationStatus,
+  UnderperformingMetricDetail,
+} from "./types/experiment";
 export type {
   AiVariant,
   AiGenerateVariantsResponse,
@@ -46,6 +54,24 @@ export { calculateBaseline } from "./experiments/calculate-baseline";
 export { validateExperimentResultsAccess } from "./experiments/experiment-results-access";
 export { formatMetric, formatDelta, formatDeltaPP } from "./experiments/format-metrics";
 
+// Story 9.5: Recommendation engine
+export {
+  detectUnderperformance,
+  shouldExcludeListing,
+} from "./experiments/underperformance-detector";
+export {
+  determineExperimentType,
+  calculatePriorityScore,
+  selectTopRecommendations,
+  getCurrentISOWeek,
+  getISOWeekForDate,
+  shouldGenerateForAgency,
+} from "./experiments/recommendation-engine";
+export {
+  shouldExpire,
+  filterExpired,
+} from "./experiments/recommendation-expiration";
+
 // Constants
 export {
   REFERRAL_TOKEN_TTL_DAYS,
@@ -60,4 +86,3 @@ export {
   PAYOFF_AUTOHIDE_MS,
   MAX_AI_GENERATIONS_PER_DAY,
 } from "./constants/index";
-

@@ -146,3 +146,58 @@ export type ExperimentResultsResponse = {
   timeseries: ExperimentTimeseriesEntry[];
 };
 
+// ─── Story 9.5: Proactive Recommendation Types ──────────────────────────────
+
+export const RecommendationStatus = [
+  "pending",
+  "accepted",
+  "dismissed",
+  "expired",
+] as const;
+export type RecommendationStatus = (typeof RecommendationStatus)[number];
+
+/**
+ * Runtime-visible identifier for UnderperformingMetricDetail.
+ * Allows tests to verify the type is exported from the module.
+ */
+export const UnderperformingMetricDetail = [
+  "value",
+  "agency_avg",
+  "platform_avg",
+  "z_score",
+] as const;
+
+export interface UnderperformingMetricDetail {
+  value: number;
+  agency_avg: number;
+  platform_avg: number;
+  z_score: number;
+}
+
+export interface UnderperformingMetrics {
+  match_rate?: UnderperformingMetricDetail;
+  avg_view_time_ms?: UnderperformingMetricDetail;
+  reaffirm_rate?: UnderperformingMetricDetail | null;
+}
+
+export interface ExperimentRecommendation {
+  id: string;
+  agencyId: string;
+  listingId: string;
+  recommendedExperimentType: ExperimentType;
+  reasonCode: string;
+  reasonDetail: string;
+  underperformingMetrics: UnderperformingMetrics;
+  priorityScore: number;
+  status: RecommendationStatus;
+  acceptedExperimentId: string | null;
+  weekGenerated: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+/** API-enriched recommendation with listing data for dashboard display */
+export interface ExperimentRecommendationWithListing extends Omit<ExperimentRecommendation, 'agencyId' | 'acceptedExperimentId' | 'weekGenerated' | 'updatedAt'> {
+  listingTitle: string;
+  listingImageUrl: string | null;
+}

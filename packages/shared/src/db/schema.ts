@@ -532,6 +532,53 @@ export const experimentResultsTimeseries = pgTable(
   })
 );
 
+// Tabla: experiment_recommendations
+// Recomendaciones proactivas de experimentos A/B para listings underperforming.
+// Generadas semanalmente por pg_cron via generate_experiment_recommendations().
+// Source: story 9-5, AC1
+// ---------------------------------------------------------------------------
+
+export const experimentRecommendations = pgTable(
+  "experiment_recommendations",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    agencyId: uuid("agency_id")
+      .notNull()
+      .references(() => agencies.id),
+    listingId: uuid("listing_id")
+      .notNull()
+      .references(() => listings.id),
+    recommendedExperimentType: experimentTypeEnum("recommended_experiment_type").notNull(),
+    reasonCode: text("reason_code").notNull(),
+    reasonDetail: text("reason_detail").notNull(),
+    underperformingMetrics: jsonb("underperforming_metrics")
+      .$type<{
+        match_rate?: { value: number; agency_avg: number; platform_avg: number; z_score: number };
+        avg_view_time_ms?: { value: number; agency_avg: number; platform_avg: number; z_score: number };
+        reaffirm_rate?: { value: number; agency_avg: number; platform_avg: number; z_score: number } | null;
+      }>()
+      .notNull(),
+    priorityScore: numeric("priority_score", { precision: 5, scale: 2 }).notNull(),
+    status: text("status").notNull().default("pending"), // pending | accepted | dismissed | expired
+    acceptedExperimentId: uuid("accepted_experiment_id")
+      .references(() => listingExperiments.id),
+    weekGenerated: text("week_generated").notNull(), // ISO week: 2026-W25
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => ({
+    idxRecommendationsAgencyId: index("idx_recommendations_agency_id").on(table.agencyId),
+    idxRecommendationsListingStatus: index("idx_recommendations_listing_status").on(
+      table.listingId,
+      table.status
+    ),
+  })
+);
+
 // ---------------------------------------------------------------------------
 // Tabla: ai_generation_usage
 // Tracks AI variant generation calls per agency for rate limiting and billing.
@@ -562,4 +609,41 @@ export const aiGenerationUsage = pgTable(
     ).on(table.agencyId, table.createdAt),
   })
 );
-
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    agencyId: uuid("agency_id")
+      .notNull()
+      .references(() => agencies.id),
+    listingId: uuid("listing_id")
+      .notNull()
+      .references(() => listings.id),
+    recommendedExperimentType: experimentTypeEnum("recommended_experiment_type").notNull(),
+    reasonCode: text("reason_code").notNull(),
+    reasonDetail: text("reason_detail").notNull(),
+    underperformingMetrics: jsonb("underperforming_metrics")
+      .$type<{
+        match_rate?: { value: number; agency_avg: number; platform_avg: number; z_score: number };
+        avg_view_time_ms?: { value: number; agency_avg: number; platform_avg: number; z_score: number };
+        reaffirm_rate?: { value: number; agency_avg: number; platform_avg: number; z_score: number } | null;
+      }>()
+      .notNull(),
+    priorityScore: numeric("priority_score", { precision: 5, scale: 2 }).notNull(),
+    status: text("status").notNull().default("pending"), // pending | accepted | dismissed | expired
+    acceptedExperimentId: uuid("accepted_experiment_id")
+      .references(() => listingExperiments.id),
+    weekGenerated: text("week_generated").notNull(), // ISO week: 2026-W25
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => ({
+    idxRecommendationsAgencyId: index("idx_recommendations_agency_id").on(table.agencyId),
+    idxRecommendationsListingStatus: index("idx_recommendations_listing_status").on(
+      table.listingId,
+      table.status
+    ),
+  })
+);

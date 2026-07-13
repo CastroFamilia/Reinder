@@ -18,6 +18,7 @@ import { eq, and, desc } from "drizzle-orm";
 import Link from "next/link";
 import type { Metadata } from "next";
 import { ExperimentList } from "@/features/agency/experiments/components/experiment-list";
+import { RecommendationsSection } from "@/features/agency/experiments/components/recommendations-section";
 
 export const metadata: Metadata = {
   title: "Experimentos A/B — Reinder",
@@ -151,6 +152,9 @@ export default async function ExperimentsPage() {
           ✨ Crear Experimento
         </Link>
       </div>
+
+      {/* Story 9.5, AC8: Proactive recommendations section */}
+      <RecommendationsSection />
 
       <ExperimentList experiments={serialized} />
     </main>
