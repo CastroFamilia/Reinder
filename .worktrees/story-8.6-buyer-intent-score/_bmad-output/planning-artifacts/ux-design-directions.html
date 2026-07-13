@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reinder — Design Directions</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0D0D0D;
+    --bg-warm: #1A1208;
+    --surface: #1E1A15;
+    --surface2: #2A2318;
+    --orange: #FF6B00;
+    --orange-warm: #FF8C00;
+    --reject: #8B3A3A;
+    --sold: #6B4E00;
+    --text: #F5F0E8;
+    --muted: #9E9080;
+    --border: #2E2820;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #111; font-family: 'Inter', sans-serif; color: var(--text); }
+
+  /* NAV */
+  nav { display: flex; gap: 12px; padding: 20px; background: #0a0a0a; border-bottom: 1px solid #222; flex-wrap: wrap; }
+  nav button { padding: 8px 18px; border: 1px solid #333; background: transparent; color: var(--muted); border-radius: 20px; cursor: pointer; font-size: 13px; transition: all 0.2s; }
+  nav button.active { background: var(--orange); color: white; border-color: var(--orange); }
+  nav h2 { color: var(--orange); font-size: 18px; font-weight: 700; align-self: center; margin-right: 12px; }
+
+  /* DIRECTIONS */
+  .direction { display: none; padding: 32px 20px; max-width: 1100px; margin: 0 auto; }
+  .direction.active { display: block; }
+  .dir-title { font-size: 22px; font-weight: 700; color: var(--orange); margin-bottom: 6px; }
+  .dir-desc { color: var(--muted); font-size: 14px; margin-bottom: 32px; }
+
+  /* PHONE FRAME */
+  .phones { display: flex; gap: 24px; flex-wrap: wrap; justify-content: center; margin-bottom: 40px; }
+  .phone-wrap { text-align: center; }
+  .phone-label { font-size: 12px; color: var(--muted); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.05em; }
+  .phone { width: 280px; height: 560px; background: var(--bg); border-radius: 36px; overflow: hidden; border: 2px solid #2a2a2a; position: relative; box-shadow: 0 24px 60px rgba(0,0,0,0.7); }
+
+  /* ====== DIRECTION 1: BOLD DARK ====== */
+  /* Swipe card */
+  .d1-swipe { width: 100%; height: 100%; position: relative; background: #1a1208; display: flex; flex-direction: column; }
+  .d1-img { flex: 1; background: linear-gradient(170deg, #3a2a10 0%, #1a0d00 100%); position: relative; overflow: hidden; }
+  .d1-img::after { content: ''; position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, transparent 50%); }
+  .d1-img-placeholder { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 56px; opacity: 0.15; }
+  .d1-badge { position: absolute; top: 16px; left: 16px; z-index: 2; background: var(--orange); color: white; font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 20px; letter-spacing: 0.05em; }
+  .d1-info { position: absolute; bottom: 0; left: 0; right: 0; z-index: 2; padding: 20px; }
+  .d1-price { font-size: 28px; font-weight: 700; color: var(--text); }
+  .d1-address { font-size: 13px; color: var(--muted); margin-top: 2px; }
+  .d1-meta { display: flex; gap: 12px; margin-top: 8px; }
+  .d1-meta span { font-size: 11px; color: var(--muted); display: flex; align-items: center; gap: 4px; }
+  .d1-actions { display: flex; justify-content: center; gap: 20px; padding: 16px; background: #110e08; }
+  .d1-btn { width: 56px; height: 56px; border-radius: 50%; border: none; cursor: pointer; font-size: 22px; display: flex; align-items: center; justify-content: center; transition: transform 0.15s; }
+  .d1-btn:hover { transform: scale(1.08); }
+  .d1-btn.reject { background: #2a1515; color: #cc5555; }
+  .d1-btn.match { background: var(--orange); color: white; box-shadow: 0 0 20px rgba(255,107,0,0.5); }
+  .d1-btn.skip { background: var(--surface); color: var(--muted); }
+  .d1-tab { display: flex; justify-content: space-around; padding: 10px 0 6px; background: #0d0d0d; border-top: 1px solid var(--border); }
+  .d1-tab span { font-size: 10px; color: var(--muted); display: flex; flex-direction: column; align-items: center; gap: 2px; cursor: pointer; }
+  .d1-tab span.on { color: var(--orange); }
+  .d1-tab span::before { font-size: 18px; }
+
+  /* MATCH SCREEN */
+  .d1-match-screen { width: 100%; height: 100%; background: radial-gradient(ellipse at center, #3d1a00 0%, #0d0d0d 70%); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; padding: 24px; }
+  .d1-match-icon { width: 80px; height: 80px; border-radius: 50%; background: var(--orange); display: flex; align-items: center; justify-content: center; font-size: 36px; box-shadow: 0 0 40px rgba(255,107,0,0.6); animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100% { box-shadow: 0 0 30px rgba(255,107,0,0.4); } 50% { box-shadow: 0 0 60px rgba(255,107,0,0.8); } }
+  .d1-match-title { font-size: 24px; font-weight: 700; color: var(--orange); }
+  .d1-match-sub { font-size: 13px; color: var(--muted); text-align: center; }
+  .d1-match-mini { width: 100%; background: var(--surface); border-radius: 12px; padding: 12px; display: flex; gap: 12px; align-items: center; }
+  .d1-match-thumb { width: 48px; height: 48px; border-radius: 8px; background: #3a2a10; flex-shrink: 0; }
+  .d1-match-btn { width: 100%; padding: 12px; background: var(--orange); border: none; border-radius: 10px; color: white; font-weight: 600; font-size: 14px; cursor: pointer; }
+
+  /* AGENT SCREEN */
+  .d1-agent { width: 100%; height: 100%; background: var(--bg-warm); display: flex; flex-direction: column; }
+  .d1-agent-header { padding: 16px; border-bottom: 1px solid var(--border); }
+  .d1-agent-header h3 { font-size: 16px; font-weight: 600; }
+  .d1-agent-header p { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .d1-client { display: flex; align-items: center; gap: 12px; padding: 14px 16px; border-bottom: 1px solid var(--border); cursor: pointer; }
+  .d1-avatar { width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #3a2000, #ff6b00); flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; }
+  .d1-client-info { flex: 1; }
+  .d1-client-info strong { font-size: 14px; display: block; }
+  .d1-client-info span { font-size: 11px; color: var(--muted); }
+  .d1-badge-orange { background: var(--orange); color: white; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 10px; }
+
+  /* ====== DIRECTION 2: MINIMAL CARD ====== */
+  .d2-swipe { width: 100%; height: 100%; background: var(--bg); display: flex; flex-direction: column; }
+  .d2-header { padding: 16px; display: flex; justify-content: space-between; align-items: center; }
+  .d2-logo { font-size: 16px; font-weight: 700; color: var(--orange); }
+  .d2-card { flex: 1; margin: 0 12px; border-radius: 20px; background: var(--surface); overflow: hidden; position: relative; box-shadow: 0 8px 32px rgba(0,0,0,0.5); }
+  .d2-img { height: 55%; background: linear-gradient(135deg, #2a1800, #1a0d00); position: relative; }
+  .d2-img::after { content: ''; position: absolute; inset: 0; background: linear-gradient(to bottom, transparent 60%, var(--surface)); }
+  .d2-card-body { padding: 16px; }
+  .d2-price { font-size: 22px; font-weight: 700; }
+  .d2-addr { font-size: 12px; color: var(--muted); margin-top: 4px; }
+  .d2-chips { display: flex; gap: 6px; margin-top: 10px; flex-wrap: wrap; }
+  .d2-chip { font-size: 11px; background: var(--surface2); padding: 4px 8px; border-radius: 8px; color: var(--muted); }
+  .d2-chip.hl { background: rgba(255,107,0,0.15); color: var(--orange); }
+  .d2-actions { display: flex; justify-content: center; gap: 16px; padding: 14px; }
+  .d2-btn { padding: 12px 28px; border-radius: 12px; border: none; cursor: pointer; font-weight: 600; font-size: 14px; }
+  .d2-btn.no { background: var(--surface2); color: var(--muted); }
+  .d2-btn.yes { background: var(--orange); color: white; }
+  .d2-pg { display: flex; justify-content: center; gap: 4px; padding-bottom: 8px; }
+  .d2-pg span { width: 6px; height: 6px; border-radius: 50%; background: var(--border); }
+  .d2-pg span.on { background: var(--orange); width: 18px; border-radius: 4px; }
+
+  /* ====== DIRECTION 3: GLASSMORPHISM ====== */
+  .d3-swipe { width: 100%; height: 100%; background: linear-gradient(160deg, #1a0800 0%, #0a0a0a 60%, #0d0d1a 100%); position: relative; display: flex; flex-direction: column; }
+  .d3-glow { position: absolute; width: 200px; height: 200px; border-radius: 50%; background: rgba(255,107,0,0.12); filter: blur(60px); top: -40px; right: -40px; pointer-events: none; }
+  .d3-glow2 { position: absolute; width: 150px; height: 150px; border-radius: 50%; background: rgba(255,107,0,0.06); filter: blur(40px); bottom: 100px; left: -30px; pointer-events: none; }
+  .d3-header { padding: 16px; display: flex; justify-content: space-between; align-items: center; position: relative; z-index: 1; }
+  .d3-logo { font-size: 16px; font-weight: 700; color: var(--orange); letter-spacing: -0.02em; }
+  .d3-card { flex: 1; margin: 0 14px; border-radius: 24px; background: rgba(30,26,21,0.7); backdrop-filter: blur(20px); border: 1px solid rgba(255,107,0,0.15); overflow: hidden; position: relative; z-index: 1; }
+  .d3-img { height: 50%; background: linear-gradient(135deg, rgba(58,42,16,0.8), rgba(26,13,0,0.9)); position: relative; display: flex; align-items: center; justify-content: center; }
+  .d3-img-icon { font-size: 48px; opacity: 0.2; }
+  .d3-exclusive { position: absolute; top: 10px; right: 10px; background: rgba(255,107,0,0.9); backdrop-filter: blur(4px); padding: 3px 10px; border-radius: 20px; font-size: 10px; font-weight: 700; color: white; }
+  .d3-body { padding: 16px; }
+  .d3-price { font-size: 24px; font-weight: 700; }
+  .d3-price span { color: var(--orange); }
+  .d3-addr { font-size: 12px; color: var(--muted); margin-top: 4px; }
+  .d3-row { display: flex; gap: 8px; margin-top: 10px; }
+  .d3-stat { flex: 1; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.06); border-radius: 10px; padding: 8px; text-align: center; }
+  .d3-stat strong { display: block; font-size: 14px; }
+  .d3-stat span { font-size: 10px; color: var(--muted); }
+  .d3-actions { display: flex; justify-content: center; gap: 20px; padding: 14px; position: relative; z-index: 1; }
+  .d3-btn { width: 54px; height: 54px; border-radius: 50%; border: none; cursor: pointer; font-size: 20px; position: relative; }
+  .d3-btn.no { background: rgba(139,58,58,0.3); border: 1px solid rgba(139,58,58,0.5); color: #cc5555; }
+  .d3-btn.yes { background: rgba(255,107,0,0.9); border: 1px solid var(--orange); color: white; box-shadow: 0 0 24px rgba(255,107,0,0.5); }
+  .d3-btn.info { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); color: var(--muted); }
+
+  /* COMPARISON */
+  .comparison { display: grid; grid-template-columns: repeat(3,1fr); gap: 20px; max-width: 900px; margin: 0 auto; }
+  .comp-card { background: var(--surface); border-radius: 16px; padding: 20px; border: 1px solid var(--border); }
+  .comp-card h3 { color: var(--orange); font-size: 15px; font-weight: 700; margin-bottom: 8px; }
+  .comp-card p { font-size: 13px; color: var(--muted); line-height: 1.5; }
+  .comp-tag { display: inline-block; margin-top: 10px; font-size: 11px; background: rgba(255,107,0,0.15); color: var(--orange); padding: 3px 10px; border-radius: 20px; }
+
+  @media (max-width: 700px) { .comparison { grid-template-columns: 1fr; } .phones { gap: 32px; } }
+</style>
+</head>
+<body>
+
+<nav>
+  <h2>REINDER</h2>
+  <button class="active" onclick="show('d1',this)">Direction 1 — Bold Dark</button>
+  <button onclick="show('d2',this)">Direction 2 — Minimal Card</button>
+  <button onclick="show('d3',this)">Direction 3 — Glassmorphism</button>
+</nav>
+
+<!-- DIRECTION 1 -->
+<div id="d1" class="direction active">
+  <div class="dir-title">Direction 1 — Bold Dark</div>
+  <div class="dir-desc">Pantalla completa sin concesiones. El listing es el protagonista total. Botones de acción grandes y táctiles. Referencia directa a Balatro: oscuro, naranja, payoff claro.</div>
+
+  <div class="phones">
+    <div class="phone-wrap">
+      <div class="phone-label">Swipe Feed</div>
+      <div class="phone">
+        <div class="d1-swipe">
+          <div class="d1-img">
+            <div class="d1-img-placeholder">🏠</div>
+            <div class="d1-badge">EXCLUSIVA</div>
+            <div class="d1-info">
+              <div class="d1-price">€485.000</div>
+              <div class="d1-address">Calle Serrano 42 · Salamanca, Madrid</div>
+              <div class="d1-meta">
+                <span>🛏 3 hab</span>
+                <span>🚿 2 baños</span>
+                <span>📐 110 m²</span>
+              </div>
+            </div>
+          </div>
+          <div class="d1-actions">
+            <button class="d1-btn reject">✕</button>
+            <button class="d1-btn skip">👁</button>
+            <button class="d1-btn match">♥</button>
+          </div>
+          <div class="d1-tab">
+            <span class="on">⟳<br>Swipe</span>
+            <span>♥<br>Matches</span>
+            <span>👤<br>Perfil</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="phone-wrap">
+      <div class="phone-label">Match!</div>
+      <div class="phone">
+        <div class="d1-match-screen">
+          <div class="d1-match-icon">🏠</div>
+          <div class="d1-match-title">¡Es un Match!</div>
+          <div class="d1-match-sub">Has guardado esta propiedad en tus matches. Tu agente ha sido notificado.</div>
+          <div class="d1-match-mini">
+            <div class="d1-match-thumb"></div>
+            <div>
+              <strong style="font-size:13px">Serrano 42</strong>
+              <div style="font-size:11px;color:var(--muted)">€485.000 · 110m²</div>
+            </div>
+          </div>
+          <button class="d1-match-btn">Seguir explorando →</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="phone-wrap">
+      <div class="phone-label">Panel Agente</div>
+      <div class="phone">
+        <div class="d1-agent">
+          <div class="d1-agent-header">
+            <h3>Mis Clientes</h3>
+            <p>3 matches nuevos hoy</p>
+          </div>
+          <div class="d1-client">
+            <div class="d1-avatar">M</div>
+            <div class="d1-client-info">
+              <strong>Marcos García</strong>
+              <span>2 matches · activo hace 10 min</span>
+            </div>
+            <span class="d1-badge-orange">2</span>
+          </div>
+          <div class="d1-client">
+            <div class="d1-avatar" style="background:linear-gradient(135deg,#1a1a3a,#4040aa)">A</div>
+            <div class="d1-client-info">
+              <strong>Ana López</strong>
+              <span>1 match · activo hoy</span>
+            </div>
+            <span class="d1-badge-orange">1</span>
+          </div>
+          <div class="d1-client" style="opacity:0.5">
+            <div class="d1-avatar" style="background:linear-gradient(135deg,#1a3a1a,#40aa40)">C</div>
+            <div class="d1-client-info">
+              <strong>Carlos Ruiz</strong>
+              <span>Sin matches nuevos</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="comparison">
+    <div class="comp-card">
+      <h3>Fortalezas</h3>
+      <p>Máximo impacto visual. Las propiedades llenan la pantalla y el naranja crea un payoff de match inmediato y reconocible.</p>
+      <span class="comp-tag">Alta engagement</span>
+    </div>
+    <div class="comp-card">
+      <h3>Ideal para</h3>
+      <p>El comprador en móvil buscando en momentos muertos. Sesiones cortas de swipe donde el hábito se forma rápido.</p>
+      <span class="comp-tag">Buyer-first</span>
+    </div>
+    <div class="comp-card">
+      <h3>Consideración</h3>
+      <p>Requiere fotos de alta calidad en los listings. Con imágenes mediocres la experiencia pierde impacto.</p>
+      <span class="comp-tag">Depende del inventario</span>
+    </div>
+  </div>
+</div>
+
+<!-- DIRECTION 2 -->
+<div id="d2" class="direction">
+  <div class="dir-title">Direction 2 — Minimal Card</div>
+  <div class="dir-desc">Tarjeta flotante con fondo oscuro. Más información visible, menos inmersión total. Equilibrio entre contenido y contexto. Más cerca de Airbnb que de Tinder.</div>
+
+  <div class="phones">
+    <div class="phone-wrap">
+      <div class="phone-label">Swipe Feed</div>
+      <div class="phone">
+        <div class="d2-swipe">
+          <div class="d2-header">
+            <div class="d2-logo">reinder</div>
+            <span style="font-size:12px;color:var(--muted)">Madrid · 24 propiedades</span>
+          </div>
+          <div class="d2-card">
+            <div class="d2-img">
+              <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:40px;opacity:0.15">🏠</div>
+              <div style="position:absolute;top:10px;left:10px;background:var(--orange);padding:3px 10px;border-radius:20px;font-size:10px;font-weight:700">EXCLUSIVA</div>
+            </div>
+            <div class="d2-card-body">
+              <div class="d2-price">€485.000</div>
+              <div class="d2-addr">Serrano 42 · Salamanca, Madrid</div>
+              <div class="d2-chips">
+                <span class="d2-chip hl">3 hab</span>
+                <span class="d2-chip">2 baños</span>
+                <span class="d2-chip">110 m²</span>
+                <span class="d2-chip">4.409 €/m²</span>
+              </div>
+            </div>
+          </div>
+          <div class="d2-pg">
+            <span class="on"></span><span></span><span></span><span></span>
+          </div>
+          <div class="d2-actions">
+            <button class="d2-btn no">✕ Pasar</button>
+            <button class="d2-btn yes">♥ Match</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="phone-wrap">
+      <div class="phone-label">Historial Matches</div>
+      <div class="phone">
+        <div style="background:var(--bg);width:100%;height:100%;display:flex;flex-direction:column;">
+          <div style="padding:16px;border-bottom:1px solid var(--border)">
+            <strong>Mis Matches</strong>
+            <div style="font-size:11px;color:var(--muted)">4 propiedades guardadas</div>
+          </div>
+          <div style="flex:1;overflow:hidden;display:flex;flex-direction:column;gap:1px;">
+            ${[
+              ['Serrano 42','€485.000','110m² · Salamanca','#2a1800'],
+              ['Gran Vía 18','€620.000','90m² · Centro','#1a1a2a'],
+              ['Chueca 7','€320.000','75m² · Chueca','#1a2a1a'],
+            ].map(([name,price,meta,bg])=>`
+            <div style="display:flex;gap:12px;padding:12px 16px;background:var(--surface);align-items:center;">
+              <div style="width:44px;height:44px;border-radius:10px;background:${bg};flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:18px;opacity:0.6">🏠</div>
+              <div style="flex:1"><strong style="font-size:13px">${name}</strong><div style="font-size:11px;color:var(--muted)">${meta}</div></div>
+              <div style="font-size:13px;font-weight:600;color:var(--orange)">${price}</div>
+            </div>`).join('')}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="comparison">
+    <div class="comp-card">
+      <h3>Fortalezas</h3>
+      <p>Más contexto visible. El comprador puede leer métricas clave sin abrir el detalle. Genial para usuarios más analíticos.</p>
+      <span class="comp-tag">Info-rich</span>
+    </div>
+    <div class="comp-card">
+      <h3>Ideal para</h3>
+      <p>Web y tablet. Usuarios que quieren comparar datos rápidamente sin perder el flujo de swipe.</p>
+      <span class="comp-tag">Multi-plataforma</span>
+    </div>
+    <div class="comp-card">
+      <h3>Consideración</h3>
+      <p>Menor impacto emocional que Direction 1. El hábito de swipe puede costar más de instalar al haber más "ruido" informativo.</p>
+      <span class="comp-tag">Menor adrenalina</span>
+    </div>
+  </div>
+</div>
+
+<!-- DIRECTION 3 -->
+<div id="d3" class="direction">
+  <div class="dir-title">Direction 3 — Glassmorphism</div>
+  <div class="dir-desc">Capas traslúcidas sobre fondo oscuro con naranja como único color de energía. Glow effects sutiles. Más sofisticado, menos visceral. Premio visual sin sacrificar la información.</div>
+
+  <div class="phones">
+    <div class="phone-wrap">
+      <div class="phone-label">Swipe Feed</div>
+      <div class="phone">
+        <div class="d3-swipe">
+          <div class="d3-glow"></div>
+          <div class="d3-glow2"></div>
+          <div class="d3-header">
+            <div class="d3-logo">reinder</div>
+            <span style="font-size:11px;color:var(--muted)">Madrid</span>
+          </div>
+          <div class="d3-card">
+            <div class="d3-img">
+              <div class="d3-img-icon">🏠</div>
+              <div class="d3-exclusive">EXCLUSIVA</div>
+            </div>
+            <div class="d3-body">
+              <div class="d3-price">€<span>485</span>.000</div>
+              <div class="d3-addr">Calle Serrano 42 · Salamanca</div>
+              <div class="d3-row">
+                <div class="d3-stat"><strong>3</strong><span>habitaciones</span></div>
+                <div class="d3-stat"><strong>110</strong><span>m²</span></div>
+                <div class="d3-stat"><strong>4.4k</strong><span>€/m²</span></div>
+              </div>
+            </div>
+          </div>
+          <div class="d3-actions">
+            <button class="d3-btn no">✕</button>
+            <button class="d3-btn info">👁</button>
+            <button class="d3-btn yes">♥</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="phone-wrap">
+      <div class="phone-label">Match Screen</div>
+      <div class="phone">
+        <div style="background:radial-gradient(ellipse at 40% 30%,rgba(255,107,0,0.15) 0%,#0d0d0d 70%);width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:24px;position:relative;">
+          <div style="position:absolute;top:20px;right:20px;background:rgba(255,107,0,0.15);border:1px solid rgba(255,107,0,0.3);border-radius:50%;width:80px;height:80px;filter:blur(20px)"></div>
+          <div style="width:70px;height:70px;border-radius:50%;background:rgba(255,107,0,0.9);backdrop-filter:blur(10px);border:1px solid rgba(255,140,0,0.5);display:flex;align-items:center;justify-content:center;font-size:30px;box-shadow:0 0 40px rgba(255,107,0,0.5)">🏠</div>
+          <div style="font-size:20px;font-weight:700;color:var(--orange)">Match guardado</div>
+          <div style="font-size:12px;color:var(--muted);text-align:center">Elena fue notificada y puede coordinar la visita</div>
+          <div style="width:100%;background:rgba(30,26,21,0.8);backdrop-filter:blur(20px);border:1px solid rgba(255,107,0,0.2);border-radius:14px;padding:12px;display:flex;gap:10px;align-items:center;">
+            <div style="width:40px;height:40px;border-radius:8px;background:rgba(58,42,16,0.8);flex-shrink:0"></div>
+            <div><div style="font-size:13px;font-weight:600">Serrano 42</div><div style="font-size:11px;color:var(--muted)">€485.000 · Salamanca</div></div>
+          </div>
+          <button style="width:100%;padding:12px;background:rgba(255,107,0,0.9);backdrop-filter:blur(4px);border:1px solid var(--orange);border-radius:12px;color:white;font-weight:600;font-size:13px;cursor:pointer;">Continuar →</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="comparison">
+    <div class="comp-card">
+      <h3>Fortalezas</h3>
+      <p>La más sofisticada visualmente. Transmite premium sin agresividad. El glassmorphism da profundidad sin oscurecer la información.</p>
+      <span class="comp-tag">Premium feel</span>
+    </div>
+    <div class="comp-card">
+      <h3>Ideal para</h3>
+      <p>Compradores de segmento alto. Propiedades de lujo donde la presentación importa tanto como los datos.</p>
+      <span class="comp-tag">High-end</span>
+    </div>
+    <div class="comp-card">
+      <h3>Consideración</h3>
+      <p>Mayor complejidad de implementación. El backdrop-filter puede ser costoso en dispositivos antiguos. Verificar rendimiento.</p>
+      <span class="comp-tag">Performance check</span>
+    </div>
+  </div>
+</div>
+
+<script>
+function show(id, btn) {
+  document.querySelectorAll('.direction').forEach(d => d.classList.remove('active'));
+  document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  btn.classList.add('active');
+}
+</script>
+</body>
+</html>

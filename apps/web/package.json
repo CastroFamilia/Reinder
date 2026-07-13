@@ -16,8 +16,10 @@
     "@supabase/supabase-js": "^2.99.2",
     "drizzle-orm": "^0.45.1",
     "next": "15.5.12",
+    "openai": "^6.45.0",
     "react": "19.1.0",
-    "react-dom": "19.1.0"
+    "react-dom": "19.1.0",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",

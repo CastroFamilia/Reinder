@@ -26,6 +26,11 @@ export type {
   ExperimentResultsResponse,
 } from "./types/experiment";
 export { ExperimentStatus, ExperimentType } from "./types/experiment";
+export type {
+  AiVariant,
+  AiGenerateVariantsResponse,
+  AiGenerationUsage,
+} from "./types/ai-variant";
 
 // Experiments
 export { assignVariant } from "./experiments/assign-variant";
@@ -53,6 +58,6 @@ export {
   SWIPE_THRESHOLD,
   PAYOFF_DURATION_MS,
   PAYOFF_AUTOHIDE_MS,
+  MAX_AI_GENERATIONS_PER_DAY,
 } from "./constants/index";
-
 

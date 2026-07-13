@@ -54,3 +54,8 @@ export const EXPERIMENT_DEFAULT_MIN_SAMPLE_SIZE = 100 as const;
 /** Story 9.4: Maximum hours since last results update before data is considered stale */
 export const EXPERIMENT_STALE_THRESHOLD_HOURS = 3 as const;
 
+/**
+ * Maximum number of AI variant generations per agency per 24-hour rolling window.
+ * Story 9.6 — rate limiting
+ */
+export const MAX_AI_GENERATIONS_PER_DAY = 10 as const;
