@@ -1,13 +1,9 @@
 /**
- * Story 9.5 — ATDD Tests: PATCH /api/v1/agency/recommendations/:id
+ * Story 9.5 — Tests: PATCH /api/v1/agency/recommendations/:id
  *
  * AC7: Dismiss and accept recommendations
  *
  * Tests: T9.5-16, T9.5-17, T9.5-18 per test-design-epic-9
- *
- * TDD RED PHASE: Tests define the expected PATCH behaviour.
- * The route handler will be created at:
- *   apps/web/src/app/api/v1/agency/recommendations/[id]/route.ts
  *
  * Run: pnpm --filter @reinder/web test apps/web/src/app/api/v1/agency/recommendations/[id]/route.test.ts
  */
@@ -39,7 +35,6 @@ import { db } from "@/lib/supabase/db";
 
 const AGENCY_ADMIN_USER = { id: "admin-uuid-001", email: "admin@agency.com" };
 const BUYER_USER = { id: "buyer-uuid-001", email: "buyer@test.com" };
-const OTHER_AGENCY_ADMIN = { id: "admin-uuid-002", email: "admin2@agency.com" };
 const AGENCY_ID = "agency-uuid-001";
 
 const PENDING_RECOMMENDATION = {
@@ -57,12 +52,6 @@ const PENDING_RECOMMENDATION = {
   updatedAt: new Date("2026-06-22T06:00:00Z"),
 };
 
-const DISMISSED_RECOMMENDATION = {
-  ...PENDING_RECOMMENDATION,
-  id: "rec-uuid-002",
-  status: "dismissed",
-};
-
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function mockAuth(
@@ -76,10 +65,49 @@ function mockAuth(
         error: user ? null : { message: "Not authenticated" },
       }),
     },
+    from: vi.fn().mockReturnValue({
+      select: vi.fn().mockReturnValue({
+        eq: vi.fn().mockReturnValue({
+          single: vi.fn().mockResolvedValue({
+            data: profile,
+            error: profile ? null : { message: "Not found" },
+          }),
+        }),
+      }),
+    }),
   };
 
   (createClient as any).mockResolvedValue(mockSupabase);
   return mockSupabase;
+}
+
+function mockDbRecommendation(rec: Record<string, unknown> | null) {
+  const mockLimit = vi.fn().mockResolvedValue(rec ? [rec] : []);
+  const mockWhere = vi.fn().mockReturnValue({ limit: mockLimit });
+  const mockFrom = vi.fn().mockReturnValue({ where: mockWhere });
+  const mockSelect = vi.fn().mockReturnValue({ from: mockFrom });
+  (db as any).select = mockSelect;
+}
+
+function mockDbUpdate(updatedRec: Record<string, unknown>) {
+  const mockReturning = vi.fn().mockResolvedValue([updatedRec]);
+  const mockWhere = vi.fn().mockReturnValue({ returning: mockReturning });
+  const mockSet = vi.fn().mockReturnValue({ where: mockWhere });
+  const mockFrom = vi.fn().mockReturnValue({ set: mockSet });
+  (db as any).update = vi.fn().mockReturnValue({ set: mockSet });
+  // Still need select for the recommendation lookup
+  return { mockSet, mockReturning };
+}
+
+function makePatchRequest(id: string, body: object) {
+  return new Request(
+    `http://localhost:3000/api/v1/agency/recommendations/${id}`,
+    {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    },
+  ) as any;
 }
 
 // ─── AC7: PATCH dismiss ──────────────────────────────────────────────────────
@@ -90,27 +118,36 @@ describe("PATCH /api/v1/agency/recommendations/:id — Dismiss (AC7)", () => {
     vi.resetModules();
   });
 
-  // ── T9.5-16: dismiss → status = dismissed ──
-  it("[P1] T9.5-16: dismiss action sets status to 'dismissed'", () => {
-    const body = { action: "dismiss" as const };
+  it("[P1] T9.5-16: dismiss action sets status to 'dismissed'", { timeout: 15_000 }, async () => {
+    mockAuth(AGENCY_ADMIN_USER, { role: "agency_admin", agencyId: AGENCY_ID });
+    mockDbRecommendation(PENDING_RECOMMENDATION);
+    mockDbUpdate({ ...PENDING_RECOMMENDATION, status: "dismissed" });
 
-    // Simulate the update
-    const updated = { ...PENDING_RECOMMENDATION, status: "dismissed" };
+    const { PATCH } = await import("./route");
+    const req = makePatchRequest("rec-uuid-001", { action: "dismiss" });
+    const res = await PATCH(req, { params: { id: "rec-uuid-001" } });
+    const body = await res.json();
 
-    expect(body.action).toBe("dismiss");
-    expect(updated.status).toBe("dismissed");
+    expect(res.status).toBe(200);
+    expect(body.data.recommendation.status).toBe("dismissed");
   });
 
-  it("[P1] T9.5-16b: dismiss does NOT set acceptedExperimentId", () => {
-    const body = { action: "dismiss" as const };
-
-    const updated = {
+  it("[P1] T9.5-16b: dismiss does NOT set acceptedExperimentId", { timeout: 15_000 }, async () => {
+    mockAuth(AGENCY_ADMIN_USER, { role: "agency_admin", agencyId: AGENCY_ID });
+    mockDbRecommendation(PENDING_RECOMMENDATION);
+    mockDbUpdate({
       ...PENDING_RECOMMENDATION,
       status: "dismissed",
       acceptedExperimentId: null,
-    };
+    });
 
-    expect(updated.acceptedExperimentId).toBeNull();
+    const { PATCH } = await import("./route");
+    const req = makePatchRequest("rec-uuid-001", { action: "dismiss" });
+    const res = await PATCH(req, { params: { id: "rec-uuid-001" } });
+    const body = await res.json();
+
+    expect(res.status).toBe(200);
+    expect(body.data.recommendation.acceptedExperimentId).toBeNull();
   });
 });
 
@@ -122,27 +159,50 @@ describe("PATCH /api/v1/agency/recommendations/:id — Accept (AC7)", () => {
     vi.resetModules();
   });
 
-  // ── T9.5-17: accept → status = accepted + experimentId linked ──
-  it("[P1] T9.5-17: accept action sets status to 'accepted' and links experimentId", () => {
-    const experimentId = "exp-uuid-001";
-    const body = { action: "accept" as const, experimentId };
-
-    const updated = {
+  it("[P1] T9.5-17: accept action sets status to 'accepted' and links experimentId", { timeout: 15_000 }, async () => {
+    const experimentId = "a1b2c3d4-e5f6-7890-abcd-ef1234567890";
+    mockAuth(AGENCY_ADMIN_USER, { role: "agency_admin", agencyId: AGENCY_ID });
+    mockDbRecommendation(PENDING_RECOMMENDATION);
+    mockDbUpdate({
       ...PENDING_RECOMMENDATION,
       status: "accepted",
       acceptedExperimentId: experimentId,
-    };
+    });
 
-    expect(body.action).toBe("accept");
-    expect(updated.status).toBe("accepted");
-    expect(updated.acceptedExperimentId).toBe(experimentId);
+    const { PATCH } = await import("./route");
+    const req = makePatchRequest("rec-uuid-001", {
+      action: "accept",
+      experimentId,
+    });
+    const res = await PATCH(req, { params: { id: "rec-uuid-001" } });
+    const body = await res.json();
+
+    expect(res.status).toBe(200);
+    expect(body.data.recommendation.status).toBe("accepted");
+    expect(body.data.recommendation.acceptedExperimentId).toBe(experimentId);
   });
 
-  it("[P1] T9.5-17b: accept without experimentId should fail validation", () => {
-    // Zod schema requires experimentId when action = 'accept'
-    const invalidBody = { action: "accept" };
-    // experimentId is required for accept
-    expect(invalidBody).not.toHaveProperty("experimentId");
+  it("[P1] T9.5-17b: accept without experimentId returns 400", { timeout: 15_000 }, async () => {
+    mockAuth(AGENCY_ADMIN_USER, { role: "agency_admin", agencyId: AGENCY_ID });
+
+    const { PATCH } = await import("./route");
+    const req = makePatchRequest("rec-uuid-001", { action: "accept" });
+    const res = await PATCH(req, { params: { id: "rec-uuid-001" } });
+
+    expect(res.status).toBe(400);
+  });
+
+  it("[P1] T9.5-17c: accept with non-UUID experimentId returns 400", { timeout: 15_000 }, async () => {
+    mockAuth(AGENCY_ADMIN_USER, { role: "agency_admin", agencyId: AGENCY_ID });
+
+    const { PATCH } = await import("./route");
+    const req = makePatchRequest("rec-uuid-001", {
+      action: "accept",
+      experimentId: "not-a-uuid",
+    });
+    const res = await PATCH(req, { params: { id: "rec-uuid-001" } });
+
+    expect(res.status).toBe(400);
   });
 });
 
@@ -154,36 +214,43 @@ describe("PATCH /api/v1/agency/recommendations/:id — Conflict (AC7)", () => {
     vi.resetModules();
   });
 
-  it("[P0] T9.5-18-conflict: returns 409 RECOMMENDATION_NOT_PENDING for dismissed recommendation", () => {
-    // The PATCH handler should check status = 'pending' before updating
-    const recommendation = DISMISSED_RECOMMENDATION;
-    expect(recommendation.status).not.toBe("pending");
+  it("[P0] T9.5-18-conflict: returns 409 RECOMMENDATION_NOT_PENDING for dismissed recommendation", { timeout: 15_000 }, async () => {
+    mockAuth(AGENCY_ADMIN_USER, { role: "agency_admin", agencyId: AGENCY_ID });
+    mockDbRecommendation({ ...PENDING_RECOMMENDATION, status: "dismissed" });
 
-    // Expected response: 409 with error code RECOMMENDATION_NOT_PENDING
-    const expectedError = {
-      code: "RECOMMENDATION_NOT_PENDING",
-      message: expect.any(String),
-    };
-    expect(expectedError.code).toBe("RECOMMENDATION_NOT_PENDING");
+    const { PATCH } = await import("./route");
+    const req = makePatchRequest("rec-uuid-001", { action: "dismiss" });
+    const res = await PATCH(req, { params: { id: "rec-uuid-001" } });
+    const body = await res.json();
+
+    expect(res.status).toBe(409);
+    expect(body.error.code).toBe("RECOMMENDATION_NOT_PENDING");
   });
 
-  it("[P0] T9.5-18b-conflict: returns 409 for already accepted recommendation", () => {
-    const acceptedRec = {
+  it("[P0] T9.5-18b-conflict: returns 409 for already accepted recommendation", { timeout: 15_000 }, async () => {
+    mockAuth(AGENCY_ADMIN_USER, { role: "agency_admin", agencyId: AGENCY_ID });
+    mockDbRecommendation({
       ...PENDING_RECOMMENDATION,
       status: "accepted",
       acceptedExperimentId: "exp-uuid-001",
-    };
+    });
 
-    expect(acceptedRec.status).not.toBe("pending");
+    const { PATCH } = await import("./route");
+    const req = makePatchRequest("rec-uuid-001", { action: "dismiss" });
+    const res = await PATCH(req, { params: { id: "rec-uuid-001" } });
+
+    expect(res.status).toBe(409);
   });
 
-  it("[P0] T9.5-18c-conflict: returns 409 for expired recommendation", () => {
-    const expiredRec = {
-      ...PENDING_RECOMMENDATION,
-      status: "expired",
-    };
+  it("[P0] T9.5-18c-conflict: returns 409 for expired recommendation", { timeout: 15_000 }, async () => {
+    mockAuth(AGENCY_ADMIN_USER, { role: "agency_admin", agencyId: AGENCY_ID });
+    mockDbRecommendation({ ...PENDING_RECOMMENDATION, status: "expired" });
 
-    expect(expiredRec.status).not.toBe("pending");
+    const { PATCH } = await import("./route");
+    const req = makePatchRequest("rec-uuid-001", { action: "dismiss" });
+    const res = await PATCH(req, { params: { id: "rec-uuid-001" } });
+
+    expect(res.status).toBe(409);
   });
 });
 
@@ -195,62 +262,81 @@ describe("PATCH /api/v1/agency/recommendations/:id — Auth Guards", () => {
     vi.resetModules();
   });
 
-  it("[P0] returns 401 when not authenticated", () => {
+  it("[P0] returns 401 when not authenticated", { timeout: 15_000 }, async () => {
     mockAuth(null, null);
-    // Route handler should return 401 before attempting any DB operation
-    expect(true).toBe(true); // Structural — tested via route import when handler exists
+
+    const { PATCH } = await import("./route");
+    const req = makePatchRequest("rec-uuid-001", { action: "dismiss" });
+    const res = await PATCH(req, { params: { id: "rec-uuid-001" } });
+
+    expect(res.status).toBe(401);
+    const body = await res.json();
+    expect(body.error.code).toBe("UNAUTHORIZED");
   });
 
-  it("[P0] returns 403 for non agency_admin role", () => {
+  it("[P0] returns 403 for non agency_admin role", { timeout: 15_000 }, async () => {
     mockAuth(BUYER_USER, { role: "buyer", agencyId: null });
-    // Route handler should return 403
-    expect(true).toBe(true);
+
+    const { PATCH } = await import("./route");
+    const req = makePatchRequest("rec-uuid-001", { action: "dismiss" });
+    const res = await PATCH(req, { params: { id: "rec-uuid-001" } });
+
+    expect(res.status).toBe(403);
+    const body = await res.json();
+    expect(body.error.code).toBe("FORBIDDEN");
   });
 
-  it("[P0] returns 404 if recommendation belongs to different agency", () => {
-    // agency_admin from agency A tries to update rec from agency B
-    mockAuth(OTHER_AGENCY_ADMIN, { role: "agency_admin", agencyId: "agency-uuid-002" });
+  it("[P0] returns 404 if recommendation belongs to different agency", { timeout: 15_000 }, async () => {
+    mockAuth(AGENCY_ADMIN_USER, { role: "agency_admin", agencyId: AGENCY_ID });
+    mockDbRecommendation({
+      ...PENDING_RECOMMENDATION,
+      agencyId: "other-agency-uuid",
+    });
 
-    // The query should filter by agencyId matching the user's agency
-    const userAgencyId = "agency-uuid-002";
-    const recAgencyId = AGENCY_ID; // "agency-uuid-001"
+    const { PATCH } = await import("./route");
+    const req = makePatchRequest("rec-uuid-001", { action: "dismiss" });
+    const res = await PATCH(req, { params: { id: "rec-uuid-001" } });
 
-    expect(userAgencyId).not.toBe(recAgencyId);
+    expect(res.status).toBe(404);
+  });
+
+  it("[P0] returns 404 when recommendation does not exist", { timeout: 15_000 }, async () => {
+    mockAuth(AGENCY_ADMIN_USER, { role: "agency_admin", agencyId: AGENCY_ID });
+    mockDbRecommendation(null);
+
+    const { PATCH } = await import("./route");
+    const req = makePatchRequest("non-existent-uuid", { action: "dismiss" });
+    const res = await PATCH(req, { params: { id: "non-existent-uuid" } });
+
+    expect(res.status).toBe(404);
   });
 });
 
-// ─── Zod body validation ──────────────────────────────────────────────────────
+// ─── Body validation ──────────────────────────────────────────────────────────
 
-describe("PATCH body validation (Zod schema)", () => {
-  it("accepts valid dismiss body", () => {
-    const body = { action: "dismiss" };
-    expect(body.action).toBe("dismiss");
+describe("PATCH body validation", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.resetModules();
   });
 
-  it("accepts valid accept body with UUID experimentId", () => {
-    const body = { action: "accept", experimentId: "550e8400-e29b-41d4-a716-446655440000" };
-    expect(body.action).toBe("accept");
-    // UUID format: 8-4-4-4-12 hex chars
-    expect(body.experimentId).toMatch(
-      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/,
-    );
+  it("[P1] rejects invalid action value", { timeout: 15_000 }, async () => {
+    mockAuth(AGENCY_ADMIN_USER, { role: "agency_admin", agencyId: AGENCY_ID });
+
+    const { PATCH } = await import("./route");
+    const req = makePatchRequest("rec-uuid-001", { action: "delete" });
+    const res = await PATCH(req, { params: { id: "rec-uuid-001" } });
+
+    expect(res.status).toBe(400);
   });
 
-  it("rejects invalid action value", () => {
-    const body = { action: "delete" };
-    const validActions = ["dismiss", "accept"];
-    expect(validActions).not.toContain(body.action);
-  });
+  it("[P1] rejects empty body", { timeout: 15_000 }, async () => {
+    mockAuth(AGENCY_ADMIN_USER, { role: "agency_admin", agencyId: AGENCY_ID });
 
-  it("rejects accept with non-UUID experimentId", () => {
-    const body = { action: "accept", experimentId: "not-a-uuid" };
-    // UUID format must match
-    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
-    expect(body.experimentId).not.toMatch(uuidRegex);
-  });
+    const { PATCH } = await import("./route");
+    const req = makePatchRequest("rec-uuid-001", {});
+    const res = await PATCH(req, { params: { id: "rec-uuid-001" } });
 
-  it("rejects empty body", () => {
-    const body = {};
-    expect(body).not.toHaveProperty("action");
+    expect(res.status).toBe(400);
   });
 });

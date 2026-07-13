@@ -173,7 +173,7 @@ describe("GET /api/v1/agency/recommendations — AC6", () => {
 
   // ─── T9.5-14: Returns pending recommendations sorted by priority_score DESC ───
 
-  it("[P0] T9.5-14: returns pending recommendations sorted by priority_score DESC", async () => {
+  it("[P0] T9.5-14: returns pending recommendations sorted by priority_score DESC", { timeout: 15_000 }, async () => {
     setupAuth(AGENCY_ADMIN_USER, "agency_admin", "agency-uuid-001");
 
     const { db } = await import("@/lib/supabase/db");
@@ -241,6 +241,10 @@ describe("GET /api/v1/agency/recommendations — AC6", () => {
     expect(rec).toHaveProperty("reasonDetail");
     expect(rec).toHaveProperty("priorityScore");
     expect(rec).toHaveProperty("status");
+    // AC6: listing info comes from JOIN — verify thumbnail extraction
+    expect(rec).toHaveProperty("listingImageUrl");
+    // listingImage raw array should be removed from response
+    expect(rec.listingImage).toBeUndefined();
   });
 
   // ─── T9.5-15: Non-agency_admin → 403 ───
@@ -582,8 +586,8 @@ describe("PATCH /api/v1/agency/recommendations/:id — AC7", () => {
     const req = makePatchRequest(recId, { action: "dismiss" });
     const res = await PATCH(req, { params: { id: recId } });
 
-    // Should not allow patching another agency's recommendation
-    expect([403, 404]).toContain(res.status);
+    // Implementation returns 404 to avoid leaking info about other agencies' recommendations
+    expect(res.status).toBe(404);
   });
 
   // ─── PATCH: Invalid action → 400 ───
@@ -626,5 +630,30 @@ describe("PATCH /api/v1/agency/recommendations/:id — AC7", () => {
     const res = await PATCH(req, { params: { id: "rec-uuid-001" } });
 
     expect(res.status).toBe(403);
+  });
+
+  // ─── PATCH: Recommendation not found → 404 ───
+
+  it("[P0] PATCH: returns 404 when recommendation does not exist", async () => {
+    setupAuth(AGENCY_ADMIN_USER, "agency_admin", "agency-uuid-001");
+
+    const { db } = await import("@/lib/supabase/db");
+
+    // Recommendation lookup returns empty array
+    vi.mocked(db.select as any).mockReturnValue({
+      from: vi.fn().mockReturnValue({
+        where: vi.fn().mockReturnValue({
+          limit: vi.fn().mockResolvedValue([]),
+        }),
+      }),
+    });
+
+    const { PATCH } = await import(
+      "@/app/api/v1/agency/recommendations/[id]/route"
+    );
+    const req = makePatchRequest("non-existent-uuid", { action: "dismiss" });
+    const res = await PATCH(req, { params: { id: "non-existent-uuid" } });
+
+    expect(res.status).toBe(404);
   });
 });

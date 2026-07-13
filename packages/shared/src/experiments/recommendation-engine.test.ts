@@ -364,3 +364,87 @@ describe("Recommendation Engine — AC4: Limit 3 per Agency per Week", () => {
 // ─── Constants ──────────────────────────────────────────────────────────────
 
 const AGENCY_ID = "agency-uuid-001";
+
+// ─── Tests: Additional Edge Cases ───────────────────────────────────────────
+
+describe("Recommendation Engine — Edge Cases", () => {
+  // ─── T9.5-09b: match_rate worst but view_time also bad → title_and_description ───
+
+  it("[P1] T9.5-09b: recommends 'title_and_description' when match_rate is worst but view_time is also bad", async () => {
+    const { determineExperimentType } = await import(
+      "./recommendation-engine"
+    );
+
+    const zScores: ZScores = {
+      matchRate: -2.5, // Worst metric
+      viewTime: -1.5, // Also bad (< -0.5 threshold)
+      reaffirmRate: -0.2, // OK
+    };
+
+    const result = determineExperimentType(zScores);
+
+    // match_rate is worst BUT view_time is also bad (< -0.5), so it should be title_and_description
+    expect(result).toBe("title_and_description");
+  });
+
+  // ─── getISOWeekForDate with known date ───
+
+  it("[P1] T9.5-12f: getISOWeekForDate produces correct ISO week for a known date", async () => {
+    const { getISOWeekForDate } = await import("./recommendation-engine");
+
+    // Monday June 22, 2026 should be in week 26
+    const date = new Date(Date.UTC(2026, 5, 22)); // June 22, 2026
+    const isoWeek = getISOWeekForDate(date);
+
+    expect(isoWeek).toMatch(/^\d{4}-W\d{2}$/);
+    // June 22, 2026 is ISO week 26 of year 2026
+    expect(isoWeek).toBe("2026-W26");
+  });
+
+  // ─── Empty candidates → returns empty ───
+
+  it("[P1] T9.5-12g: returns empty array when no candidates provided", async () => {
+    const { selectTopRecommendations } = await import(
+      "./recommendation-engine"
+    );
+
+    const selected = selectTopRecommendations([], AGENCY_ID);
+
+    expect(selected).toHaveLength(0);
+  });
+
+  // ─── shouldGenerateForAgency with empty existing weeks ───
+
+  it("[P1] T9.5-12h: generates when existingWeeks is empty (first ever run)", async () => {
+    const { shouldGenerateForAgency } = await import(
+      "./recommendation-engine"
+    );
+
+    const shouldGenerate = shouldGenerateForAgency([], "2026-W25");
+
+    expect(shouldGenerate).toBe(true);
+  });
+
+  // ─── Priority score with minimal underperformance ───
+
+  it("[P1] T9.5-19e: priority_score is low for mildly underperforming listing with few impressions", async () => {
+    const { calculatePriorityScore } = await import(
+      "./recommendation-engine"
+    );
+
+    const mild: RecommendationCandidate = {
+      listingId: "listing-mild",
+      agencyId: AGENCY_ID,
+      impressions: 55, // Barely above threshold
+      zScores: { matchRate: -1.1, viewTime: -1.05, reaffirmRate: null },
+      underperformingMetricCount: 2,
+    };
+
+    const score = calculatePriorityScore(mild);
+
+    // Should still be in valid range but relatively low
+    expect(score).toBeGreaterThanOrEqual(0);
+    expect(score).toBeLessThanOrEqual(100);
+    expect(score).toBeLessThan(30); // Mild case with few impressions → low score
+  });
+});

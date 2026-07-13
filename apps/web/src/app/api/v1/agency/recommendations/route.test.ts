@@ -1,8 +1,7 @@
 /**
- * Story 9.5 — ATDD Tests: GET /api/v1/agency/recommendations
+ * Story 9.5 — Tests: GET /api/v1/agency/recommendations
  *
  * AC6: API returns pending recommendations for agency_admin
- * AC7: PATCH dismiss/accept
  *
  * Run: pnpm --filter @reinder/web test apps/web/src/app/api/v1/agency/recommendations/route.test.ts
  */
@@ -21,11 +20,8 @@ vi.mock("@/lib/supabase/db", () => ({
     from: vi.fn().mockReturnThis(),
     innerJoin: vi.fn().mockReturnThis(),
     where: vi.fn().mockReturnThis(),
-    orderBy: vi.fn().mockReturnThis(),
+    orderBy: vi.fn().mockResolvedValue([]),
     limit: vi.fn().mockResolvedValue([]),
-    update: vi.fn().mockReturnThis(),
-    set: vi.fn().mockReturnThis(),
-    returning: vi.fn().mockResolvedValue([]),
   },
 }));
 
@@ -47,8 +43,18 @@ const MOCK_RECOMMENDATION = {
   reasonCode: "low_avg_view_time",
   reasonDetail: "Tiempo medio 800ms — 1.5σ por debajo del promedio (2100ms)",
   underperformingMetrics: {
-    avg_view_time_ms: { value: 800, agency_avg: 2100, platform_avg: 1800, z_score: -1.5 },
-    match_rate: { value: 0.03, agency_avg: 0.06, platform_avg: 0.05, z_score: -1.2 },
+    avg_view_time_ms: {
+      value: 800,
+      agency_avg: 2100,
+      platform_avg: 1800,
+      z_score: -1.5,
+    },
+    match_rate: {
+      value: 0.03,
+      agency_avg: 0.06,
+      platform_avg: 0.05,
+      z_score: -1.2,
+    },
   },
   priorityScore: "78.50",
   status: "pending",
@@ -57,7 +63,10 @@ const MOCK_RECOMMENDATION = {
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-function mockAuth(user: { id: string; email: string } | null, profile: { role: string; agencyId: string | null } | null) {
+function mockAuth(
+  user: { id: string; email: string } | null,
+  profile: { role: string; agencyId: string | null } | null,
+) {
   const mockSupabase = {
     auth: {
       getUser: vi.fn().mockResolvedValue({
@@ -65,12 +74,15 @@ function mockAuth(user: { id: string; email: string } | null, profile: { role: s
         error: user ? null : { message: "Not authenticated" },
       }),
     },
-    from: vi.fn().mockReturnThis(),
-    select: vi.fn().mockReturnThis(),
-    eq: vi.fn().mockReturnThis(),
-    single: vi.fn().mockResolvedValue({
-      data: profile,
-      error: profile ? null : { message: "Not found" },
+    from: vi.fn().mockReturnValue({
+      select: vi.fn().mockReturnValue({
+        eq: vi.fn().mockReturnValue({
+          single: vi.fn().mockResolvedValue({
+            data: profile,
+            error: profile ? null : { message: "Not found" },
+          }),
+        }),
+      }),
     }),
   };
 
@@ -78,101 +90,147 @@ function mockAuth(user: { id: string; email: string } | null, profile: { role: s
   return mockSupabase;
 }
 
+function mockDbQuery(recommendations: unknown[]) {
+  const mockOrderBy = vi.fn().mockResolvedValue(recommendations);
+  const mockWhere = vi.fn().mockReturnValue({ orderBy: mockOrderBy });
+  const mockInnerJoin = vi.fn().mockReturnValue({ where: mockWhere });
+  const mockFrom = vi.fn().mockReturnValue({ innerJoin: mockInnerJoin });
+  const mockSelect = vi.fn().mockReturnValue({ from: mockFrom });
+  (db as any).select = mockSelect;
+}
+
+function makeGetRequest() {
+  return new Request(
+    "http://localhost/api/v1/agency/recommendations",
+  ) as any;
+}
+
 // ─── GET /api/v1/agency/recommendations (AC6) ───
 
 describe("GET /api/v1/agency/recommendations (AC6)", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.resetModules();
   });
 
-  it("[P0] T9.5-22: returns 401 when not authenticated", async () => {
+  it("[P0] returns 401 when not authenticated", { timeout: 15_000 }, async () => {
     mockAuth(null, null);
 
     const { GET } = await import("./route");
-    const req = new Request("http://localhost/api/v1/agency/recommendations");
-    const res = await GET(req as any);
+    const res = await GET(makeGetRequest());
 
     expect(res.status).toBe(401);
     const body = await res.json();
     expect(body.error.code).toBe("UNAUTHORIZED");
+    expect(body.data).toBeNull();
   });
 
-  it("[P0] T9.5-23: returns 403 for non agency_admin", async () => {
+  it("[P0] returns 403 for non agency_admin", { timeout: 15_000 }, async () => {
     mockAuth(BUYER_USER, { role: "buyer", agencyId: null });
 
     const { GET } = await import("./route");
-    const req = new Request("http://localhost/api/v1/agency/recommendations");
-    const res = await GET(req as any);
+    const res = await GET(makeGetRequest());
 
     expect(res.status).toBe(403);
     const body = await res.json();
     expect(body.error.code).toBe("FORBIDDEN");
   });
 
-  it("[P0] T9.5-24: returns 200 with pending recommendations for agency_admin", async () => {
-    mockAuth(AGENCY_ADMIN_USER, { role: "agency_admin", agencyId: AGENCY_ID });
-
-    // Mock DB to return a recommendation
-    const mockOrderBy = vi.fn().mockResolvedValue([MOCK_RECOMMENDATION]);
-    const mockWhere = vi.fn().mockReturnValue({ orderBy: mockOrderBy });
-    const mockInnerJoin = vi.fn().mockReturnValue({ where: mockWhere });
-    const mockFrom = vi.fn().mockReturnValue({ innerJoin: mockInnerJoin });
-    const mockSelect = vi.fn().mockReturnValue({ from: mockFrom });
-    (db as any).select = mockSelect;
-
-    // Also mock profile lookup
-    const mockLimit = vi.fn().mockResolvedValue([
-      { role: "agency_admin", agencyId: AGENCY_ID },
-    ]);
-    (db as any).from = vi.fn().mockReturnValue({
-      where: vi.fn().mockReturnValue({ limit: mockLimit }),
+  it("[P0] returns 200 with pending recommendations for agency_admin", { timeout: 15_000 }, async () => {
+    mockAuth(AGENCY_ADMIN_USER, {
+      role: "agency_admin",
+      agencyId: AGENCY_ID,
     });
-    // Restore select chain for recommendations
-    (db as any).select = mockSelect;
+    mockDbQuery([MOCK_RECOMMENDATION]);
 
     const { GET } = await import("./route");
-    const req = new Request("http://localhost/api/v1/agency/recommendations");
-    const res = await GET(req as any);
+    const res = await GET(makeGetRequest());
 
     expect(res.status).toBe(200);
     const body = await res.json();
     expect(body.data).toBeDefined();
     expect(body.error).toBeNull();
+    expect(body.data.recommendations).toHaveLength(1);
   });
 
-  it("[P0] T9.5-25: returns only pending recommendations sorted by priority_score DESC", async () => {
-    // This test verifies the query structure through mock calls
-    mockAuth(AGENCY_ADMIN_USER, { role: "agency_admin", agencyId: AGENCY_ID });
+  it("[P0] extracts listingImageUrl from images array", { timeout: 15_000 }, async () => {
+    mockAuth(AGENCY_ADMIN_USER, {
+      role: "agency_admin",
+      agencyId: AGENCY_ID,
+    });
+    mockDbQuery([MOCK_RECOMMENDATION]);
 
-    // The route.ts should filter by status = 'pending' and order by priority_score DESC
-    // Verified by the SQL query in route handler
-    expect(true).toBe(true); // Structural validation — actual query tested in integration
-  });
-});
+    const { GET } = await import("./route");
+    const res = await GET(makeGetRequest());
+    const body = await res.json();
 
-// ─── PATCH /api/v1/agency/recommendations/:id (AC7) ───
-
-describe("PATCH /api/v1/agency/recommendations/:id (AC7)", () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
-
-  it("[P0] T9.5-26: dismiss action updates status to dismissed", async () => {
-    // Validates the PATCH handler accepts { action: 'dismiss' }
-    // and updates the recommendation status
-    const body = { action: "dismiss" };
-    expect(body.action).toBe("dismiss");
+    expect(res.status).toBe(200);
+    const rec = body.data.recommendations[0];
+    // The route extracts images[0] as listingImageUrl and removes listingImage
+    expect(rec.listingImageUrl).toBe("https://example.com/img1.jpg");
+    expect(rec.listingImage).toBeUndefined();
   });
 
-  it("[P0] T9.5-27: accept action updates status and sets experimentId", async () => {
-    const body = { action: "accept", experimentId: "exp-uuid-001" };
-    expect(body.action).toBe("accept");
-    expect(body.experimentId).toBeDefined();
+  it("[P0] returns empty array when no pending recommendations", { timeout: 15_000 }, async () => {
+    mockAuth(AGENCY_ADMIN_USER, {
+      role: "agency_admin",
+      agencyId: AGENCY_ID,
+    });
+    mockDbQuery([]);
+
+    const { GET } = await import("./route");
+    const res = await GET(makeGetRequest());
+    const body = await res.json();
+
+    expect(res.status).toBe(200);
+    expect(body.data.recommendations).toEqual([]);
+    expect(body.error).toBeNull();
   });
 
-  it("[P0] T9.5-28: returns 409 for non-pending recommendation", async () => {
-    // A recommendation with status != 'pending' should return 409
-    const recommendation = { ...MOCK_RECOMMENDATION, status: "dismissed" };
-    expect(recommendation.status).not.toBe("pending");
+  it("[P1] response follows ApiResponse<T> wrapper format", { timeout: 15_000 }, async () => {
+    mockAuth(AGENCY_ADMIN_USER, {
+      role: "agency_admin",
+      agencyId: AGENCY_ID,
+    });
+    mockDbQuery([]);
+
+    const { GET } = await import("./route");
+    const res = await GET(makeGetRequest());
+    const body = await res.json();
+
+    expect(body).toHaveProperty("data");
+    expect(body).toHaveProperty("error");
+  });
+
+  it("[P1] handles null listingImage gracefully", { timeout: 15_000 }, async () => {
+    mockAuth(AGENCY_ADMIN_USER, {
+      role: "agency_admin",
+      agencyId: AGENCY_ID,
+    });
+    mockDbQuery([{ ...MOCK_RECOMMENDATION, listingImage: null }]);
+
+    const { GET } = await import("./route");
+    const res = await GET(makeGetRequest());
+    const body = await res.json();
+
+    expect(res.status).toBe(200);
+    const rec = body.data.recommendations[0];
+    expect(rec.listingImageUrl).toBeNull();
+  });
+
+  it("[P1] handles empty listingImage array", { timeout: 15_000 }, async () => {
+    mockAuth(AGENCY_ADMIN_USER, {
+      role: "agency_admin",
+      agencyId: AGENCY_ID,
+    });
+    mockDbQuery([{ ...MOCK_RECOMMENDATION, listingImage: [] }]);
+
+    const { GET } = await import("./route");
+    const res = await GET(makeGetRequest());
+    const body = await res.json();
+
+    expect(res.status).toBe(200);
+    const rec = body.data.recommendations[0];
+    expect(rec.listingImageUrl).toBeNull();
   });
 });

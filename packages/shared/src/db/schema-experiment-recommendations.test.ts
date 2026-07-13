@@ -19,6 +19,7 @@ describe("Drizzle Schema — experiment_recommendations (AC1, AC10)", () => {
 
   it(
     "[P0] T9.5-01a: exports experimentRecommendations table from schema.ts",
+    { timeout: 15_000 },
     async () => {
       const schema = await import("./schema");
 
@@ -28,7 +29,6 @@ describe("Drizzle Schema — experiment_recommendations (AC1, AC10)", () => {
         (schema.experimentRecommendations as any)[Symbol.for("drizzle:Name")]
       ).toBe("experiment_recommendations");
     },
-    { timeout: 15_000 }
   );
 
   // ─── T9.5-01b: All required columns present per AC1 ───

@@ -352,4 +352,94 @@ describe("Underperformance Detection — AC2: Detection Algorithm", () => {
     expect(result.underperformingMetricCount).toBe(2);
     expect(result.zScores.reaffirmRate).toBeNull();
   });
+
+  // ─── Edge case: shouldExclude when both flags are true ───
+
+  it("[P1] T9.5-05b: excludes listing when both active experiment AND pending recommendation exist", async () => {
+    const { shouldExcludeListing } = await import(
+      "./underperformance-detector"
+    );
+
+    const result = shouldExcludeListing({
+      listingId: "listing-both-flags",
+      hasActiveExperiment: true,
+      hasPendingRecommendation: true,
+    });
+
+    expect(result).toBe(true);
+  });
+
+  // ─── Edge case: shouldExclude when neither flag is true ───
+
+  it("[P1] T9.5-05c: does NOT exclude listing when no active experiment and no pending recommendation", async () => {
+    const { shouldExcludeListing } = await import(
+      "./underperformance-detector"
+    );
+
+    const result = shouldExcludeListing({
+      listingId: "listing-no-flags",
+      hasActiveExperiment: false,
+      hasPendingRecommendation: false,
+    });
+
+    expect(result).toBe(false);
+  });
+
+  // ─── Edge case: exactly 50 impressions → should be analyzed (boundary) ───
+
+  it("[P1] T9.5-04b: includes listing with exactly 50 impressions (boundary check)", async () => {
+    const { detectUnderperformance } = await import(
+      "./underperformance-detector"
+    );
+
+    const listing: ListingMetrics = {
+      listingId: "listing-boundary-50",
+      agencyId: AGENCY_ID,
+      impressions: 50, // Exactly at the minimum threshold
+      matchRate: 0.02, // z = -2.25 (underperforming)
+      avgViewTimeMs: 2000, // z = -2.08 (underperforming)
+      reaffirmRate: 0.35, // z = 0.0 (OK)
+    };
+
+    const result = detectUnderperformance(listing, AGENCY_STATS, PLATFORM_STATS);
+
+    // 50 impressions is AT the threshold, so it should be analyzed (not excluded)
+    expect(result.isUnderperforming).toBe(true);
+    expect(result.underperformingMetricCount).toBeGreaterThanOrEqual(2);
+  });
+
+  // ─── Edge case: stddev = 0 for all metrics → z-score = 0 ───
+
+  it("[P1] T9.5-02e: handles zero stddev gracefully (z-score = 0, not flagged)", async () => {
+    const { detectUnderperformance } = await import(
+      "./underperformance-detector"
+    );
+
+    const zeroStdStats: AgencyStats = {
+      agencyId: AGENCY_ID,
+      avgMatchRate: 0.065,
+      stdMatchRate: 0, // Zero stddev!
+      avgViewTimeMs: 4500,
+      stdViewTimeMs: 0, // Zero stddev!
+      avgReaffirmRate: 0.35,
+      stdReaffirmRate: 0, // Zero stddev!
+      listingCount: 5,
+    };
+
+    const listing: ListingMetrics = {
+      listingId: "listing-zero-std",
+      agencyId: AGENCY_ID,
+      impressions: 200,
+      matchRate: 0.01, // Would be underperforming but stddev = 0
+      avgViewTimeMs: 1000,
+      reaffirmRate: 0.05,
+    };
+
+    const result = detectUnderperformance(listing, zeroStdStats, PLATFORM_STATS);
+
+    // z-scores should be 0 when stddev is 0 (cannot compute)
+    expect(result.zScores.matchRate).toBe(0);
+    expect(result.zScores.viewTime).toBe(0);
+    expect(result.isUnderperforming).toBe(false);
+  });
 });
