@@ -51,12 +51,17 @@ You are working in the worktree at `{repo_root}/{WORKTREE_BASE_PATH}/story-{numb
 
 4. **Merge the PR** using squash strategy:
    ```bash
-   gh pr merge {pr_number} --squash --auto --delete-branch
+   gh pr merge {pr_number} --squash --auto
    ```
    If `--auto` is unavailable (requires branch protection rules), merge immediately:
    ```bash
-   gh pr merge {pr_number} --squash --delete-branch
+   gh pr merge {pr_number} --squash
    ```
+
+   > **IMPORTANT: Do NOT use `--delete-branch`.** The story worktree still holds a
+   > lock on the branch at this point. Using `--delete-branch` will cause the merge
+   > to fail with `error: cannot delete branch used by worktree`. Branch cleanup is
+   > handled by the Phase 3 cleanup subagent after all merges complete.
 
 5. **Confirm the merge:**
    ```bash

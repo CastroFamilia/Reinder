@@ -86,6 +86,7 @@ To intelligently manage the version control process by grouping uncommitted chan
 ## Constraints
 
 - **CRITICAL**: Submodules MUST be committed and pushed BEFORE the root repository to prevent broken references.
+- **CRITICAL**: Before merging PRs with `gh pr merge`, check `git worktree list` for active worktrees on the target branches. If any exist, remove them first with `git worktree remove --force <path>` before merging. **Never use `--delete-branch`** with `gh pr merge` when worktrees may exist — it will fail with `error: cannot delete branch used by worktree`. Delete branches manually after worktree removal.
 - **Do not** push the root repository before all submodules with changes are pushed.
 - **Do not** squash distinct features into a single commit.
 - **Do not** use generic messages like "fixes" or "updates".
