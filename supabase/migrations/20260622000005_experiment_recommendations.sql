@@ -302,7 +302,7 @@ BEGIN
       END AS rec_type,
       -- Reason code
       CASE
-        WHEN underperforming_count >= 2 THEN 'multiple_metrics_low'
+        WHEN underperforming_count >= 3 THEN 'multiple_metrics_low'
         WHEN z_view_time = worst_z THEN 'low_avg_view_time'
         WHEN z_match_rate = worst_z THEN 'low_match_rate'
         ELSE 'low_reaffirm_rate'

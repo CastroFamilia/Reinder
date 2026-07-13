@@ -59,6 +59,7 @@ export {
   calculatePriorityScore,
   selectTopRecommendations,
   getCurrentISOWeek,
+  getISOWeekForDate,
   shouldGenerateForAgency,
 } from "./experiments/recommendation-engine";
 export {
