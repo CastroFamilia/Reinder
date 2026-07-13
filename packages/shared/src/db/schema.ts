@@ -617,7 +617,6 @@ export const aiGenerationUsage = pgTable(
     listingId: uuid("listing_id")
       .notNull()
       .references(() => listings.id),
-<<<<<<< HEAD
     recommendedExperimentType: experimentTypeEnum("recommended_experiment_type").notNull(),
     reasonCode: text("reason_code").notNull(),
     reasonDetail: text("reason_detail").notNull(),
@@ -648,20 +647,3 @@ export const aiGenerationUsage = pgTable(
     ),
   })
 );
-=======
-    userId: uuid("user_id").notNull(),
-    model: text("model").notNull(),
-    promptTokens: integer("prompt_tokens").notNull().default(0),
-    completionTokens: integer("completion_tokens").notNull().default(0),
-    createdAt: timestamp("created_at", { withTimezone: true })
-      .defaultNow()
-      .notNull(),
-  },
-  (table) => ({
-    idxAiGenerationUsageAgencyCreated: index(
-      "idx_ai_generation_usage_agency_created"
-    ).on(table.agencyId, table.createdAt),
-  })
-);
-
->>>>>>> main
