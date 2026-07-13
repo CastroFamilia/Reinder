@@ -410,4 +410,23 @@ Compradores swipean (gratis)
 
 ---
 
-*Última actualización: 2026-06-30 — Galería multi-foto por listing.*
+### Light Mode / Theme Switching
+
+**Qué es:** Actualmente toda la app usa un tema oscuro (dark mode) con fondos negros/grises y glassmorphism. Muchos usuarios prefieren interfaces claras, especialmente al aire libre o en ambientes con mucha luz. Se debería ofrecer un Light Mode como alternativa y respetar la preferencia del sistema (Appearance API).
+
+**Implementación sugerida:**
+- **Tokens duales:** Extender el sistema de design tokens (`lib/tokens.ts`) para exportar dos paletas (`darkTheme` / `lightTheme`). Colores de superficie, texto, bordes y acentos tendrían variantes claras.
+- **ThemeProvider con Context:** Un `ThemeContext` que provea los tokens activos a toda la app. Los componentes usarían `useTheme()` en vez de importar tokens directamente.
+- **Preferencia del sistema:** Usar `useColorScheme()` de React Native para detectar la preferencia del OS. Añadir un toggle manual en Settings con 3 opciones: Auto / Claro / Oscuro.
+- **GlassPanel adaptativo:** El efecto de glassmorphism necesitaría variantes claras (blur sobre fondos blancos con opacidades invertidas).
+- **Persistencia:** Guardar la preferencia del usuario en AsyncStorage (igual que otros settings del store).
+
+**Impacto estimado:** Medio-alto. Requiere refactorizar todos los componentes que importan `Colors`/`SurfaceColors` directamente para usar el ThemeContext. El `GlassPanel`, `PropertyCard`, `ScreenBackground` y todas las pantallas necesitarían adaptarse.
+
+**Dónde surgió:** Feedback durante testing manual del feed — 2026-07-04.
+
+**Estado:** 🔵 Propuesta para futura mejora de UX. Sin dependencias bloqueantes.
+
+---
+
+*Última actualización: 2026-07-04 — Light mode / theme switching.*
