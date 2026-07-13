@@ -33,14 +33,18 @@ import { db } from "@/lib/supabase/db";
 
 // ─── Fixtures ─────────────────────────────────────────────────────────────────
 
-const AGENCY_ADMIN_USER = { id: "admin-uuid-001", email: "admin@agency.com" };
-const BUYER_USER = { id: "buyer-uuid-001", email: "buyer@test.com" };
-const AGENCY_ID = "agency-uuid-001";
+const AGENCY_ADMIN_USER = { id: "a0000000-0000-4000-8000-000000000001", email: "admin@agency.com" };
+const BUYER_USER = { id: "b0000000-0000-4000-8000-000000000001", email: "buyer@test.com" };
+const AGENCY_ID = "c0000000-0000-4000-8000-000000000001";
+const REC_ID = "d0000000-0000-4000-8000-000000000001";
+const REC_ID_2 = "d0000000-0000-4000-8000-000000000002";
+const EXP_ID = "e0000000-0000-4000-8000-000000000001";
+const OTHER_AGENCY_ID = "c0000000-0000-4000-8000-000000000099";
 
 const PENDING_RECOMMENDATION = {
-  id: "rec-uuid-001",
+  id: REC_ID,
   agencyId: AGENCY_ID,
-  listingId: "listing-uuid-001",
+  listingId: "f0000000-0000-4000-8000-000000000001",
   recommendedExperimentType: "cover_image",
   reasonCode: "low_avg_view_time",
   reasonDetail: "Tiempo medio 800ms — 1.5σ por debajo del promedio (2100ms)",
@@ -124,8 +128,8 @@ describe("PATCH /api/v1/agency/recommendations/:id — Dismiss (AC7)", () => {
     mockDbUpdate({ ...PENDING_RECOMMENDATION, status: "dismissed" });
 
     const { PATCH } = await import("./route");
-    const req = makePatchRequest("rec-uuid-001", { action: "dismiss" });
-    const res = await PATCH(req, { params: { id: "rec-uuid-001" } });
+    const req = makePatchRequest(REC_ID, { action: "dismiss" });
+    const res = await PATCH(req, { params: { id: REC_ID } });
     const body = await res.json();
 
     expect(res.status).toBe(200);
@@ -142,8 +146,8 @@ describe("PATCH /api/v1/agency/recommendations/:id — Dismiss (AC7)", () => {
     });
 
     const { PATCH } = await import("./route");
-    const req = makePatchRequest("rec-uuid-001", { action: "dismiss" });
-    const res = await PATCH(req, { params: { id: "rec-uuid-001" } });
+    const req = makePatchRequest(REC_ID, { action: "dismiss" });
+    const res = await PATCH(req, { params: { id: REC_ID } });
     const body = await res.json();
 
     expect(res.status).toBe(200);
@@ -160,34 +164,33 @@ describe("PATCH /api/v1/agency/recommendations/:id — Accept (AC7)", () => {
   });
 
   it("[P1] T9.5-17: accept action sets status to 'accepted' and links experimentId", { timeout: 15_000 }, async () => {
-    const experimentId = "a1b2c3d4-e5f6-7890-abcd-ef1234567890";
     mockAuth(AGENCY_ADMIN_USER, { role: "agency_admin", agencyId: AGENCY_ID });
     mockDbRecommendation(PENDING_RECOMMENDATION);
     mockDbUpdate({
       ...PENDING_RECOMMENDATION,
       status: "accepted",
-      acceptedExperimentId: experimentId,
+      acceptedExperimentId: EXP_ID,
     });
 
     const { PATCH } = await import("./route");
-    const req = makePatchRequest("rec-uuid-001", {
+    const req = makePatchRequest(REC_ID, {
       action: "accept",
-      experimentId,
+      experimentId: EXP_ID,
     });
-    const res = await PATCH(req, { params: { id: "rec-uuid-001" } });
+    const res = await PATCH(req, { params: { id: REC_ID } });
     const body = await res.json();
 
     expect(res.status).toBe(200);
     expect(body.data.recommendation.status).toBe("accepted");
-    expect(body.data.recommendation.acceptedExperimentId).toBe(experimentId);
+    expect(body.data.recommendation.acceptedExperimentId).toBe(EXP_ID);
   });
 
   it("[P1] T9.5-17b: accept without experimentId returns 400", { timeout: 15_000 }, async () => {
     mockAuth(AGENCY_ADMIN_USER, { role: "agency_admin", agencyId: AGENCY_ID });
 
     const { PATCH } = await import("./route");
-    const req = makePatchRequest("rec-uuid-001", { action: "accept" });
-    const res = await PATCH(req, { params: { id: "rec-uuid-001" } });
+    const req = makePatchRequest(REC_ID, { action: "accept" });
+    const res = await PATCH(req, { params: { id: REC_ID } });
 
     expect(res.status).toBe(400);
   });
@@ -196,11 +199,11 @@ describe("PATCH /api/v1/agency/recommendations/:id — Accept (AC7)", () => {
     mockAuth(AGENCY_ADMIN_USER, { role: "agency_admin", agencyId: AGENCY_ID });
 
     const { PATCH } = await import("./route");
-    const req = makePatchRequest("rec-uuid-001", {
+    const req = makePatchRequest(REC_ID, {
       action: "accept",
       experimentId: "not-a-uuid",
     });
-    const res = await PATCH(req, { params: { id: "rec-uuid-001" } });
+    const res = await PATCH(req, { params: { id: REC_ID } });
 
     expect(res.status).toBe(400);
   });
@@ -219,8 +222,8 @@ describe("PATCH /api/v1/agency/recommendations/:id — Conflict (AC7)", () => {
     mockDbRecommendation({ ...PENDING_RECOMMENDATION, status: "dismissed" });
 
     const { PATCH } = await import("./route");
-    const req = makePatchRequest("rec-uuid-001", { action: "dismiss" });
-    const res = await PATCH(req, { params: { id: "rec-uuid-001" } });
+    const req = makePatchRequest(REC_ID, { action: "dismiss" });
+    const res = await PATCH(req, { params: { id: REC_ID } });
     const body = await res.json();
 
     expect(res.status).toBe(409);
@@ -232,12 +235,12 @@ describe("PATCH /api/v1/agency/recommendations/:id — Conflict (AC7)", () => {
     mockDbRecommendation({
       ...PENDING_RECOMMENDATION,
       status: "accepted",
-      acceptedExperimentId: "exp-uuid-001",
+      acceptedExperimentId: EXP_ID,
     });
 
     const { PATCH } = await import("./route");
-    const req = makePatchRequest("rec-uuid-001", { action: "dismiss" });
-    const res = await PATCH(req, { params: { id: "rec-uuid-001" } });
+    const req = makePatchRequest(REC_ID, { action: "dismiss" });
+    const res = await PATCH(req, { params: { id: REC_ID } });
 
     expect(res.status).toBe(409);
   });
@@ -247,8 +250,8 @@ describe("PATCH /api/v1/agency/recommendations/:id — Conflict (AC7)", () => {
     mockDbRecommendation({ ...PENDING_RECOMMENDATION, status: "expired" });
 
     const { PATCH } = await import("./route");
-    const req = makePatchRequest("rec-uuid-001", { action: "dismiss" });
-    const res = await PATCH(req, { params: { id: "rec-uuid-001" } });
+    const req = makePatchRequest(REC_ID, { action: "dismiss" });
+    const res = await PATCH(req, { params: { id: REC_ID } });
 
     expect(res.status).toBe(409);
   });
@@ -266,8 +269,8 @@ describe("PATCH /api/v1/agency/recommendations/:id — Auth Guards", () => {
     mockAuth(null, null);
 
     const { PATCH } = await import("./route");
-    const req = makePatchRequest("rec-uuid-001", { action: "dismiss" });
-    const res = await PATCH(req, { params: { id: "rec-uuid-001" } });
+    const req = makePatchRequest(REC_ID, { action: "dismiss" });
+    const res = await PATCH(req, { params: { id: REC_ID } });
 
     expect(res.status).toBe(401);
     const body = await res.json();
@@ -278,8 +281,8 @@ describe("PATCH /api/v1/agency/recommendations/:id — Auth Guards", () => {
     mockAuth(BUYER_USER, { role: "buyer", agencyId: null });
 
     const { PATCH } = await import("./route");
-    const req = makePatchRequest("rec-uuid-001", { action: "dismiss" });
-    const res = await PATCH(req, { params: { id: "rec-uuid-001" } });
+    const req = makePatchRequest(REC_ID, { action: "dismiss" });
+    const res = await PATCH(req, { params: { id: REC_ID } });
 
     expect(res.status).toBe(403);
     const body = await res.json();
@@ -290,12 +293,12 @@ describe("PATCH /api/v1/agency/recommendations/:id — Auth Guards", () => {
     mockAuth(AGENCY_ADMIN_USER, { role: "agency_admin", agencyId: AGENCY_ID });
     mockDbRecommendation({
       ...PENDING_RECOMMENDATION,
-      agencyId: "other-agency-uuid",
+      agencyId: OTHER_AGENCY_ID,
     });
 
     const { PATCH } = await import("./route");
-    const req = makePatchRequest("rec-uuid-001", { action: "dismiss" });
-    const res = await PATCH(req, { params: { id: "rec-uuid-001" } });
+    const req = makePatchRequest(REC_ID, { action: "dismiss" });
+    const res = await PATCH(req, { params: { id: REC_ID } });
 
     expect(res.status).toBe(404);
   });
@@ -305,8 +308,8 @@ describe("PATCH /api/v1/agency/recommendations/:id — Auth Guards", () => {
     mockDbRecommendation(null);
 
     const { PATCH } = await import("./route");
-    const req = makePatchRequest("non-existent-uuid", { action: "dismiss" });
-    const res = await PATCH(req, { params: { id: "non-existent-uuid" } });
+    const req = makePatchRequest(REC_ID_2, { action: "dismiss" });
+    const res = await PATCH(req, { params: { id: REC_ID_2 } });
 
     expect(res.status).toBe(404);
   });
@@ -324,8 +327,8 @@ describe("PATCH body validation", () => {
     mockAuth(AGENCY_ADMIN_USER, { role: "agency_admin", agencyId: AGENCY_ID });
 
     const { PATCH } = await import("./route");
-    const req = makePatchRequest("rec-uuid-001", { action: "delete" });
-    const res = await PATCH(req, { params: { id: "rec-uuid-001" } });
+    const req = makePatchRequest(REC_ID, { action: "delete" });
+    const res = await PATCH(req, { params: { id: REC_ID } });
 
     expect(res.status).toBe(400);
   });
@@ -334,8 +337,8 @@ describe("PATCH body validation", () => {
     mockAuth(AGENCY_ADMIN_USER, { role: "agency_admin", agencyId: AGENCY_ID });
 
     const { PATCH } = await import("./route");
-    const req = makePatchRequest("rec-uuid-001", {});
-    const res = await PATCH(req, { params: { id: "rec-uuid-001" } });
+    const req = makePatchRequest(REC_ID, {});
+    const res = await PATCH(req, { params: { id: REC_ID } });
 
     expect(res.status).toBe(400);
   });
