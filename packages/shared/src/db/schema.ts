@@ -331,6 +331,7 @@ export const experimentStatusEnum = pgEnum("experiment_status", [
   "paused",
   "completed",
   "cancelled",
+  "winner_promoted",
 ]);
 
 /**
@@ -461,6 +462,41 @@ export const experimentResults = pgTable(
 );
 
 // ---------------------------------------------------------------------------
+// Tabla: experiment_promotion_logs
+// Audit log para auto-promoción y rollback de variantes ganadoras.
+// Source: story 9-4, AC6
+// ---------------------------------------------------------------------------
+
+export const experimentPromotionLogs = pgTable(
+  "experiment_promotion_logs",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    experimentId: uuid("experiment_id")
+      .notNull()
+      .references(() => listingExperiments.id),
+    listingId: uuid("listing_id")
+      .notNull()
+      .references(() => listings.id),
+    promotedVariant: text("promoted_variant").notNull(), // 'a' | 'b'
+    experimentType: text("experiment_type").notNull(),
+    previousContent: jsonb("previous_content").notNull(),
+    promotedContent: jsonb("promoted_content").notNull(),
+    promotedAt: timestamp("promoted_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    promotedBy: text("promoted_by").notNull().default("system"),
+  },
+  (table) => ({
+    idxPromotionLogsExperimentId: index("idx_promotion_logs_experiment_id").on(
+      table.experimentId
+    ),
+    idxPromotionLogsListingId: index("idx_promotion_logs_listing_id").on(
+      table.listingId
+    ),
+  })
+);
+
+// ---------------------------------------------------------------------------
 // Tabla: experiment_results_timeseries
 // Hourly cumulative snapshots per variant for time-series dashboard charts.
 // One row per (experiment, variant, hour) — upserted by aggregation job.
@@ -496,7 +532,6 @@ export const experimentResultsTimeseries = pgTable(
   })
 );
 
-// ---------------------------------------------------------------------------
 // Tabla: experiment_recommendations
 // Recomendaciones proactivas de experimentos A/B para listings underperforming.
 // Generadas semanalmente por pg_cron via generate_experiment_recommendations().
@@ -543,3 +578,90 @@ export const experimentRecommendations = pgTable(
     ),
   })
 );
+
+// ---------------------------------------------------------------------------
+// Tabla: ai_generation_usage
+// Tracks AI variant generation calls per agency for rate limiting and billing.
+// Source: story 9-6, AC4
+// ---------------------------------------------------------------------------
+
+export const aiGenerationUsage = pgTable(
+  "ai_generation_usage",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    agencyId: uuid("agency_id")
+      .notNull()
+      .references(() => agencies.id),
+    listingId: uuid("listing_id")
+      .notNull()
+      .references(() => listings.id),
+    userId: uuid("user_id").notNull(),
+    model: text("model").notNull(),
+    promptTokens: integer("prompt_tokens").notNull().default(0),
+    completionTokens: integer("completion_tokens").notNull().default(0),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => ({
+    idxAiGenerationUsageAgencyCreated: index(
+      "idx_ai_generation_usage_agency_created"
+    ).on(table.agencyId, table.createdAt),
+  })
+);
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    agencyId: uuid("agency_id")
+      .notNull()
+      .references(() => agencies.id),
+    listingId: uuid("listing_id")
+      .notNull()
+      .references(() => listings.id),
+<<<<<<< HEAD
+    recommendedExperimentType: experimentTypeEnum("recommended_experiment_type").notNull(),
+    reasonCode: text("reason_code").notNull(),
+    reasonDetail: text("reason_detail").notNull(),
+    underperformingMetrics: jsonb("underperforming_metrics")
+      .$type<{
+        match_rate?: { value: number; agency_avg: number; platform_avg: number; z_score: number };
+        avg_view_time_ms?: { value: number; agency_avg: number; platform_avg: number; z_score: number };
+        reaffirm_rate?: { value: number; agency_avg: number; platform_avg: number; z_score: number } | null;
+      }>()
+      .notNull(),
+    priorityScore: numeric("priority_score", { precision: 5, scale: 2 }).notNull(),
+    status: text("status").notNull().default("pending"), // pending | accepted | dismissed | expired
+    acceptedExperimentId: uuid("accepted_experiment_id")
+      .references(() => listingExperiments.id),
+    weekGenerated: text("week_generated").notNull(), // ISO week: 2026-W25
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => ({
+    idxRecommendationsAgencyId: index("idx_recommendations_agency_id").on(table.agencyId),
+    idxRecommendationsListingStatus: index("idx_recommendations_listing_status").on(
+      table.listingId,
+      table.status
+    ),
+  })
+);
+=======
+    userId: uuid("user_id").notNull(),
+    model: text("model").notNull(),
+    promptTokens: integer("prompt_tokens").notNull().default(0),
+    completionTokens: integer("completion_tokens").notNull().default(0),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => ({
+    idxAiGenerationUsageAgencyCreated: index(
+      "idx_ai_generation_usage_agency_created"
+    ).on(table.agencyId, table.createdAt),
+  })
+);
+
+>>>>>>> main

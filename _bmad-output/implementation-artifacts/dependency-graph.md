@@ -1,5 +1,5 @@
 # Story Dependency Graph
-_Last updated: 2026-06-22T17:09:00+02:00_
+_Last updated: 2026-07-04T20:52:00+02:00_
 
 ## Stories
 
@@ -20,7 +20,7 @@ _Last updated: 2026-06-22T17:09:00+02:00_
 | 2.7 | 2 | Historial de Matches y Badge "Nuevas Propiedades" | done | — | — | — | 2.3, 2.6 | ✅ Yes (done) |
 | 2.8 | 2 | TabBar de Comprador con Navegación Rol-Based | done | — | — | — | 2.7 | ✅ Yes (done) |
 | 2.9 | 2 | Filtros de Búsqueda — Buyer Onboarding y Edición en Sesión | done | — | — | — | 2.2 | ✅ Yes (done) |
-| 3.1 | 3 | Generación de Link de Referral por el Agente | done | — | — | — | none (Epic 2 complete ✅) | ✅ Yes (done) |
+| 3.1 | 3 | Generación de Link de Referral por el Agente | done | — | — | — | Epic 2 complete ✅ | ✅ Yes (done) |
 | 3.2 | 3 | Aceptación del Vínculo por el Comprador vía Referral Link | done | — | — | — | 3.1 | ✅ Yes (done) |
 | 3.3 | 3 | Reconfirmación Periódica y Desvinculación Voluntaria | done | — | — | — | 3.2 | ✅ Yes (done) |
 | 3.4 | 3 | Sobreescritura del Listing Agent en la UI | done | — | — | — | 3.2 | ✅ Yes (done) |
@@ -46,12 +46,12 @@ _Last updated: 2026-06-22T17:09:00+02:00_
 | 8.5 | 8 | Dashboard de Analytics por Listing para Agencias | done | — | #22 | merged | 8.7 | ✅ Yes (done) |
 | 8.6 | 8 | Buyer Intent Score en Panel del Agente | done | — | #23 | merged | 8.7 | ✅ Yes (done) |
 | 8.7 | 8 | Aggregation Jobs para Read Models de Analytics | done | — | #24 | merged | 8.1 | ✅ Yes (done) |
-| 9.1 | 9 | Schema de Experimentos y Motor de Asignación de Variantes | ready-for-dev | #25 | — | — | Epic 8 complete ✅ | ✅ Yes |
-| 9.2 | 9 | UI de Creación de Experimento para Agencias (Portada A/B) | ready-for-dev | #26 | — | — | 9.1 | ❌ No (9.1 not merged) |
-| 9.3 | 9 | Medición de Impacto y Dashboard de Resultados del Experimento | ready-for-dev | #27 | — | — | 9.1 | ❌ No (9.1 not merged) |
-| 9.4 | 9 | Auto-promoción de Variante Ganadora al Alcanzar Significancia | ready-for-dev | #28 | — | — | 9.3 | ❌ No (9.3 not merged) |
-| 9.5 | 9 | Recomendaciones Proactivas de Experimentos para Listings Underperforming | ready-for-dev | #29 | — | — | 9.3 | ❌ No (9.3 not merged) |
-| 9.6 | 9 | Generación de Variantes de Título y Descripción con IA (Human-in-the-loop) | ready-for-dev | #30 | — | — | 9.2 | ❌ No (9.2 not merged) |
+| 9.1 | 9 | Schema de Experimentos y Motor de Asignación de Variantes | done | #25 | #31 | merged | Epic 8 complete ✅ | ✅ Yes (done) |
+| 9.2 | 9 | UI de Creación de Experimento para Agencias (Portada A/B) | done | #26 | #32 | merged | 9.1 | ✅ Yes (done) |
+| 9.3 | 9 | Medición de Impacto y Dashboard de Resultados del Experimento | done | #27 | #33 | merged | 9.1 | ✅ Yes (done) |
+| 9.4 | 9 | Auto-promoción de Variante Ganadora al Alcanzar Significancia | ready-for-dev | #28 | — | — | 9.3 | ✅ Yes |
+| 9.5 | 9 | Recomendaciones Proactivas de Experimentos para Listings Underperforming | ready-for-dev | #29 | — | — | 9.3 | ✅ Yes |
+| 9.6 | 9 | Generación de Variantes de Título y Descripción con IA (Human-in-the-loop) | ready-for-dev | #30 | — | — | 9.2 | ✅ Yes |
 | 10.1 | 10 | Buyer Preference Vector — Generación y Persistencia | backlog | — | — | — | Epic 9 complete | ❌ No (epic 9 not complete) |
 | 10.2 | 10 | Listing Fit Score — Cálculo de Afinidad | backlog | — | — | — | 10.1 | ❌ No (epic 9 not complete) |
 | 10.3 | 10 | Personalización de Foto de Portada en Swipe Feed | backlog | — | — | — | 10.2 | ❌ No (epic 9 not complete) |
@@ -119,24 +119,20 @@ _Last updated: 2026-06-22T17:09:00+02:00_
 
 **Current epic:** Epic 9 — Content Optimization & A/B Testing (in-progress)
 **All previous epics done:** Epics 1–8 and 11 are fully complete.
-**GitHub Issues created:** #25 (9.1), #26 (9.2), #27 (9.3), #28 (9.4), #29 (9.5), #30 (9.6)
-**Pending PRs:** None (no PRs created yet for Epic 9)
-**Worktree cleanup:** Removed 17 worktrees from Epics 5–8 and deleted corresponding remote branches.
+**GitHub Issues:** #25 (9.1 closed), #26 (9.2 closed), #27 (9.3 closed), #28 (9.4 open), #29 (9.5 open), #30 (9.6 open)
+**Merged PRs:** #31 (9.1), #32 (9.2), #33 (9.3)
+**Pending PRs:** None
+**Worktree cleanup:** Removed worktrees for 9.1, 9.2, 9.3 and deleted their remote branches. Active worktrees remain for 9.4, 9.5, 9.6.
 
-### Parallelization Opportunities (Epic 9)
+### Parallelization Opportunities (Epic 9 — remaining)
 
 ```
-                 ┌──→ 9.2 ──→ 9.6
-                 │
-    9.1 ────────┤
-                 │
-                 └──→ 9.3 ──┬──→ 9.4
-                             └──→ 9.5
+    9.4 ←── 9.3 (done ✅)
+    9.5 ←── 9.3 (done ✅)
+    9.6 ←── 9.2 (done ✅)
 ```
 
-- **Wave 1:** 9.1 (sole entry point — no parallelism possible at start)
-- **Wave 2:** 9.2 + 9.3 (can run in parallel after 9.1 merges)
-- **Wave 3:** 9.4 + 9.5 + 9.6 (9.4 and 9.5 depend on 9.3; 9.6 depends on 9.2 — all three can run in parallel once both 9.2 and 9.3 are merged)
+- **Wave 3 (NOW):** 9.4 + 9.5 + 9.6 — all three can run **in parallel** since their dependencies (9.2, 9.3) are merged.
 
-### Bottleneck
-Story 9.1 is the sole critical path entry point. Until it is implemented and merged, no other Epic 9 story can start.
+### Key Change This Run
+Stories 9.1, 9.2, 9.3 PRs (#31, #32, #33) confirmed merged. Worktrees and remote branches cleaned. All remaining Epic 9 stories (9.4, 9.5, 9.6) are now unblocked and ready to work in parallel.

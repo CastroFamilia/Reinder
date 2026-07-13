@@ -14,8 +14,10 @@ export const ExperimentStatus = [
   "paused",
   "completed",
   "cancelled",
+  "winner_promoted",
 ] as const;
 export type ExperimentStatus = (typeof ExperimentStatus)[number];
+
 
 export const ExperimentType = [
   "cover_image",

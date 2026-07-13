@@ -98,9 +98,9 @@
 | **9.1** | Schema de Experimentos y Motor de Asignación de Variantes | 4 | ☝️ Migración SQL: tablas `listing_experiments`, `experiment_assignments` | ✅ done — PR #25 |
 | **9.2** | UI de Creación de Experimento para Agencias (Portada A/B) | 3 | — | ✅ done — PR #32 |
 | **9.3** | Medición de Impacto y Dashboard de Resultados del Experimento | 3 | — | ✅ done — PR #33 |
-| **9.4** | Auto-promoción de Variante Ganadora al Alcanzar Significancia | 4 | — | 🟡 ready-for-dev |
-| **9.5** | Recomendaciones Proactivas de Experimentos para Listings Underperforming | 2 | — | 🟡 ready-for-dev |
-| **9.6** | Generación de Variantes de Título y Descripción con IA (Human-in-the-loop) | 5 | ☝️ Integración OpenAI GPT-4o: API key + prompt engineering + UI de aprobación | 🟡 ready-for-dev |
+| **9.4** | Auto-promoción de Variante Ganadora al Alcanzar Significancia | 4 | — | ✅ done — PR #34 |
+| **9.5** | Recomendaciones Proactivas de Experimentos para Listings Underperforming | 2 | — | ✅ done — PR #36 |
+| **9.6** | Generación de Variantes de Título y Descripción con IA (Human-in-the-loop) | 5 | ☝️ Integración OpenAI GPT-4o: API key + prompt engineering + UI de aprobación | ✅ done — PR #35 |
 | **10.1** | Buyer Preference Vector — Generación y Persistencia | 5 | ☝️ Migración SQL: tabla `buyer_preference_vectors` + evaluación legal GDPR | 🔵 backlog |
 | **10.2** | Listing Fit Score — Cálculo de Afinidad Listing × Comprador | 4 | — | 🔵 backlog |
 | **10.3** | Personalización de Foto de Portada en Swipe Feed | 4 | — | 🔵 backlog |
@@ -166,4 +166,4 @@
 
 ---
 
-*Última actualización: 2026-06-30 — Epic 9 en progreso (3/6 done: stories 9.1–9.3). Sesión 2026-06-30: Registro web corregido (email check modal y client Supabase), realtime listener en matches de la web, view modes 'cover'/'detail' con toggle persistente en app móvil, script de semilla RE/MAX, migración de base de datos de agencias.*
+*Última actualización: 2026-07-13 — Epic 9 completado (6/6 done). Stories 9.4–9.6 implementadas: significancia estadística, recomendaciones proactivas, generación IA con OpenAI. PRs #34, #35, #36 abiertos para merge.*
