@@ -89,18 +89,19 @@ export async function computePreferenceVector(
   const matchedSwipes = swipeEvents.filter((e) => e.action === "match");
   const matchRate = matchedSwipes.length / swipeEvents.length;
 
-  // Resolve listing data for matched swipes
-  const matchedListingIds = [...new Set(matchedSwipes.map((e) => e.listingId))];
+  // Resolve listing data for relevant swipes (use all if no matches)
+  const relevantSwipes = matchedSwipes.length > 0 ? matchedSwipes : swipeEvents;
+  const relevantListingIds = [...new Set(relevantSwipes.map((e) => e.listingId))];
   const listingDataMap = new Map<string, ListingDataForVector>();
 
-  for (const listingId of matchedListingIds) {
+  for (const listingId of relevantListingIds) {
     const data = await deps.getListingData(listingId);
     if (data) {
       listingDataMap.set(listingId, data);
     }
   }
 
-  // Gather numeric arrays from matched listings
+  // Gather numeric arrays from relevant listings
   const prices: number[] = [];
   const sizes: number[] = [];
   const bedrooms: number[] = [];
@@ -108,7 +109,7 @@ export async function computePreferenceVector(
   const lats: number[] = [];
   const lngs: number[] = [];
 
-  for (const swipe of matchedSwipes) {
+  for (const swipe of relevantSwipes) {
     const listing = listingDataMap.get(swipe.listingId);
     if (!listing) continue;
     prices.push(listing.price);
