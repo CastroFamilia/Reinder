@@ -13,8 +13,6 @@ import type {
   BuyerPreferenceVector,
   ComputePreferenceVectorDeps,
   ListingDataForVector,
-  SwipeEventInput,
-  EngagementEventInput,
 } from "./types";
 import { MIN_SWIPES_THRESHOLD } from "./types";
 
@@ -124,8 +122,8 @@ export async function computePreferenceVector(
   const priceAffinity = {
     mean: mean(prices),
     stddev: stddev(prices),
-    rangeMin: prices.length > 0 ? Math.min(...prices) : 0,
-    rangeMax: prices.length > 0 ? Math.max(...prices) : 0,
+    rangeMin: prices.length > 0 ? prices.reduce((a, b) => Math.min(a, b), prices[0]) : 0,
+    rangeMax: prices.length > 0 ? prices.reduce((a, b) => Math.max(a, b), prices[0]) : 0,
   };
 
   // ── Dimension 2: Size Affinity ──

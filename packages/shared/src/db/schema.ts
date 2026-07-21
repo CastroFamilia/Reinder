@@ -636,9 +636,6 @@ export const buyerPreferenceVectors = pgTable(
   },
   (table) => ({
     buyerIdUnique: unique("buyer_preference_vectors_buyer_id_unique").on(table.buyerId),
-    idxBuyerPreferenceVectorsBuyerId: index("idx_buyer_preference_vectors_buyer_id").on(
-      table.buyerId
-    ),
     idxBpvLastComputed: index("idx_bpv_last_computed").on(table.lastComputedAt),
   })
 );

@@ -24,12 +24,8 @@ CREATE TABLE IF NOT EXISTS buyer_preference_vectors (
   updated_at      TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
--- Unique index on buyer_id (1:1 relationship)
+-- Unique index on buyer_id (1:1 relationship) — also serves as the lookup index
 CREATE UNIQUE INDEX IF NOT EXISTS buyer_preference_vectors_buyer_id_unique
-  ON buyer_preference_vectors (buyer_id);
-
--- Index for buyer_id lookups
-CREATE INDEX IF NOT EXISTS idx_buyer_preference_vectors_buyer_id
   ON buyer_preference_vectors (buyer_id);
 
 -- Index for freshness monitoring queries (AC1)
@@ -118,10 +114,9 @@ BEGIN
   -- Guard: only schedule if pg_cron extension is available
   IF EXISTS (SELECT 1 FROM pg_extension WHERE extname = 'pg_cron') THEN
     -- Remove existing schedule if present (idempotent)
-    PERFORM cron.unschedule('compute_buyer_preference_vectors')
-    WHERE EXISTS (
-      SELECT 1 FROM cron.job WHERE jobname = 'compute_buyer_preference_vectors'
-    );
+    IF EXISTS (SELECT 1 FROM cron.job WHERE jobname = 'compute_buyer_preference_vectors') THEN
+      PERFORM cron.unschedule('compute_buyer_preference_vectors');
+    END IF;
 
     -- Schedule the job
     PERFORM cron.schedule(
