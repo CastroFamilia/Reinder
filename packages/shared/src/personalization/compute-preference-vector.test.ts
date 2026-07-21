@@ -4,8 +4,7 @@
  * AC2: Preference vector structure (all dimensions)
  * AC3: Computation logic — threshold, edge cases, dimension calculation
  *
- * TDD RED PHASE: All tests use it.skip() — will fail until implementation exists.
- * Remove .skip() after implementing packages/shared/src/personalization/compute-preference-vector.ts
+ * Tests validate computePreferenceVector() logic, thresholds, and vector structure.
  *
  * Run: pnpm --filter @reinder/shared test packages/shared/src/personalization/compute-preference-vector.test.ts
  */
@@ -82,8 +81,8 @@ function createMockEngagementEvents(count: number) {
       sessionId: `session-${i}`,
       eventType: i % 2 === 0 ? "photo_view" : "detail_view",
       payload: {
-        viewTimeMs: 2000 + Math.floor(Math.random() * 3000),
-        scrollDepthPct: 0.3 + Math.random() * 0.7,
+        viewTimeMs: 2000 + (i * 317) % 3000, // deterministic spread
+        scrollDepthPct: 0.3 + ((i * 431) % 700) / 1000, // deterministic 0.3-1.0
         photoIndex: i % 5,
       },
       createdAt: new Date(now.getTime() - i * 3600000),

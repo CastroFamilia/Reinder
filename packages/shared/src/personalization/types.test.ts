@@ -3,8 +3,7 @@
  *
  * AC8: Types exported from @reinder/shared personalization module
  *
- * TDD RED PHASE: All tests use it.skip() — will fail until types are implemented.
- * Remove .skip() after creating packages/shared/src/personalization/types.ts and index.ts
+ * Tests validate exported types, constants, and functions from the personalization module.
  *
  * Run: pnpm --filter @reinder/shared test packages/shared/src/personalization/types.test.ts
  */
@@ -15,7 +14,7 @@ describe("Personalization Types & Exports (AC8)", () => {
   // ─── AC8: BuyerPreferenceVector interface ───
 
   it(
-    "[P0] T10.1-31: exports BuyerPreferenceVector type from personalization module",
+    "[P0] T10.1-31: exports computePreferenceVector function via barrel index",
     async () => {
       const personalization = await import("./index");
 

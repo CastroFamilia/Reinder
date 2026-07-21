@@ -6,8 +6,7 @@
  *      - Single buyer computation (with buyerId)
  *      - Batch computation (without buyerId)
  *
- * TDD RED PHASE: All tests use it.skip() — will fail until route is implemented.
- * Remove .skip() after implementing apps/web/src/app/api/v1/admin/preference-vectors/compute/route.ts
+ * Tests validate auth guards, single buyer, and batch response shapes.
  *
  * Run: pnpm --filter @reinder/web test apps/web/src/app/api/v1/admin/preference-vectors/compute/route.test.ts
  */

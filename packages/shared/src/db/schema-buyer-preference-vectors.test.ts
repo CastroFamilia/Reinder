@@ -4,8 +4,7 @@
  * AC1: buyer_preference_vectors table with all required columns and indices
  * AC8: Types exported from @reinder/shared
  *
- * TDD RED PHASE: All tests use it.skip() — will fail until schema is implemented.
- * Remove .skip() after adding buyer_preference_vectors table to packages/shared/src/db/schema.ts
+ * Tests validate the Drizzle schema definition for buyer_preference_vectors.
  *
  * Run: pnpm --filter @reinder/shared test packages/shared/src/db/schema-buyer-preference-vectors.test.ts
  */
@@ -17,6 +16,7 @@ describe("Drizzle Schema — buyer_preference_vectors Table (AC1)", () => {
 
   it(
     "[P0] T10.1-01: exports buyerPreferenceVectors table from schema.ts",
+    { timeout: 15_000 },
     async () => {
       const schema = await import("./schema");
 
@@ -25,8 +25,7 @@ describe("Drizzle Schema — buyer_preference_vectors Table (AC1)", () => {
       expect(
         (schema.buyerPreferenceVectors as any)[Symbol.for("drizzle:Name")]
       ).toBe("buyer_preference_vectors");
-    },
-    { timeout: 15_000 }
+    }
   );
 
   // ─── AC1: All required columns present ───
