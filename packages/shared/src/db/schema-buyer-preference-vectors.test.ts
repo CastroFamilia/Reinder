@@ -15,7 +15,7 @@ import { describe, it, expect } from "vitest";
 describe("Drizzle Schema — buyer_preference_vectors Table (AC1)", () => {
   // ─── AC1: Table exists and exports correctly ───
 
-  it.skip(
+  it(
     "[P0] T10.1-01: exports buyerPreferenceVectors table from schema.ts",
     async () => {
       const schema = await import("./schema");
@@ -31,7 +31,7 @@ describe("Drizzle Schema — buyer_preference_vectors Table (AC1)", () => {
 
   // ─── AC1: All required columns present ───
 
-  it.skip(
+  it(
     "[P0] T10.1-02: buyer_preference_vectors has all required columns per AC1",
     async () => {
       const schema = await import("./schema");
@@ -58,29 +58,31 @@ describe("Drizzle Schema — buyer_preference_vectors Table (AC1)", () => {
 
   // ─── AC1: Column types ───
 
-  it.skip(
+  it(
     "[P0] T10.1-03: id is UUID with defaultRandom",
     async () => {
       const schema = await import("./schema");
       const col = (schema.buyerPreferenceVectors as any).id;
 
-      expect(col.dataType).toBe("uuid");
+      // Drizzle 0.45.x: UUID columns have dataType 'string' but columnType 'PgUUID'
+      expect(col.columnType).toBe("PgUUID");
       expect(col.hasDefault).toBe(true);
     }
   );
 
-  it.skip(
+  it(
     "[P0] T10.1-04: buyerId is UUID NOT NULL",
     async () => {
       const schema = await import("./schema");
       const col = (schema.buyerPreferenceVectors as any).buyerId;
 
-      expect(col.dataType).toBe("uuid");
+      // Drizzle 0.45.x: UUID columns have dataType 'string' but columnType 'PgUUID'
+      expect(col.columnType).toBe("PgUUID");
       expect(col.notNull).toBe(true);
     }
   );
 
-  it.skip(
+  it(
     "[P0] T10.1-05: vector is JSONB NOT NULL",
     async () => {
       const schema = await import("./schema");
@@ -91,7 +93,7 @@ describe("Drizzle Schema — buyer_preference_vectors Table (AC1)", () => {
     }
   );
 
-  it.skip(
+  it(
     "[P1] T10.1-06: swipeCount is INTEGER NOT NULL with default 0",
     async () => {
       const schema = await import("./schema");
@@ -103,7 +105,7 @@ describe("Drizzle Schema — buyer_preference_vectors Table (AC1)", () => {
     }
   );
 
-  it.skip(
+  it(
     "[P1] T10.1-07: engagementEventCount is INTEGER NOT NULL with default 0",
     async () => {
       const schema = await import("./schema");
@@ -115,7 +117,7 @@ describe("Drizzle Schema — buyer_preference_vectors Table (AC1)", () => {
     }
   );
 
-  it.skip(
+  it(
     "[P1] T10.1-08: version is INTEGER NOT NULL with default 1",
     async () => {
       const schema = await import("./schema");
@@ -127,7 +129,7 @@ describe("Drizzle Schema — buyer_preference_vectors Table (AC1)", () => {
     }
   );
 
-  it.skip(
+  it(
     "[P1] T10.1-09: lastComputedAt is TIMESTAMPTZ NOT NULL",
     async () => {
       const schema = await import("./schema");
@@ -138,7 +140,7 @@ describe("Drizzle Schema — buyer_preference_vectors Table (AC1)", () => {
     }
   );
 
-  it.skip(
+  it(
     "[P2] T10.1-10: createdAt is TIMESTAMPTZ NOT NULL with defaultNow",
     async () => {
       const schema = await import("./schema");
@@ -150,7 +152,7 @@ describe("Drizzle Schema — buyer_preference_vectors Table (AC1)", () => {
     }
   );
 
-  it.skip(
+  it(
     "[P2] T10.1-11: updatedAt is TIMESTAMPTZ NOT NULL with defaultNow",
     async () => {
       const schema = await import("./schema");

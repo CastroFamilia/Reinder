@@ -95,7 +95,7 @@ function createMockEngagementEvents(count: number) {
 // ─── AC3: Minimum Threshold ───────────────────────────────────────────────────
 
 describe("computePreferenceVector() — AC3: Threshold and Edge Cases", () => {
-  it.skip(
+  it(
     "[P0] T10.1-12: returns null when buyer has fewer than 10 swipe_events",
     async () => {
       const { computePreferenceVector } = await import(
@@ -117,7 +117,7 @@ describe("computePreferenceVector() — AC3: Threshold and Edge Cases", () => {
     }
   );
 
-  it.skip(
+  it(
     "[P0] T10.1-13: returns null when buyer has exactly 9 swipe_events",
     async () => {
       const { computePreferenceVector } = await import(
@@ -139,7 +139,7 @@ describe("computePreferenceVector() — AC3: Threshold and Edge Cases", () => {
     }
   );
 
-  it.skip(
+  it(
     "[P0] T10.1-14: returns vector when buyer has exactly 10 swipe_events",
     async () => {
       const { computePreferenceVector } = await import(
@@ -161,7 +161,7 @@ describe("computePreferenceVector() — AC3: Threshold and Edge Cases", () => {
     }
   );
 
-  it.skip(
+  it(
     "[P0] T10.1-15: returns vector when buyer has >10 swipes but all rejects (0 matches)",
     async () => {
       const { computePreferenceVector } = await import(
@@ -189,7 +189,7 @@ describe("computePreferenceVector() — AC3: Threshold and Edge Cases", () => {
 // ─── AC2: Preference Vector Structure ─────────────────────────────────────────
 
 describe("computePreferenceVector() — AC2: Vector Structure", () => {
-  it.skip(
+  it(
     "[P0] T10.1-16: vector contains all required dimensions per AC2",
     async () => {
       const { computePreferenceVector } = await import(
@@ -221,7 +221,7 @@ describe("computePreferenceVector() — AC2: Vector Structure", () => {
     }
   );
 
-  it.skip(
+  it(
     "[P0] T10.1-17: price_affinity has correct sub-fields (mean, stddev, range_min, range_max)",
     async () => {
       const { computePreferenceVector } = await import(
@@ -253,7 +253,7 @@ describe("computePreferenceVector() — AC2: Vector Structure", () => {
     }
   );
 
-  it.skip(
+  it(
     "[P0] T10.1-18: size_affinity has correct sub-fields (mean, stddev)",
     async () => {
       const { computePreferenceVector } = await import(
@@ -281,7 +281,7 @@ describe("computePreferenceVector() — AC2: Vector Structure", () => {
     }
   );
 
-  it.skip(
+  it(
     "[P0] T10.1-19: bedroom_affinity has correct sub-fields (mode, distribution)",
     async () => {
       const { computePreferenceVector } = await import(
@@ -309,7 +309,7 @@ describe("computePreferenceVector() — AC2: Vector Structure", () => {
     }
   );
 
-  it.skip(
+  it(
     "[P0] T10.1-20: location_affinity has correct sub-fields (preferred_cities, geo_centroid)",
     async () => {
       const { computePreferenceVector } = await import(
@@ -341,7 +341,7 @@ describe("computePreferenceVector() — AC2: Vector Structure", () => {
     }
   );
 
-  it.skip(
+  it(
     "[P1] T10.1-21: photo_engagement has correct sub-fields (avg_view_time_ms, preferred_photo_indices)",
     async () => {
       const { computePreferenceVector } = await import(
@@ -369,7 +369,7 @@ describe("computePreferenceVector() — AC2: Vector Structure", () => {
     }
   );
 
-  it.skip(
+  it(
     "[P1] T10.1-22: engagement_depth has correct sub-fields (avg_scroll_depth_pct, avg_detail_view_ms)",
     async () => {
       const { computePreferenceVector } = await import(
@@ -397,7 +397,7 @@ describe("computePreferenceVector() — AC2: Vector Structure", () => {
     }
   );
 
-  it.skip(
+  it(
     "[P0] T10.1-23: match_rate is number between 0 and 1",
     async () => {
       const { computePreferenceVector } = await import(
@@ -422,7 +422,7 @@ describe("computePreferenceVector() — AC2: Vector Structure", () => {
     }
   );
 
-  it.skip(
+  it(
     "[P1] T10.1-24: reaffirm_rate is number between 0 and 1",
     async () => {
       const { computePreferenceVector } = await import(
@@ -449,7 +449,7 @@ describe("computePreferenceVector() — AC2: Vector Structure", () => {
 
   // ─── AC2: Numeric sanity — no NaN/Infinity ───
 
-  it.skip(
+  it(
     "[P0] T10.1-25: all numeric values in vector are finite (no NaN, no Infinity)",
     async () => {
       const { computePreferenceVector } = await import(
@@ -494,7 +494,7 @@ describe("computePreferenceVector() — AC2: Vector Structure", () => {
 
   // ─── AC2: JSONB serialization ───
 
-  it.skip(
+  it(
     "[P1] T10.1-26: vector serializes correctly as JSON (JSONB compatibility)",
     async () => {
       const { computePreferenceVector } = await import(
@@ -525,7 +525,7 @@ describe("computePreferenceVector() — AC2: Vector Structure", () => {
 // ─── AC3: Computation correctness ─────────────────────────────────────────────
 
 describe("computePreferenceVector() — AC3: Computation Correctness", () => {
-  it.skip(
+  it(
     "[P0] T10.1-27: match_rate equals matches / total_swipes",
     async () => {
       const { computePreferenceVector } = await import(
@@ -553,7 +553,7 @@ describe("computePreferenceVector() — AC3: Computation Correctness", () => {
     }
   );
 
-  it.skip(
+  it(
     "[P0] T10.1-28: price_affinity.mean reflects matched listings average price",
     async () => {
       const { computePreferenceVector } = await import(
@@ -579,7 +579,7 @@ describe("computePreferenceVector() — AC3: Computation Correctness", () => {
     }
   );
 
-  it.skip(
+  it(
     "[P1] T10.1-29: location_affinity.preferred_cities contains cities from matched listings",
     async () => {
       const { computePreferenceVector } = await import(
@@ -610,7 +610,7 @@ describe("computePreferenceVector() — AC3: Computation Correctness", () => {
     }
   );
 
-  it.skip(
+  it(
     "[P1] T10.1-30: bedroom_affinity.mode is the most frequent bedroom count among matches",
     async () => {
       const { computePreferenceVector } = await import(

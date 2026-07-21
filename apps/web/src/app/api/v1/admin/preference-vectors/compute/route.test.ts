@@ -90,7 +90,7 @@ describe("POST /api/v1/admin/preference-vectors/compute — Auth (AC5)", () => {
     vi.clearAllMocks();
   });
 
-  it.skip(
+  it(
     "[P0] T10.1-35: returns 403 when buyer attempts access",
     async () => {
       mockSupabaseClient(BUYER_USER, "buyer");
@@ -111,7 +111,7 @@ describe("POST /api/v1/admin/preference-vectors/compute — Auth (AC5)", () => {
     }
   );
 
-  it.skip(
+  it(
     "[P0] T10.1-36: returns 403 when agent attempts access",
     async () => {
       mockSupabaseClient(AGENT_USER, "agent");
@@ -132,7 +132,7 @@ describe("POST /api/v1/admin/preference-vectors/compute — Auth (AC5)", () => {
     }
   );
 
-  it.skip(
+  it(
     "[P0] T10.1-37: returns 403 when agency_admin attempts access",
     async () => {
       mockSupabaseClient(AGENCY_ADMIN_USER, "agency_admin");
@@ -153,7 +153,7 @@ describe("POST /api/v1/admin/preference-vectors/compute — Auth (AC5)", () => {
     }
   );
 
-  it.skip(
+  it(
     "[P0] T10.1-38: returns 401 when no user session exists",
     async () => {
       const mockClient = {
@@ -189,7 +189,7 @@ describe("POST /api/v1/admin/preference-vectors/compute — Single Buyer (AC5)",
     vi.clearAllMocks();
   });
 
-  it.skip(
+  it(
     "[P0] T10.1-39: returns success with vector details when buyerId provided",
     async () => {
       mockSupabaseClient(PLATFORM_ADMIN_USER, "platform_admin");
@@ -217,7 +217,7 @@ describe("POST /api/v1/admin/preference-vectors/compute — Single Buyer (AC5)",
     }
   );
 
-  it.skip(
+  it(
     "[P1] T10.1-40: response shape follows ApiResponse convention for single buyer",
     async () => {
       mockSupabaseClient(PLATFORM_ADMIN_USER, "platform_admin");
@@ -253,7 +253,7 @@ describe("POST /api/v1/admin/preference-vectors/compute — Batch (AC5)", () => 
     vi.clearAllMocks();
   });
 
-  it.skip(
+  it(
     "[P0] T10.1-41: returns batch result when no buyerId provided",
     async () => {
       mockSupabaseClient(PLATFORM_ADMIN_USER, "platform_admin");
@@ -280,7 +280,7 @@ describe("POST /api/v1/admin/preference-vectors/compute — Batch (AC5)", () => 
     }
   );
 
-  it.skip(
+  it(
     "[P1] T10.1-42: batch response has correct types for processedCount, skippedCount, durationMs",
     async () => {
       mockSupabaseClient(PLATFORM_ADMIN_USER, "platform_admin");

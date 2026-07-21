@@ -14,7 +14,7 @@ import { describe, it, expect } from "vitest";
 describe("Personalization Types & Exports (AC8)", () => {
   // ─── AC8: BuyerPreferenceVector interface ───
 
-  it.skip(
+  it(
     "[P0] T10.1-31: exports BuyerPreferenceVector type from personalization module",
     async () => {
       const personalization = await import("./index");
@@ -24,7 +24,7 @@ describe("Personalization Types & Exports (AC8)", () => {
     }
   );
 
-  it.skip(
+  it(
     "[P0] T10.1-32: exports computePreferenceVector function from personalization module",
     async () => {
       const personalization = await import("./index");
@@ -34,7 +34,7 @@ describe("Personalization Types & Exports (AC8)", () => {
     }
   );
 
-  it.skip(
+  it(
     "[P0] T10.1-33: exports PREFERENCE_VECTOR_VERSION constant",
     async () => {
       const personalization = await import("./index");
@@ -47,7 +47,7 @@ describe("Personalization Types & Exports (AC8)", () => {
     }
   );
 
-  it.skip(
+  it(
     "[P0] T10.1-34: exports MIN_SWIPES_THRESHOLD constant equal to 10",
     async () => {
       const personalization = await import("./index");
