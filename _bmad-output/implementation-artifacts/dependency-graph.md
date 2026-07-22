@@ -1,5 +1,5 @@
 # Story Dependency Graph
-_Last updated: 2026-07-04T20:52:00+02:00_
+_Last updated: 2026-07-22T12:59:00+02:00_
 
 ## Stories
 
@@ -29,9 +29,9 @@ _Last updated: 2026-07-04T20:52:00+02:00_
 | 4.3 | 4 | Historial de Matches y Rechazos por Cliente | done | #3 | — | — | 4.1 | ✅ Yes (done) |
 | 4.4 | 4 | Deep Link — Notificación → Detalle del Match | done | #4 | — | — | 4.2 | ✅ Yes (done) |
 | 5.1 | 5 | Conexión de CRM Agencia — Inmovilla | done | — | — | — | Epic 2 complete | ✅ Yes (done) |
-| 5.2 | 5 | Sincronización de Listings — Webhook + Batch Desacoplados | done | #5 | #8 | merged | 5.1 | ✅ Yes (done) |
-| 5.3 | 5 | Validación de Exclusividad y Detección de Duplicados | done | #6 | #9 | merged | 5.2 | ✅ Yes (done) |
-| 5.4 | 5 | Ciclo de Vida del Listing — Retirada y Vendida | done | #7 | #10 | merged | 5.2 | ✅ Yes (done) |
+| 5.2 | 5 | Sincronización de Listings — Webhook + Batch Desacoplados | done | #5 | #8 | closed (reimpl.) | 5.1 | ✅ Yes (done) |
+| 5.3 | 5 | Validación de Exclusividad y Detección de Duplicados | done | #6 | #9 | closed (reimpl.) | 5.2 | ✅ Yes (done) |
+| 5.4 | 5 | Ciclo de Vida del Listing — Retirada y Vendida | done | #7 | #10 | closed (reimpl.) | 5.2 | ✅ Yes (done) |
 | 6.1 | 6 | Páginas de Listing SSR Indexables por Google | done | — | — | — | 5.2 | ✅ Yes (done) |
 | 6.2 | 6 | Datos Estructurados schema.org en Páginas de Listing | done | — | — | — | 6.1 | ✅ Yes (done) |
 | 6.3 | 6 | Gated Content — Preview para Usuarios No Autenticados | done | — | — | — | 6.1 | ✅ Yes (done) |
@@ -39,24 +39,24 @@ _Last updated: 2026-07-04T20:52:00+02:00_
 | 7.2 | 7 | Panel de Activación de Agencias | done | — | — | — | 7.1 | ✅ Yes (done) |
 | 7.3 | 7 | Resolución de Listings Duplicados | done | — | — | — | 7.1, 5.3 | ✅ Yes (done) |
 | 7.4 | 7 | Dashboard de Métricas Globales de Plataforma | done | — | — | — | 7.1 | ✅ Yes (done) |
-| 8.1 | 8 | Schema de Engagement Events e Instrumentación Base | done | — | #18 | merged | Epic 2 complete | ✅ Yes (done) |
-| 8.2 | 8 | Instrumentación de PropertyCard — Tiempo por Foto | done | — | #19 | merged | 8.1 | ✅ Yes (done) |
-| 8.3 | 8 | Instrumentación de PropertyDetailSheet — Scroll Depth | done | — | #20 | merged | 8.1 | ✅ Yes (done) |
-| 8.4 | 8 | Tracking de Match Reaffirm desde Match Recap Screen | done | — | #21 | merged | 8.1, 2.6 | ✅ Yes (done) |
-| 8.5 | 8 | Dashboard de Analytics por Listing para Agencias | done | — | #22 | merged | 8.7 | ✅ Yes (done) |
-| 8.6 | 8 | Buyer Intent Score en Panel del Agente | done | — | #23 | merged | 8.7 | ✅ Yes (done) |
-| 8.7 | 8 | Aggregation Jobs para Read Models de Analytics | done | — | #24 | merged | 8.1 | ✅ Yes (done) |
+| 8.1 | 8 | Schema de Engagement Events e Instrumentación Base | done | — | #18 | closed (reimpl.) | Epic 2 complete | ✅ Yes (done) |
+| 8.2 | 8 | Instrumentación de PropertyCard — Tiempo por Foto | done | — | #19 | closed (reimpl.) | 8.1 | ✅ Yes (done) |
+| 8.3 | 8 | Instrumentación de PropertyDetailSheet — Scroll Depth | done | — | #20 | closed (reimpl.) | 8.1 | ✅ Yes (done) |
+| 8.4 | 8 | Tracking de Match Reaffirm desde Match Recap Screen | done | — | #21 | closed (reimpl.) | 8.1, 2.6 | ✅ Yes (done) |
+| 8.5 | 8 | Dashboard de Analytics por Listing para Agencias | done | — | #22 | closed (reimpl.) | 8.7 | ✅ Yes (done) |
+| 8.6 | 8 | Buyer Intent Score en Panel del Agente | done | — | #23 | closed (reimpl.) | 8.7 | ✅ Yes (done) |
+| 8.7 | 8 | Aggregation Jobs para Read Models de Analytics | done | — | #24 | closed (reimpl.) | 8.1 | ✅ Yes (done) |
 | 9.1 | 9 | Schema de Experimentos y Motor de Asignación de Variantes | done | #25 | #31 | merged | Epic 8 complete ✅ | ✅ Yes (done) |
 | 9.2 | 9 | UI de Creación de Experimento para Agencias (Portada A/B) | done | #26 | #32 | merged | 9.1 | ✅ Yes (done) |
 | 9.3 | 9 | Medición de Impacto y Dashboard de Resultados del Experimento | done | #27 | #33 | merged | 9.1 | ✅ Yes (done) |
-| 9.4 | 9 | Auto-promoción de Variante Ganadora al Alcanzar Significancia | ready-for-dev | #28 | — | — | 9.3 | ✅ Yes |
-| 9.5 | 9 | Recomendaciones Proactivas de Experimentos para Listings Underperforming | ready-for-dev | #29 | — | — | 9.3 | ✅ Yes |
-| 9.6 | 9 | Generación de Variantes de Título y Descripción con IA (Human-in-the-loop) | ready-for-dev | #30 | — | — | 9.2 | ✅ Yes |
-| 10.1 | 10 | Buyer Preference Vector — Generación y Persistencia | backlog | — | — | — | Epic 9 complete | ❌ No (epic 9 not complete) |
-| 10.2 | 10 | Listing Fit Score — Cálculo de Afinidad | backlog | — | — | — | 10.1 | ❌ No (epic 9 not complete) |
-| 10.3 | 10 | Personalización de Foto de Portada en Swipe Feed | backlog | — | — | — | 10.2 | ❌ No (epic 9 not complete) |
-| 10.4 | 10 | Adaptación de Highlights de Descripción por Perfil | backlog | — | — | — | 10.2 | ❌ No (epic 9 not complete) |
-| 10.5 | 10 | Control de Privacidad — Desactivación de Personalización | backlog | — | — | — | 10.1 | ❌ No (epic 9 not complete) |
+| 9.4 | 9 | Auto-promoción de Variante Ganadora al Alcanzar Significancia | done | #28 | #34 | merged | 9.3 | ✅ Yes (done) |
+| 9.5 | 9 | Recomendaciones Proactivas de Experimentos para Listings Underperforming | done | #29 | #36 | merged | 9.3 | ✅ Yes (done) |
+| 9.6 | 9 | Generación de Variantes de Título y Descripción con IA (Human-in-the-loop) | done | #30 | #35 | merged | 9.2 | ✅ Yes (done) |
+| 10.1 | 10 | Buyer Preference Vector — Generación y Persistencia | done | #37 | #42 | open | Epic 9 complete ✅ | ⏳ Done (PR open) |
+| 10.2 | 10 | Listing Fit Score — Cálculo de Afinidad | backlog | #38 | — | — | 10.1 | ❌ No (10.1 PR not merged) |
+| 10.3 | 10 | Personalización de Foto de Portada en Swipe Feed | backlog | #39 | — | — | 10.2 | ❌ No (10.1 PR not merged) |
+| 10.4 | 10 | Adaptación de Highlights de Descripción por Perfil | backlog | #40 | — | — | 10.2 | ❌ No (10.1 PR not merged) |
+| 10.5 | 10 | Control de Privacidad — Desactivación de Personalización | backlog | #41 | — | — | 10.1 | ❌ No (10.1 PR not merged) |
 | 11.1 | 11 | Landing Page Pública — Primera Impresión de Marca | done | — | — | — | none | ✅ Yes (done) |
 | 11.2 | 11 | Auth Pages — Rediseño Registro/Login Premium | done | — | — | — | none | ✅ Yes (done) |
 | 11.3 | 11 | Home Comprador — Dashboard Personalizado | done | — | — | — | none | ✅ Yes (done) |
@@ -109,7 +109,7 @@ _Last updated: 2026-07-04T20:52:00+02:00_
 - **9.4** depends on: 9.3 (needs measurement/aggregation pipeline)
 - **9.5** depends on: 9.3 (needs measurement data for underperformance detection)
 - **9.6** depends on: 9.2 (needs experiment creation UI to integrate with)
-- **10.x** depends on: Epic 9 complete
+- **10.x** depends on: Epic 9 complete ✅
 - **10.2** depends on: 10.1
 - **10.3** depends on: 10.2
 - **10.4** depends on: 10.2
@@ -117,22 +117,27 @@ _Last updated: 2026-07-04T20:52:00+02:00_
 
 ## Notes
 
-**Current epic:** Epic 9 — Content Optimization & A/B Testing (in-progress)
-**All previous epics done:** Epics 1–8 and 11 are fully complete.
-**GitHub Issues:** #25 (9.1 closed), #26 (9.2 closed), #27 (9.3 closed), #28 (9.4 open), #29 (9.5 open), #30 (9.6 open)
-**Merged PRs:** #31 (9.1), #32 (9.2), #33 (9.3)
-**Pending PRs:** None
-**Worktree cleanup:** Removed worktrees for 9.1, 9.2, 9.3 and deleted their remote branches. Active worktrees remain for 9.4, 9.5, 9.6.
+**Current epic:** Epic 10 — Personalized Content Layer (in-progress)
+**All previous epics done:** Epics 1–9 and 11 are fully complete. Earlier PRs (#8–#10, #18–#24) were closed (code re-implemented directly on main).
+**GitHub Issues:** #25–#30 (Epic 9, all closed), #37–#41 (Epic 10, all open)
+**Merged PRs:** #31 (9.1), #32 (9.2), #33 (9.3), #34 (9.4), #35 (9.6), #36 (9.5)
+**Pending PRs:** #42 (10.1 — code review passed, awaiting merge)
+**Active worktree:** story-10.1-buyer-preference-vector-generacion-persistencia (PR #42 open)
 
-### Parallelization Opportunities (Epic 9 — remaining)
+### ⚠️ Blocker: PR #42 (Story 10.1) Needs Merge
+
+Story 10.1 has passed code review (2026-07-21) but PR #42 remains **open**. All other Epic 10 stories (10.2–10.5) are blocked until this PR is merged into main.
+
+### Parallelization Opportunities (Epic 10)
 
 ```
-    9.4 ←── 9.3 (done ✅)
-    9.5 ←── 9.3 (done ✅)
-    9.6 ←── 9.2 (done ✅)
+    10.1 ←── Epic 9 complete ✅  [done, PR #42 OPEN — needs merge]
+    10.2 ←── 10.1
+    10.3 ←── 10.2
+    10.4 ←── 10.2
+    10.5 ←── 10.1
 ```
 
-- **Wave 3 (NOW):** 9.4 + 9.5 + 9.6 — all three can run **in parallel** since their dependencies (9.2, 9.3) are merged.
-
-### Key Change This Run
-Stories 9.1, 9.2, 9.3 PRs (#31, #32, #33) confirmed merged. Worktrees and remote branches cleaned. All remaining Epic 9 stories (9.4, 9.5, 9.6) are now unblocked and ready to work in parallel.
+- **BLOCKED:** All stories waiting on PR #42 merge.
+- **Wave 2 (after 10.1 merged):** 10.2 + 10.5 — can run in parallel (10.2 needs the preference vector, 10.5 only needs the vector table).
+- **Wave 3 (after 10.2 merged):** 10.3 + 10.4 — can run in parallel (both need the fit score).

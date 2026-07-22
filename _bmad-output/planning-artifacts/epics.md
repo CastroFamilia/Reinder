@@ -407,14 +407,19 @@ Reinder utiliza el `buyer_preference_vector` inferido del historial de swipes pa
 ---
 
 ### Story 10.1: Buyer Preference Vector — Generación y Persistencia
+**GH Issue:** #37
 
 ### Story 10.2: Listing Fit Score — Cálculo de Afinidad Listing × Comprador
+**GH Issue:** #38
 
 ### Story 10.3: Personalización de Foto de Portada en Swipe Feed
+**GH Issue:** #39
 
 ### Story 10.4: Adaptación de Highlights de Descripción por Perfil
+**GH Issue:** #40
 
 ### Story 10.5: Control de Privacidad — Desactivación de Personalización desde Perfil
+**GH Issue:** #41
 
 > 📝 *Stories 10.1–10.5 pendientes de desarrollo completo de Acceptance Criteria — ejecutar `create story [id]` cuando Epic 9 esté en producción y se haya completado la revisión legal GDPR.*
 
