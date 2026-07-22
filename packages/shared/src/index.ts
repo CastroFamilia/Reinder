@@ -86,3 +86,25 @@ export {
   PAYOFF_AUTOHIDE_MS,
   MAX_AI_GENERATIONS_PER_DAY,
 } from "./constants/index";
+
+// Story 10.1: Personalization — Buyer Preference Vectors
+export type {
+  BuyerPreferenceVector,
+  BuyerPreferenceVectorRow,
+  PriceAffinity,
+  SizeAffinity,
+  BedroomAffinity,
+  LocationAffinity,
+  PhotoEngagement,
+  EngagementDepth,
+  ListingDataForVector,
+  SwipeEventInput,
+  EngagementEventInput,
+  ComputePreferenceVectorDeps,
+} from "./personalization/index";
+export {
+  computePreferenceVector,
+  PREFERENCE_VECTOR_VERSION,
+  MIN_SWIPES_THRESHOLD,
+} from "./personalization/index";
+

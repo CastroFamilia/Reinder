@@ -609,29 +609,24 @@ export const aiGenerationUsage = pgTable(
     ).on(table.agencyId, table.createdAt),
   })
 );
+
+// ---------------------------------------------------------------------------
+// Tabla: buyer_preference_vectors
+// Vector de preferencia del comprador (8 dimensiones) calculado a partir
+// de swipe_events + engagement_events.
+// Source: story 10-1, AC1
+// ---------------------------------------------------------------------------
+
+export const buyerPreferenceVectors = pgTable(
+  "buyer_preference_vectors",
   {
     id: uuid("id").primaryKey().defaultRandom(),
-    agencyId: uuid("agency_id")
-      .notNull()
-      .references(() => agencies.id),
-    listingId: uuid("listing_id")
-      .notNull()
-      .references(() => listings.id),
-    recommendedExperimentType: experimentTypeEnum("recommended_experiment_type").notNull(),
-    reasonCode: text("reason_code").notNull(),
-    reasonDetail: text("reason_detail").notNull(),
-    underperformingMetrics: jsonb("underperforming_metrics")
-      .$type<{
-        match_rate?: { value: number; agency_avg: number; platform_avg: number; z_score: number };
-        avg_view_time_ms?: { value: number; agency_avg: number; platform_avg: number; z_score: number };
-        reaffirm_rate?: { value: number; agency_avg: number; platform_avg: number; z_score: number } | null;
-      }>()
-      .notNull(),
-    priorityScore: numeric("priority_score", { precision: 5, scale: 2 }).notNull(),
-    status: text("status").notNull().default("pending"), // pending | accepted | dismissed | expired
-    acceptedExperimentId: uuid("accepted_experiment_id")
-      .references(() => listingExperiments.id),
-    weekGenerated: text("week_generated").notNull(), // ISO week: 2026-W25
+    buyerId: uuid("buyer_id").notNull(), // Referencia a auth.users.id — 1:1 via unique index
+    vector: jsonb("vector").notNull(), // BuyerPreferenceVector (8 dimensions)
+    swipeCount: integer("swipe_count").notNull().default(0),
+    engagementEventCount: integer("engagement_event_count").notNull().default(0),
+    version: integer("version").notNull().default(1),
+    lastComputedAt: timestamp("last_computed_at", { withTimezone: true }).notNull(),
     createdAt: timestamp("created_at", { withTimezone: true })
       .defaultNow()
       .notNull(),
@@ -640,10 +635,7 @@ export const aiGenerationUsage = pgTable(
       .notNull(),
   },
   (table) => ({
-    idxRecommendationsAgencyId: index("idx_recommendations_agency_id").on(table.agencyId),
-    idxRecommendationsListingStatus: index("idx_recommendations_listing_status").on(
-      table.listingId,
-      table.status
-    ),
+    buyerIdUnique: unique("buyer_preference_vectors_buyer_id_unique").on(table.buyerId),
+    idxBpvLastComputed: index("idx_bpv_last_computed").on(table.lastComputedAt),
   })
 );
