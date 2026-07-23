@@ -41,13 +41,13 @@ export async function PATCH(request: Request) {
   }
 
   // Auth: verify buyer role
-  const { data: profile } = await supabase
+  const { data: profile, error: profileError } = await supabase
     .from("user_profiles")
     .select("role")
     .eq("id", user.id)
     .single();
 
-  if (!profile || profile.role !== "buyer") {
+  if (profileError || !profile || profile.role !== "buyer") {
     return NextResponse.json(
       {
         data: null,
@@ -94,13 +94,23 @@ export async function PATCH(request: Request) {
 
   // Update user's personalization setting via Supabase client
   // RLS ensures buyer can only update their own profile (id = auth.uid())
-  await supabase
+  const { error: updateError } = await supabase
     .from("user_profiles")
     .update({
       personalization_enabled: enabled,
       updated_at: now,
     })
     .eq("id", user.id);
+
+  if (updateError) {
+    return NextResponse.json(
+      {
+        data: null,
+        error: { code: "UPDATE_FAILED", message: updateError.message },
+      },
+      { status: 500 }
+    );
+  }
 
   return NextResponse.json(
     {

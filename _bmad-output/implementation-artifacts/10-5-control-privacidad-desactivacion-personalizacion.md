@@ -135,11 +135,11 @@ para que pueda controlar cómo la plataforma usa mis datos de comportamiento y c
   - [ ] 3.2 Integrar en `apps/web/src/app/(protected)/profile/page.tsx` — nueva sección "Privacidad y Datos"
   - [ ] 3.3 Lógica de toggle con optimistic UI + rollback on error
   - [ ] 3.4 Toast de confirmación (usar patrón existente de la app)
-- [ ] Task 4: Toggle UI en Profile mobile (AC: #4)
-  - [ ] 4.1 Crear componente `PersonalizationToggle` en `apps/mobile/src/features/profile/components/personalization-toggle.tsx`
-  - [ ] 4.2 Integrar en `ProfileScreen` — nueva sección "Privacidad" usando `GlassPanel`
-  - [ ] 4.3 Actualización vía Supabase client directo (`supabase.from('user_profiles').update(...)`)
-  - [ ] 4.4 Toast glass de confirmación (patrón UX-DR12)
+- [x] Task 4: Toggle UI en Profile mobile (AC: #4)
+  - [x] 4.1 Crear componente `PersonalizationToggle` en `apps/mobile/src/features/profile/components/personalization-toggle.tsx`
+  - [x] 4.2 Integrar en `ProfileScreen` — nueva sección "Privacidad" usando `GlassPanel`
+  - [x] 4.3 Actualización vía Supabase client directo (`supabase.from('user_profiles').update(...)`)
+  - [x] 4.4 Toast glass de confirmación (patrón UX-DR12)
 - [ ] Task 5: Guard en swipe feed (AC: #5)
   - [ ] 5.1 Modificar lógica de feed para verificar `personalization_enabled` antes de aplicar personalización
   - [ ] 5.2 Fallback a contenido original de la agencia cuando desactivado

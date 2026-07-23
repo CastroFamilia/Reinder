@@ -26,6 +26,7 @@ import { useMatchHistoryStore } from '../../../stores/use-match-history-store';
 import { useAuthSession } from '../../../hooks/useAuthSession';
 import { supabase } from '../../../lib/supabase';
 import { SearchFiltersModal } from '../../search/components/search-filters-modal';
+import { PersonalizationToggle } from '../components/personalization-toggle';
 import type { SearchPreferences } from '@reinder/shared';
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -183,6 +184,13 @@ export function ProfileScreen() {
             {session?.user?.email && (
               <PreferenceRow label="Email" value={session.user.email} />
             )}
+          </GlassPanel>
+
+          {/* Sección: Privacidad */}
+          <GlassPanel intensity="light" style={[styles.section, styles.sessionSection]}>
+            <Text style={styles.sectionTitle}>Privacidad</Text>
+            <View style={styles.separator} />
+            <PersonalizationToggle />
           </GlassPanel>
 
           {/* Sección: Acciones y Dev */}
