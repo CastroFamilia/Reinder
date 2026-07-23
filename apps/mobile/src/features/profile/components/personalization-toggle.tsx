@@ -46,7 +46,7 @@ export function PersonalizationToggle() {
   };
 
   return (
-    <View data-testid="personalization-toggle" testID="personalization-toggle">
+    <View testID="personalization-toggle">
       <View style={styles.row}>
         <Text style={styles.title}>Personalización de contenido</Text>
         <Switch

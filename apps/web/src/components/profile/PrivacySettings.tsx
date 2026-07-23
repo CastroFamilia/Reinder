@@ -66,7 +66,7 @@ export function PrivacySettings({
           <label htmlFor="personalization-toggle-input" style={{ fontWeight: 600 }}>
             Personalización de contenido
           </label>
-          <p style={{ fontSize: "0.875rem", color: "#666", marginTop: "0.25rem" }}>
+          <p style={{ fontSize: "0.875rem", color: "var(--text-muted)", marginTop: "0.25rem" }}>
             Cuando está activa, Reinder adapta las fotos y descripción de cada
             propiedad a tus preferencias. Tus datos nunca se comparten con
             terceros.
