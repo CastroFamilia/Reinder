@@ -6,8 +6,8 @@
  *       locationScore, photoAffinityScore, engagementDepthScore
  * AC9: Type exports from @reinder/shared
  *
- * TDD RED PHASE: All tests use test.skip() — they MUST fail until
- * the feature is implemented. Do NOT remove test.skip().
+ * TDD RED PHASE: All tests use test() — they MUST fail until
+ * the feature is implemented. Do NOT remove test().
  *
  * Run: pnpm --filter @reinder/shared test packages/shared/src/personalization/compute-listing-fit-score.test.ts
  */
@@ -78,7 +78,7 @@ function createMockListing(overrides: Record<string, any> = {}) {
 // ─── AC9: Type Exports ────────────────────────────────────────────────────────
 
 describe("Story 10.2 — AC9: Type Exports from @reinder/shared", () => {
-  test.skip("[P0] T10.2-01: exports ListingFitScore interface", async () => {
+  test("[P0] T10.2-01: exports ListingFitScore interface", async () => {
     const mod = await import("./index");
     // ListingFitScore should be importable as a type — we verify the module
     // exports the computeListingFitScore function which returns it
@@ -86,7 +86,7 @@ describe("Story 10.2 — AC9: Type Exports from @reinder/shared", () => {
     expect(typeof mod.computeListingFitScore).toBe("function");
   });
 
-  test.skip("[P0] T10.2-02: exports DimensionScores interface", async () => {
+  test("[P0] T10.2-02: exports DimensionScores interface", async () => {
     // DimensionScores is a type — verify via the result of computeListingFitScore
     const { computeListingFitScore } = await import(
       "./compute-listing-fit-score"
@@ -104,7 +104,7 @@ describe("Story 10.2 — AC9: Type Exports from @reinder/shared", () => {
     expect(result.dimensionScores).toHaveProperty("engagementDepthScore");
   });
 
-  test.skip("[P0] T10.2-03: exports FIT_SCORE_WEIGHTS constant", async () => {
+  test("[P0] T10.2-03: exports FIT_SCORE_WEIGHTS constant", async () => {
     const mod = await import("./index");
     expect(mod).toHaveProperty("FIT_SCORE_WEIGHTS");
 
@@ -117,14 +117,14 @@ describe("Story 10.2 — AC9: Type Exports from @reinder/shared", () => {
     expect(weights.engagementDepthScore).toBe(0.05);
   });
 
-  test.skip("[P0] T10.2-04: exports FIT_SCORE_VERSION constant", async () => {
+  test("[P0] T10.2-04: exports FIT_SCORE_VERSION constant", async () => {
     const mod = await import("./index");
     expect(mod).toHaveProperty("FIT_SCORE_VERSION");
     expect(typeof mod.FIT_SCORE_VERSION).toBe("number");
     expect(mod.FIT_SCORE_VERSION).toBeGreaterThanOrEqual(1);
   });
 
-  test.skip(
+  test(
     "[P1] T10.2-05: exports ListingFitScoreRow type via module",
     async () => {
       // ListingFitScoreRow is a type-only export — verify module structure
@@ -140,7 +140,7 @@ describe("Story 10.2 — AC9: Type Exports from @reinder/shared", () => {
 // ─── AC2: DimensionScores Structure ───────────────────────────────────────────
 
 describe("Story 10.2 — AC2: DimensionScores Structure", () => {
-  test.skip(
+  test(
     "[P0] T10.2-06: dimension_scores contains all 6 required dimensions",
     async () => {
       const { computeListingFitScore } = await import(
@@ -163,7 +163,7 @@ describe("Story 10.2 — AC2: DimensionScores Structure", () => {
     }
   );
 
-  test.skip(
+  test(
     "[P0] T10.2-07: all dimension scores are numbers in [0, 1]",
     async () => {
       const { computeListingFitScore } = await import(
@@ -184,7 +184,7 @@ describe("Story 10.2 — AC2: DimensionScores Structure", () => {
     }
   );
 
-  test.skip(
+  test(
     "[P0] T10.2-08: overall_score is weighted mean of dimensions",
     async () => {
       const { computeListingFitScore } = await import(
@@ -207,7 +207,7 @@ describe("Story 10.2 — AC2: DimensionScores Structure", () => {
     }
   );
 
-  test.skip(
+  test(
     "[P0] T10.2-09: overall_score is in [0, 1] range",
     async () => {
       const { computeListingFitScore } = await import(
@@ -223,7 +223,7 @@ describe("Story 10.2 — AC2: DimensionScores Structure", () => {
     }
   );
 
-  test.skip(
+  test(
     "[P1] T10.2-10: recommendedPhotoIndex is null (computed in Story 10.3)",
     async () => {
       const { computeListingFitScore } = await import(
@@ -241,7 +241,7 @@ describe("Story 10.2 — AC2: DimensionScores Structure", () => {
 // ─── AC3: priceScore Calculation ──────────────────────────────────────────────
 
 describe("Story 10.2 — AC3: priceScore Calculation", () => {
-  test.skip(
+  test(
     "[P0] T10.2-11: priceScore = 1.0 when listing price within buyer range",
     async () => {
       const { computeListingFitScore } = await import(
@@ -263,7 +263,7 @@ describe("Story 10.2 — AC3: priceScore Calculation", () => {
     }
   );
 
-  test.skip(
+  test(
     "[P0] T10.2-12: priceScore = 1.0 at range boundary (rangeMin)",
     async () => {
       const { computeListingFitScore } = await import(
@@ -284,7 +284,7 @@ describe("Story 10.2 — AC3: priceScore Calculation", () => {
     }
   );
 
-  test.skip(
+  test(
     "[P0] T10.2-13: priceScore = 1.0 at range boundary (rangeMax)",
     async () => {
       const { computeListingFitScore } = await import(
@@ -305,7 +305,7 @@ describe("Story 10.2 — AC3: priceScore Calculation", () => {
     }
   );
 
-  test.skip(
+  test(
     "[P0] T10.2-14: priceScore decays exponentially outside range",
     async () => {
       const { computeListingFitScore } = await import(
@@ -328,7 +328,7 @@ describe("Story 10.2 — AC3: priceScore Calculation", () => {
     }
   );
 
-  test.skip(
+  test(
     "[P1] T10.2-15: priceScore decreases as distance from range increases",
     async () => {
       const { computeListingFitScore } = await import(
@@ -355,7 +355,7 @@ describe("Story 10.2 — AC3: priceScore Calculation", () => {
     }
   );
 
-  test.skip(
+  test(
     "[P1] T10.2-16: priceScore minimum is 0.0",
     async () => {
       const { computeListingFitScore } = await import(
@@ -381,7 +381,7 @@ describe("Story 10.2 — AC3: priceScore Calculation", () => {
 // ─── AC3: sizeScore Calculation ───────────────────────────────────────────────
 
 describe("Story 10.2 — AC3: sizeScore Calculation", () => {
-  test.skip(
+  test(
     "[P0] T10.2-17: sizeScore uses gaussian distance from mean",
     async () => {
       const { computeListingFitScore } = await import(
@@ -399,7 +399,7 @@ describe("Story 10.2 — AC3: sizeScore Calculation", () => {
     }
   );
 
-  test.skip(
+  test(
     "[P0] T10.2-18: sizeScore = exp(-0.5 * ((sizeSqm - mean) / stddev)^2)",
     async () => {
       const { computeListingFitScore } = await import(
@@ -417,7 +417,7 @@ describe("Story 10.2 — AC3: sizeScore Calculation", () => {
     }
   );
 
-  test.skip(
+  test(
     "[P1] T10.2-19: sizeScore when stddev = 0 → exact match = 1.0, else 0.5",
     async () => {
       const { computeListingFitScore } = await import(
@@ -443,7 +443,7 @@ describe("Story 10.2 — AC3: sizeScore Calculation", () => {
 // ─── AC3: bedroomScore Calculation ────────────────────────────────────────────
 
 describe("Story 10.2 — AC3: bedroomScore Calculation", () => {
-  test.skip(
+  test(
     "[P0] T10.2-20: bedroomScore from distribution lookup",
     async () => {
       const { computeListingFitScore } = await import(
@@ -469,7 +469,7 @@ describe("Story 10.2 — AC3: bedroomScore Calculation", () => {
     }
   );
 
-  test.skip(
+  test(
     "[P0] T10.2-21: bedroomScore = 0.1 when bedrooms not in distribution",
     async () => {
       const { computeListingFitScore } = await import(
@@ -493,7 +493,7 @@ describe("Story 10.2 — AC3: bedroomScore Calculation", () => {
 // ─── AC3: locationScore Calculation ───────────────────────────────────────────
 
 describe("Story 10.2 — AC3: locationScore Calculation", () => {
-  test.skip(
+  test(
     "[P0] T10.2-22: locationScore = 1.0 for first preferredCity",
     async () => {
       const { computeListingFitScore } = await import(
@@ -512,7 +512,7 @@ describe("Story 10.2 — AC3: locationScore Calculation", () => {
     }
   );
 
-  test.skip(
+  test(
     "[P0] T10.2-23: locationScore = 0.8 for second preferredCity",
     async () => {
       const { computeListingFitScore } = await import(
@@ -531,7 +531,7 @@ describe("Story 10.2 — AC3: locationScore Calculation", () => {
     }
   );
 
-  test.skip(
+  test(
     "[P0] T10.2-24: locationScore = 0.6 for third preferredCity",
     async () => {
       const { computeListingFitScore } = await import(
@@ -550,7 +550,7 @@ describe("Story 10.2 — AC3: locationScore Calculation", () => {
     }
   );
 
-  test.skip(
+  test(
     "[P0] T10.2-25: locationScore minimum is 0.3 for cities in preferredCities",
     async () => {
       const { computeListingFitScore } = await import(
@@ -577,7 +577,7 @@ describe("Story 10.2 — AC3: locationScore Calculation", () => {
     }
   );
 
-  test.skip(
+  test(
     "[P0] T10.2-26: locationScore uses haversine decay when city not in preferredCities but geoCentroid exists",
     async () => {
       const { computeListingFitScore } = await import(
@@ -603,7 +603,7 @@ describe("Story 10.2 — AC3: locationScore Calculation", () => {
     }
   );
 
-  test.skip(
+  test(
     "[P1] T10.2-27: locationScore = 0.5 at ~100km from geoCentroid",
     async () => {
       const { computeListingFitScore } = await import(
@@ -627,7 +627,7 @@ describe("Story 10.2 — AC3: locationScore Calculation", () => {
     }
   );
 
-  test.skip(
+  test(
     "[P1] T10.2-28: locationScore = 0.1 when no match and no geoCentroid",
     async () => {
       const { computeListingFitScore } = await import(
@@ -650,7 +650,7 @@ describe("Story 10.2 — AC3: locationScore Calculation", () => {
 // ─── AC3: photoAffinityScore Calculation ──────────────────────────────────────
 
 describe("Story 10.2 — AC3: photoAffinityScore Calculation", () => {
-  test.skip(
+  test(
     "[P0] T10.2-29: photoAffinityScore > 0.5 when listing has preferred photo indices",
     async () => {
       const { computeListingFitScore } = await import(
@@ -672,7 +672,7 @@ describe("Story 10.2 — AC3: photoAffinityScore Calculation", () => {
     }
   );
 
-  test.skip(
+  test(
     "[P0] T10.2-30: photoAffinityScore = 0.5 (neutral) with no engagement data",
     async () => {
       const { computeListingFitScore } = await import(
@@ -695,7 +695,7 @@ describe("Story 10.2 — AC3: photoAffinityScore Calculation", () => {
 // ─── AC3: engagementDepthScore Calculation ────────────────────────────────────
 
 describe("Story 10.2 — AC3: engagementDepthScore Calculation", () => {
-  test.skip(
+  test(
     "[P0] T10.2-31: engagementDepthScore = 1.0 for high engagement buyer",
     async () => {
       const { computeListingFitScore } = await import(
@@ -715,7 +715,7 @@ describe("Story 10.2 — AC3: engagementDepthScore Calculation", () => {
     }
   );
 
-  test.skip(
+  test(
     "[P0] T10.2-32: engagementDepthScore scales linearly between 0.3 and 1.0",
     async () => {
       const { computeListingFitScore } = await import(
@@ -756,7 +756,7 @@ describe("Story 10.2 — AC3: engagementDepthScore Calculation", () => {
 // ─── AC3: Incomplete Data Handling ────────────────────────────────────────────
 
 describe("Story 10.2 — AC3: Incomplete Data Handling", () => {
-  test.skip(
+  test(
     "[P0] T10.2-33: listing with null price → priceScore = 0.5 (neutral)",
     async () => {
       const { computeListingFitScore } = await import(
@@ -770,7 +770,7 @@ describe("Story 10.2 — AC3: Incomplete Data Handling", () => {
     }
   );
 
-  test.skip(
+  test(
     "[P0] T10.2-34: listing with null coordinates → locationScore = 0.5 (neutral)",
     async () => {
       const { computeListingFitScore } = await import(
@@ -790,7 +790,7 @@ describe("Story 10.2 — AC3: Incomplete Data Handling", () => {
     }
   );
 
-  test.skip(
+  test(
     "[P0] T10.2-35: listing with null sizeSqm → sizeScore = 0.5 (neutral)",
     async () => {
       const { computeListingFitScore } = await import(
@@ -804,7 +804,7 @@ describe("Story 10.2 — AC3: Incomplete Data Handling", () => {
     }
   );
 
-  test.skip(
+  test(
     "[P0] T10.2-36: listing with null bedrooms → bedroomScore = 0.5 (neutral)",
     async () => {
       const { computeListingFitScore } = await import(
@@ -818,7 +818,7 @@ describe("Story 10.2 — AC3: Incomplete Data Handling", () => {
     }
   );
 
-  test.skip(
+  test(
     "[P0] T10.2-37: overall_score reponderates weights when dimensions have incomplete data",
     async () => {
       const { computeListingFitScore } = await import(
@@ -843,7 +843,7 @@ describe("Story 10.2 — AC3: Incomplete Data Handling", () => {
     }
   );
 
-  test.skip(
+  test(
     "[P1] T10.2-38: incomplete data dimensions get 0.5, weights redistributed proportionally",
     async () => {
       const { computeListingFitScore } = await import(
@@ -867,7 +867,7 @@ describe("Story 10.2 — AC3: Incomplete Data Handling", () => {
 // ─── AC3: Function Signature & Return Shape ───────────────────────────────────
 
 describe("Story 10.2 — AC3: Function Signature & Return Shape", () => {
-  test.skip(
+  test(
     "[P0] T10.2-39: computeListingFitScore is synchronous (pure, no I/O)",
     async () => {
       const { computeListingFitScore } = await import(
@@ -884,7 +884,7 @@ describe("Story 10.2 — AC3: Function Signature & Return Shape", () => {
     }
   );
 
-  test.skip(
+  test(
     "[P0] T10.2-40: return shape is { overallScore, dimensionScores, recommendedPhotoIndex }",
     async () => {
       const { computeListingFitScore } = await import(
@@ -905,7 +905,7 @@ describe("Story 10.2 — AC3: Function Signature & Return Shape", () => {
 // ─── AC3: Edge Cases ──────────────────────────────────────────────────────────
 
 describe("Story 10.2 — AC3: Edge Cases", () => {
-  test.skip(
+  test(
     "[P1] T10.2-41: perfect match listing produces overallScore close to 1.0",
     async () => {
       const { computeListingFitScore } = await import(
@@ -943,7 +943,7 @@ describe("Story 10.2 — AC3: Edge Cases", () => {
     }
   );
 
-  test.skip(
+  test(
     "[P1] T10.2-42: completely mismatched listing produces low overallScore",
     async () => {
       const { computeListingFitScore } = await import(
@@ -981,7 +981,7 @@ describe("Story 10.2 — AC3: Edge Cases", () => {
     }
   );
 
-  test.skip(
+  test(
     "[P2] T10.2-43: deterministic — same inputs always produce same output",
     async () => {
       const { computeListingFitScore } = await import(

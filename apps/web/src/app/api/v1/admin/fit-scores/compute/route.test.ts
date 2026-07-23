@@ -4,9 +4,6 @@
  * AC6: Manual trigger endpoint — auth, params, response shape
  * AC7: RLS policies (buyer/agent/admin access)
  *
- * TDD RED PHASE: All tests use test.skip() — they MUST fail until
- * the feature is implemented. Do NOT remove test.skip().
- *
  * Run: pnpm --filter web test apps/web/src/app/api/v1/admin/fit-scores/compute/route.test.ts
  */
 
@@ -14,12 +11,60 @@ import { describe, it, expect, test, vi, beforeEach, afterEach } from "vitest";
 
 // ─── Mock Setup ───────────────────────────────────────────────────────────────
 
-// Mock the Supabase SSR createServerClient
-vi.mock("@supabase/ssr", () => ({
-  createServerClient: vi.fn(),
+// Mock the Supabase server client (same pattern as Story 10.1 tests)
+vi.mock("@/lib/supabase/server", () => ({
+  createClient: vi.fn(),
 }));
 
-// Mock Next.js request/response
+import { createClient } from "@/lib/supabase/server";
+
+// ─── Fixtures ─────────────────────────────────────────────────────────────────
+
+const PLATFORM_ADMIN_USER = {
+  id: "admin-uuid-001",
+  email: "admin@reinder.com",
+};
+const BUYER_USER = { id: "buyer-uuid-001", email: "buyer@test.com" };
+const AGENT_USER = { id: "agent-uuid-001", email: "agent@test.com" };
+const AGENCY_ADMIN_USER = {
+  id: "agency-admin-uuid-001",
+  email: "agencyadmin@test.com",
+};
+
+// ─── Helper: Create mock Supabase client ──────────────────────────────────────
+
+function mockSupabaseClient(user: any, role: string) {
+  const mockClient = {
+    auth: {
+      getUser: vi.fn().mockResolvedValue({ data: { user }, error: null }),
+    },
+    from: vi.fn().mockReturnValue({
+      select: vi.fn().mockReturnThis(),
+      eq: vi.fn().mockReturnThis(),
+      single: vi.fn().mockResolvedValue({
+        data: { role },
+        error: null,
+      }),
+    }),
+  };
+  (createClient as any).mockResolvedValue(mockClient);
+  return mockClient;
+}
+
+function mockUnauthenticated() {
+  const mockClient = {
+    auth: {
+      getUser: vi
+        .fn()
+        .mockResolvedValue({ data: { user: null }, error: null }),
+    },
+  };
+  (createClient as any).mockResolvedValue(mockClient);
+  return mockClient;
+}
+
+// ─── Mock Next.js request/response ────────────────────────────────────────────
+
 function createMockRequest(
   method: string,
   body?: Record<string, unknown>
@@ -34,14 +79,18 @@ function createMockRequest(
 // ─── AC6: Admin Endpoint Auth ─────────────────────────────────────────────────
 
 describe("Story 10.2 — AC6: Admin Fit Scores Compute Endpoint — Auth", () => {
-  test.skip(
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  test(
     "[P0] T10.2-44: POST /api/v1/admin/fit-scores/compute — platform_admin succeeds",
     async () => {
+      mockSupabaseClient(PLATFORM_ADMIN_USER, "platform_admin");
+
       const { POST } = await import("./route");
       const req = createMockRequest("POST", {});
 
-      // Mock: authenticated platform_admin
-      // Implementation should check role via createServerClient
       const response = await POST(req);
 
       expect(response.status).toBe(200);
@@ -51,52 +100,56 @@ describe("Story 10.2 — AC6: Admin Fit Scores Compute Endpoint — Auth", () =>
     }
   );
 
-  test.skip(
+  test(
     "[P0] T10.2-45: POST returns 403 for buyer role",
     async () => {
+      mockSupabaseClient(BUYER_USER, "buyer");
+
       const { POST } = await import("./route");
       const req = createMockRequest("POST", {});
 
-      // Mock: authenticated buyer
       const response = await POST(req);
 
       expect(response.status).toBe(403);
     }
   );
 
-  test.skip(
+  test(
     "[P0] T10.2-46: POST returns 403 for agent role",
     async () => {
+      mockSupabaseClient(AGENT_USER, "agent");
+
       const { POST } = await import("./route");
       const req = createMockRequest("POST", {});
 
-      // Mock: authenticated agent
       const response = await POST(req);
 
       expect(response.status).toBe(403);
     }
   );
 
-  test.skip(
+  test(
     "[P0] T10.2-47: POST returns 403 for agency_admin role",
     async () => {
+      mockSupabaseClient(AGENCY_ADMIN_USER, "agency_admin");
+
       const { POST } = await import("./route");
       const req = createMockRequest("POST", {});
 
-      // Mock: authenticated agency_admin
       const response = await POST(req);
 
       expect(response.status).toBe(403);
     }
   );
 
-  test.skip(
+  test(
     "[P0] T10.2-48: POST returns 401 for unauthenticated request",
     async () => {
+      mockUnauthenticated();
+
       const { POST } = await import("./route");
       const req = createMockRequest("POST", {});
 
-      // Mock: no auth session
       const response = await POST(req);
 
       expect(response.status).toBe(401);
@@ -107,9 +160,15 @@ describe("Story 10.2 — AC6: Admin Fit Scores Compute Endpoint — Auth", () =>
 // ─── AC6: Request Body Handling ───────────────────────────────────────────────
 
 describe("Story 10.2 — AC6: Request Body Handling", () => {
-  test.skip(
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  test(
     "[P0] T10.2-49: accepts buyerId param — computes for that buyer × all active listings",
     async () => {
+      mockSupabaseClient(PLATFORM_ADMIN_USER, "platform_admin");
+
       const { POST } = await import("./route");
       const req = createMockRequest("POST", {
         buyerId: "550e8400-e29b-41d4-a716-446655440000",
@@ -124,9 +183,11 @@ describe("Story 10.2 — AC6: Request Body Handling", () => {
     }
   );
 
-  test.skip(
+  test(
     "[P0] T10.2-50: accepts listingId param — computes for that listing × all buyers with vector",
     async () => {
+      mockSupabaseClient(PLATFORM_ADMIN_USER, "platform_admin");
+
       const { POST } = await import("./route");
       const req = createMockRequest("POST", {
         listingId: "660e8400-e29b-41d4-a716-446655440000",
@@ -140,9 +201,11 @@ describe("Story 10.2 — AC6: Request Body Handling", () => {
     }
   );
 
-  test.skip(
+  test(
     "[P0] T10.2-51: accepts both buyerId and listingId — computes specific pair",
     async () => {
+      mockSupabaseClient(PLATFORM_ADMIN_USER, "platform_admin");
+
       const { POST } = await import("./route");
       const req = createMockRequest("POST", {
         buyerId: "550e8400-e29b-41d4-a716-446655440000",
@@ -157,9 +220,11 @@ describe("Story 10.2 — AC6: Request Body Handling", () => {
     }
   );
 
-  test.skip(
+  test(
     "[P0] T10.2-52: accepts empty body — triggers full batch compute",
     async () => {
+      mockSupabaseClient(PLATFORM_ADMIN_USER, "platform_admin");
+
       const { POST } = await import("./route");
       const req = createMockRequest("POST", {});
 
@@ -175,9 +240,15 @@ describe("Story 10.2 — AC6: Request Body Handling", () => {
 // ─── AC6: Response Shape ──────────────────────────────────────────────────────
 
 describe("Story 10.2 — AC6: Response Shape", () => {
-  test.skip(
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  test(
     "[P0] T10.2-53: response shape matches ApiResponse<{ processedCount, skippedCount, durationMs }>",
     async () => {
+      mockSupabaseClient(PLATFORM_ADMIN_USER, "platform_admin");
+
       const { POST } = await import("./route");
       const req = createMockRequest("POST", {});
 
@@ -199,9 +270,11 @@ describe("Story 10.2 — AC6: Response Shape", () => {
     }
   );
 
-  test.skip(
+  test(
     "[P1] T10.2-54: durationMs is a positive number",
     async () => {
+      mockSupabaseClient(PLATFORM_ADMIN_USER, "platform_admin");
+
       const { POST } = await import("./route");
       const req = createMockRequest("POST", {});
 
@@ -216,9 +289,15 @@ describe("Story 10.2 — AC6: Response Shape", () => {
 // ─── AC6: Validation ──────────────────────────────────────────────────────────
 
 describe("Story 10.2 — AC6: Input Validation", () => {
-  test.skip(
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  test(
     "[P1] T10.2-55: rejects invalid buyerId format",
     async () => {
+      mockSupabaseClient(PLATFORM_ADMIN_USER, "platform_admin");
+
       const { POST } = await import("./route");
       const req = createMockRequest("POST", {
         buyerId: "not-a-uuid",
@@ -229,9 +308,11 @@ describe("Story 10.2 — AC6: Input Validation", () => {
     }
   );
 
-  test.skip(
+  test(
     "[P1] T10.2-56: rejects invalid listingId format",
     async () => {
+      mockSupabaseClient(PLATFORM_ADMIN_USER, "platform_admin");
+
       const { POST } = await import("./route");
       const req = createMockRequest("POST", {
         listingId: "not-a-uuid",
