@@ -639,3 +639,44 @@ export const buyerPreferenceVectors = pgTable(
     idxBpvLastComputed: index("idx_bpv_last_computed").on(table.lastComputedAt),
   })
 );
+
+// ---------------------------------------------------------------------------
+// Tabla: listing_fit_scores
+// Score de afinidad pre-calculado entre un buyer y un listing.
+// Producto cartesiano: 1 registro por par (buyer, listing).
+// Source: story 10-2, AC1
+// ---------------------------------------------------------------------------
+
+export const listingFitScores = pgTable(
+  "listing_fit_scores",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    buyerId: uuid("buyer_id").notNull(), // Referencia a auth.users.id
+    listingId: uuid("listing_id")
+      .notNull()
+      .references(() => listings.id),
+    overallScore: numeric("overall_score", { precision: 5, scale: 4 }).notNull(), // 0.0000–1.0000
+    dimensionScores: jsonb("dimension_scores").notNull(), // DimensionScores JSON
+    recommendedPhotoIndex: integer("recommended_photo_index"), // nullable — computed in 10.3
+    vectorVersion: integer("vector_version").notNull().default(1),
+    lastComputedAt: timestamp("last_computed_at", { withTimezone: true }).notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => ({
+    buyerListingUnique: unique("listing_fit_scores_buyer_listing_unique").on(
+      table.buyerId,
+      table.listingId,
+    ),
+    idxLfsBuyerOverall: index("idx_lfs_buyer_overall").on(
+      table.buyerId,
+      table.overallScore,
+    ),
+    idxLfsListing: index("idx_lfs_listing").on(table.listingId),
+  })
+);
+
