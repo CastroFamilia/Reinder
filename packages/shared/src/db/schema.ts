@@ -66,6 +66,8 @@ export const userProfiles = pgTable("user_profiles", {
     minRooms?: number;
     minSqm?: number;
   }>(),
+  /** Story 10.5: GDPR personalization opt-out — buyer can disable personalized content */
+  personalizationEnabled: boolean("personalization_enabled").notNull().default(true),
   createdAt: timestamp("created_at", { withTimezone: true })
     .defaultNow()
     .notNull(),

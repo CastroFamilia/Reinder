@@ -16,6 +16,7 @@ import {
 import { eq, and, count } from "drizzle-orm";
 import type { Metadata } from "next";
 import { LogoutButton } from "@/components/profile/LogoutButton";
+import { PrivacySettingsConnected } from "@/components/profile/PrivacySettingsConnected";
 
 export const metadata: Metadata = {
   title: "Mi Perfil — Reinder",
@@ -266,6 +267,18 @@ export default async function ProfilePage() {
             </div>
           )}
         </section>
+
+        {/* Story 10.5: Privacidad y Datos */}
+        {profile?.role === "buyer" && (
+          <section
+            className="card animate-fade-in-up"
+            style={{ opacity: 0, animationDelay: "0.35s", marginBottom: "24px" }}
+          >
+            <PrivacySettingsConnected
+              initialEnabled={profile?.personalizationEnabled ?? true}
+            />
+          </section>
+        )}
 
         {/* Account */}
         <section
