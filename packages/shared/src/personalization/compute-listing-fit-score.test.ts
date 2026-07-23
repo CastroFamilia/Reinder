@@ -15,8 +15,6 @@ import { FIT_SCORE_WEIGHTS, FIT_SCORE_VERSION } from "./fit-score-types";
 
 // ─── Test Fixtures ────────────────────────────────────────────────────────────
 
-const BUYER_ID = "550e8400-e29b-41d4-a716-446655440000";
-
 /**
  * Creates a complete BuyerPreferenceVector for testing.
  * Mirrors the structure from Story 10.1 types.ts.
