@@ -11,14 +11,12 @@
  *      - Enabling shows toast: "Personalización activada..."
  *      - Optimistic UI with rollback on error
  *
- * TDD RED PHASE: All tests are intentionally skipped (test.skip).
- * They will FAIL until the feature is implemented.
- *
  * Run: pnpm --filter @reinder/web test apps/web/src/components/profile/PrivacySettings.test.tsx
  */
 
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
-import { describe, it, expect, vi, beforeEach, test } from "vitest";
+import { describe, expect, vi, beforeEach, test } from "vitest";
+import { PrivacySettings } from "@/components/profile/PrivacySettings";
 
 /*
  * Provider Scrutiny Evidence:
@@ -39,12 +37,7 @@ describe("PrivacySettings — Rendering (AC3)", () => {
     vi.clearAllMocks();
   });
 
-  test('[P0] T10.5-12: renders "Privacidad y Datos" section heading', async () => {
-    // Import will fail until component is created
-    const { PrivacySettings } = await import(
-      "@/components/profile/PrivacySettings"
-    );
-
+  test('[P0] T10.5-12: renders "Privacidad y Datos" section heading', () => {
     render(
       <PrivacySettings personalizationEnabled={true} onToggle={vi.fn()} />
     );
@@ -54,11 +47,7 @@ describe("PrivacySettings — Rendering (AC3)", () => {
     ).toBeInTheDocument();
   });
 
-  test("[P0] T10.5-13: renders toggle labeled 'Personalización de contenido'", async () => {
-    const { PrivacySettings } = await import(
-      "@/components/profile/PrivacySettings"
-    );
-
+  test("[P0] T10.5-13: renders toggle labeled 'Personalización de contenido'", () => {
     render(
       <PrivacySettings personalizationEnabled={true} onToggle={vi.fn()} />
     );
@@ -68,11 +57,7 @@ describe("PrivacySettings — Rendering (AC3)", () => {
     ).toBeInTheDocument();
   });
 
-  test('[P0] T10.5-14: renders explanatory text about personalization', async () => {
-    const { PrivacySettings } = await import(
-      "@/components/profile/PrivacySettings"
-    );
-
+  test('[P0] T10.5-14: renders explanatory text about personalization', () => {
     render(
       <PrivacySettings personalizationEnabled={true} onToggle={vi.fn()} />
     );
@@ -87,11 +72,7 @@ describe("PrivacySettings — Rendering (AC3)", () => {
     ).toBeInTheDocument();
   });
 
-  test('[P0] T10.5-15: section has testID "privacy-settings-section"', async () => {
-    const { PrivacySettings } = await import(
-      "@/components/profile/PrivacySettings"
-    );
-
+  test('[P0] T10.5-15: section has testID "privacy-settings-section"', () => {
     render(
       <PrivacySettings personalizationEnabled={true} onToggle={vi.fn()} />
     );
@@ -101,11 +82,7 @@ describe("PrivacySettings — Rendering (AC3)", () => {
     ).toBeInTheDocument();
   });
 
-  test('[P0] T10.5-16: toggle has testID "personalization-toggle"', async () => {
-    const { PrivacySettings } = await import(
-      "@/components/profile/PrivacySettings"
-    );
-
+  test('[P0] T10.5-16: toggle has testID "personalization-toggle"', () => {
     render(
       <PrivacySettings personalizationEnabled={true} onToggle={vi.fn()} />
     );
@@ -123,11 +100,7 @@ describe("PrivacySettings — Toggle State (AC3)", () => {
     vi.clearAllMocks();
   });
 
-  test("[P0] T10.5-17: toggle is ON when personalizationEnabled is true", async () => {
-    const { PrivacySettings } = await import(
-      "@/components/profile/PrivacySettings"
-    );
-
+  test("[P0] T10.5-17: toggle is ON when personalizationEnabled is true", () => {
     render(
       <PrivacySettings personalizationEnabled={true} onToggle={vi.fn()} />
     );
@@ -137,11 +110,7 @@ describe("PrivacySettings — Toggle State (AC3)", () => {
     expect(toggle).toBeChecked();
   });
 
-  test("[P0] T10.5-18: toggle is OFF when personalizationEnabled is false", async () => {
-    const { PrivacySettings } = await import(
-      "@/components/profile/PrivacySettings"
-    );
-
+  test("[P0] T10.5-18: toggle is OFF when personalizationEnabled is false", () => {
     render(
       <PrivacySettings personalizationEnabled={false} onToggle={vi.fn()} />
     );
@@ -159,10 +128,6 @@ describe("PrivacySettings — Toggle Interaction (AC3)", () => {
   });
 
   test("[P0] T10.5-19: calls onToggle(false) when disabling personalization", async () => {
-    const { PrivacySettings } = await import(
-      "@/components/profile/PrivacySettings"
-    );
-
     const onToggle = vi.fn().mockResolvedValue(undefined);
 
     render(
@@ -178,10 +143,6 @@ describe("PrivacySettings — Toggle Interaction (AC3)", () => {
   });
 
   test("[P0] T10.5-20: calls onToggle(true) when enabling personalization", async () => {
-    const { PrivacySettings } = await import(
-      "@/components/profile/PrivacySettings"
-    );
-
     const onToggle = vi.fn().mockResolvedValue(undefined);
 
     render(
@@ -197,10 +158,6 @@ describe("PrivacySettings — Toggle Interaction (AC3)", () => {
   });
 
   test('[P1] T10.5-21: shows toast "Personalización desactivada" after disabling', async () => {
-    const { PrivacySettings } = await import(
-      "@/components/profile/PrivacySettings"
-    );
-
     const onToggle = vi.fn().mockResolvedValue(undefined);
 
     render(
@@ -220,10 +177,6 @@ describe("PrivacySettings — Toggle Interaction (AC3)", () => {
   });
 
   test('[P1] T10.5-22: shows toast "Personalización activada" after enabling', async () => {
-    const { PrivacySettings } = await import(
-      "@/components/profile/PrivacySettings"
-    );
-
     const onToggle = vi.fn().mockResolvedValue(undefined);
 
     render(
@@ -241,10 +194,6 @@ describe("PrivacySettings — Toggle Interaction (AC3)", () => {
   });
 
   test("[P1] T10.5-23: toggle shows optimistic UI — changes immediately before API response", async () => {
-    const { PrivacySettings } = await import(
-      "@/components/profile/PrivacySettings"
-    );
-
     // Create a promise that we control
     let resolveToggle: () => void;
     const onToggle = vi.fn().mockImplementation(
@@ -268,10 +217,6 @@ describe("PrivacySettings — Toggle Interaction (AC3)", () => {
   });
 
   test("[P2] T10.5-24: toggle reverts on API error (rollback)", async () => {
-    const { PrivacySettings } = await import(
-      "@/components/profile/PrivacySettings"
-    );
-
     const onToggle = vi.fn().mockRejectedValue(new Error("Network error"));
 
     render(

@@ -10,30 +10,15 @@
  *
  * AC1: Schema field personalization_enabled exists in user_profiles
  *
- * TDD RED PHASE: All tests are intentionally skipped (test.skip).
- * They will FAIL until the feature is implemented.
- *
  * Run: pnpm --filter @reinder/web test apps/web/src/app/api/v1/buyer/personalization/route.test.ts
  */
 
-import { describe, it, expect, vi, beforeEach, test } from "vitest";
+import { describe, expect, vi, beforeEach, test } from "vitest";
 
 // ─── Mocks ────────────────────────────────────────────────────────────────────
 
 vi.mock("@/lib/supabase/server", () => ({
   createClient: vi.fn(),
-}));
-
-vi.mock("@/lib/supabase/db", () => ({
-  db: {
-    select: vi.fn().mockReturnThis(),
-    from: vi.fn().mockReturnThis(),
-    where: vi.fn().mockReturnThis(),
-    limit: vi.fn().mockResolvedValue([]),
-    update: vi.fn().mockReturnThis(),
-    set: vi.fn().mockReturnThis(),
-    returning: vi.fn().mockResolvedValue([]),
-  },
 }));
 
 import { createClient } from "@/lib/supabase/server";
@@ -278,14 +263,33 @@ describe("PATCH /api/v1/buyer/personalization — Own Record (AC2, AC7)", () => 
   test("[P0] T10.5-11: update targets auth.uid() — buyer updates own profile only", async () => {
     const mockClient = mockSupabaseClient(BUYER_USER, "buyer");
 
+    // Track chained calls on the "user_profiles" table
+    const mockEq = vi.fn().mockResolvedValue({ data: null, error: null });
+    const mockUpdate = vi.fn().mockReturnValue({ eq: mockEq });
+    mockClient.from.mockImplementation((table: string) => {
+      if (table === "user_profiles") {
+        return {
+          select: vi.fn().mockReturnThis(),
+          eq: vi.fn().mockReturnThis(),
+          single: vi.fn().mockResolvedValue({ data: { role: "buyer" }, error: null }),
+          update: mockUpdate,
+        };
+      }
+      return {};
+    });
+
     const { PATCH } = await import("./route");
 
     const response = await PATCH(makeRequest({ enabled: false }));
     expect(response.status).toBe(200);
 
-    // Verify the update was called with the buyer's own ID
-    // The exact assertion depends on the implementation, but the response
-    // should reflect the caller's own personalization state
+    // Verify update was called with the correct payload
+    expect(mockUpdate).toHaveBeenCalledWith(
+      expect.objectContaining({ personalization_enabled: false })
+    );
+    // Verify eq filter targets the buyer's own ID (auth.uid())
+    expect(mockEq).toHaveBeenCalledWith("id", BUYER_USER.id);
+
     const body = await response.json();
     expect(body.data.personalizationEnabled).toBe(false);
   });
