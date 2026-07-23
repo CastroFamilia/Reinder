@@ -36,7 +36,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: 2026-03-18T12:42:21+01:00
-last_updated: 2026-07-22T12:59:00+02:00
+last_updated: 2026-07-23T13:58:29+02:00
 project: Reinder
 project_key: NOKEY
 tracking_system: file-system
@@ -129,7 +129,7 @@ development_status:
   # ─── Epic 10: Personalized Content Layer ──────────────────────────────────
   epic-10: in-progress
   10-1-buyer-preference-vector-generacion-persistencia: done  # PR #42 — code review passed 2026-07-21
-  10-2-listing-fit-score-calculo-afinidad: backlog
+  10-2-listing-fit-score-calculo-afinidad: done
   10-3-personalizacion-foto-portada-swipe-feed: backlog
   10-4-adaptacion-highlights-descripcion-perfil: backlog
   10-5-control-privacidad-desactivacion-personalizacion: backlog
