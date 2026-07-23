@@ -739,7 +739,7 @@ describe("Story 10.2 — AC3: Incomplete Data Handling", () => {
   );
 
   test(
-    "[P1] T10.2-38: incomplete dimensions get 0.5 neutral, overall uses standard weights",
+    "[P1] T10.2-38: incomplete dimensions get 0.5 neutral, overall redistributes available weights",
     () => {
       const vector = createMockVector();
       // Only price is null — the rest should compute normally
@@ -749,15 +749,23 @@ describe("Story 10.2 — AC3: Incomplete Data Handling", () => {
       // priceScore should be 0.5
       expect(result.dimensionScores.priceScore).toBe(0.5);
 
-      // Overall score should equal standard weighted mean (not redistribution)
+      // Overall score should re-weight excluding the missing dimension (price)
       const ds = result.dimensionScores;
-      const expectedOverall =
-        ds.priceScore * FIT_SCORE_WEIGHTS.priceScore +
+      const availableWeight =
+        FIT_SCORE_WEIGHTS.locationScore +
+        FIT_SCORE_WEIGHTS.sizeScore +
+        FIT_SCORE_WEIGHTS.bedroomScore +
+        FIT_SCORE_WEIGHTS.photoAffinityScore +
+        FIT_SCORE_WEIGHTS.engagementDepthScore;
+        
+      const expectedOverall = (
         ds.locationScore * FIT_SCORE_WEIGHTS.locationScore +
         ds.sizeScore * FIT_SCORE_WEIGHTS.sizeScore +
         ds.bedroomScore * FIT_SCORE_WEIGHTS.bedroomScore +
         ds.photoAffinityScore * FIT_SCORE_WEIGHTS.photoAffinityScore +
-        ds.engagementDepthScore * FIT_SCORE_WEIGHTS.engagementDepthScore;
+        ds.engagementDepthScore * FIT_SCORE_WEIGHTS.engagementDepthScore
+      ) / availableWeight;
+      
       expect(result.overallScore).toBeCloseTo(expectedOverall, 4);
     }
   );

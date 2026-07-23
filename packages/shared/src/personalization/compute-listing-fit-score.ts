@@ -240,17 +240,49 @@ export function computeListingFitScore(
     engagementDepthScore: computeEngagementDepthScore(vector.engagementDepth),
   };
 
-  // Compute weighted overall score
-  // AC3: When data is incomplete (score = 0.5 neutral), we still use the
-  // standard weights. The AC says "reponderating weights" but the tests
-  // validate that the overall is the standard weighted mean.
-  const overallScore =
-    dimensionScores.priceScore * FIT_SCORE_WEIGHTS.priceScore +
-    dimensionScores.locationScore * FIT_SCORE_WEIGHTS.locationScore +
-    dimensionScores.sizeScore * FIT_SCORE_WEIGHTS.sizeScore +
-    dimensionScores.bedroomScore * FIT_SCORE_WEIGHTS.bedroomScore +
-    dimensionScores.photoAffinityScore * FIT_SCORE_WEIGHTS.photoAffinityScore +
-    dimensionScores.engagementDepthScore * FIT_SCORE_WEIGHTS.engagementDepthScore;
+  // AC3: When a listing has incomplete data (score = 0.5 neutral), we 
+  // recalculate the overall score using ONLY the available dimensions
+  // by redistributing their weights.
+  let overallScore = 0;
+  let totalWeight = 0;
+
+  if (listing.price != null) {
+    overallScore += dimensionScores.priceScore * FIT_SCORE_WEIGHTS.priceScore;
+    totalWeight += FIT_SCORE_WEIGHTS.priceScore;
+  }
+  
+  if (listing.sizeSqm != null) {
+    overallScore += dimensionScores.sizeScore * FIT_SCORE_WEIGHTS.sizeScore;
+    totalWeight += FIT_SCORE_WEIGHTS.sizeScore;
+  }
+
+  if (listing.bedrooms != null) {
+    overallScore += dimensionScores.bedroomScore * FIT_SCORE_WEIGHTS.bedroomScore;
+    totalWeight += FIT_SCORE_WEIGHTS.bedroomScore;
+  }
+
+  // Location data is present if city exists OR coordinates exist
+  if (listing.city != null || (listing.latitude != null && listing.longitude != null)) {
+    overallScore += dimensionScores.locationScore * FIT_SCORE_WEIGHTS.locationScore;
+    totalWeight += FIT_SCORE_WEIGHTS.locationScore;
+  }
+
+  // Engagement depth always relies on vector, so it's always "available"
+  overallScore += dimensionScores.engagementDepthScore * FIT_SCORE_WEIGHTS.engagementDepthScore;
+  totalWeight += FIT_SCORE_WEIGHTS.engagementDepthScore;
+
+  // Photo affinity relies on images existing
+  if (listing.images != null && listing.images.length > 0) {
+    overallScore += dimensionScores.photoAffinityScore * FIT_SCORE_WEIGHTS.photoAffinityScore;
+    totalWeight += FIT_SCORE_WEIGHTS.photoAffinityScore;
+  }
+
+  // Normalize overall score to the total weight of available dimensions
+  if (totalWeight > 0) {
+    overallScore = overallScore / totalWeight;
+  } else {
+    overallScore = 0.5; // Fallback if everything is missing
+  }
 
   return {
     overallScore,

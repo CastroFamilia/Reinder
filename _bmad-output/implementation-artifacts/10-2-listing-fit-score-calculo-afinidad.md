@@ -1,6 +1,6 @@
 # Story 10.2: Listing Fit Score — Cálculo de Afinidad Listing × Comprador
 
-Status: ready-for-dev
+Status: done
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -159,31 +159,31 @@ para que las stories posteriores (10.3–10.4) puedan ordenar fotos y destacar i
 
 ## Tasks / Subtasks
 
-- [ ] Task 1: Schema Drizzle + migración SQL (AC: #1, #8)
-  - [ ] 1.1 Añadir tabla `listing_fit_scores` a `packages/shared/src/db/schema.ts`
-  - [ ] 1.2 Crear migración SQL `supabase/migrations/YYYYMMDD000002_listing_fit_scores.sql`
-  - [ ] 1.3 RLS policies en la migración (copiar patrón de Story 10.1 migration)
-  - [ ] 1.4 Trigger `AFTER UPDATE` en `listings` para invalidación de scores (AC5)
-  - [ ] 1.5 pg_cron schedule en la migración (minuto 45, patrón idéntico a Story 10.1)
-- [ ] Task 2: Tipos y lógica de cálculo (AC: #2, #3, #9)
-  - [ ] 2.1 Crear `packages/shared/src/personalization/fit-score-types.ts` con DimensionScores, ListingFitScore, ListingFitScoreRow, FIT_SCORE_WEIGHTS
-  - [ ] 2.2 Crear `packages/shared/src/personalization/compute-listing-fit-score.ts` con lógica de cálculo pura
-  - [ ] 2.3 Actualizar `packages/shared/src/personalization/index.ts` para re-exportar tipos y función
-  - [ ] 2.4 Tests unitarios: `compute-listing-fit-score.test.ts` — cubrir todos los escenarios de AC3
-- [ ] Task 3: Aggregation job batch (AC: #4)
-  - [ ] 3.1 Crear función SQL wrapper `compute_listing_fit_scores()`
-  - [ ] 3.2 Crear endpoint de trigger API (AC6)
-  - [ ] 3.3 Test de idempotencia del UPSERT
-  - [ ] 3.4 Test de performance con mock de 100 buyers × 500 listings
-- [ ] Task 4: API endpoint admin (AC: #6)
-  - [ ] 4.1 Crear `apps/web/src/app/api/v1/admin/fit-scores/compute/route.ts`
-  - [ ] 4.2 Auth guard: solo `platform_admin` (copiar patrón de Story 10.1 endpoint)
-  - [ ] 4.3 Tests de auth y response shape
-- [ ] Task 5: Tests de RLS + invalidación (AC: #5, #7)
-  - [ ] 5.1 Test: buyer lee solo sus propios scores
-  - [ ] 5.2 Test: agent/agency_admin no leen scores
-  - [ ] 5.3 Test: platform_admin lee todos los scores
-  - [ ] 5.4 Test: update de listing invalida (elimina) scores afectados
+- [x] Task 1: Schema Drizzle + migración SQL (AC: #1, #8)
+  - [x] 1.1 Añadir tabla `listing_fit_scores` a `packages/shared/src/db/schema.ts`
+  - [x] 1.2 Crear migración SQL `supabase/migrations/YYYYMMDD000002_listing_fit_scores.sql`
+  - [x] 1.3 RLS policies en la migración (copiar patrón de Story 10.1 migration)
+  - [x] 1.4 Trigger `AFTER UPDATE` en `listings` para invalidación de scores (AC5)
+  - [x] 1.5 pg_cron schedule en la migración (minuto 45, patrón idéntico a Story 10.1)
+- [x] Task 2: Tipos y lógica de cálculo (AC: #2, #3, #9)
+  - [x] 2.1 Crear `packages/shared/src/personalization/fit-score-types.ts` con DimensionScores, ListingFitScore, ListingFitScoreRow, FIT_SCORE_WEIGHTS
+  - [x] 2.2 Crear `packages/shared/src/personalization/compute-listing-fit-score.ts` con lógica de cálculo pura
+  - [x] 2.3 Actualizar `packages/shared/src/personalization/index.ts` para re-exportar tipos y función
+  - [x] 2.4 Tests unitarios: `compute-listing-fit-score.test.ts` — cubrir todos los escenarios de AC3
+- [x] Task 3: Aggregation job batch (AC: #4)
+  - [x] 3.1 Crear función SQL wrapper `compute_listing_fit_scores()`
+  - [x] 3.2 Crear endpoint de trigger API (AC6)
+  - [x] 3.3 Test de idempotencia del UPSERT
+  - [x] 3.4 Test de performance con mock de 100 buyers × 500 listings
+- [x] Task 4: API endpoint admin (AC: #6)
+  - [x] 4.1 Crear `apps/web/src/app/api/v1/admin/fit-scores/compute/route.ts`
+  - [x] 4.2 Auth guard: solo `platform_admin` (copiar patrón de Story 10.1 endpoint)
+  - [x] 4.3 Tests de auth y response shape
+- [x] Task 5: Tests de RLS + invalidación (AC: #5, #7)
+  - [x] 5.1 Test: buyer lee solo sus propios scores
+  - [x] 5.2 Test: agent/agency_admin no leen scores
+  - [x] 5.3 Test: platform_admin lee todos los scores
+  - [x] 5.4 Test: update de listing invalida (elimina) scores afectados
 
 ## Dev Notes
 
