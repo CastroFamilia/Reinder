@@ -7,7 +7,7 @@
  * Run: pnpm --filter web test apps/web/src/app/api/v1/admin/fit-scores/compute/route.test.ts
  */
 
-import { describe, it, expect, test, vi, beforeEach, afterEach } from "vitest";
+import { describe, expect, test, vi, beforeEach } from "vitest";
 
 // ─── Mock Setup ───────────────────────────────────────────────────────────────
 

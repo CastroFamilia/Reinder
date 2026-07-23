@@ -1,18 +1,17 @@
 /**
- * Story 10.2 — ATDD Tests: computeListingFitScore() Logic
+ * Story 10.2 — Tests: computeListingFitScore() Logic
  *
  * AC2: DimensionScores structure (all 6 dimensions)
  * AC3: Calculation logic — priceScore, sizeScore, bedroomScore,
  *       locationScore, photoAffinityScore, engagementDepthScore
  * AC9: Type exports from @reinder/shared
  *
- * TDD RED PHASE: All tests use test() — they MUST fail until
- * the feature is implemented. Do NOT remove test().
- *
- * Run: pnpm --filter @reinder/shared test packages/shared/src/personalization/compute-listing-fit-score.test.ts
+ * Run: npx vitest run src/personalization/compute-listing-fit-score.test.ts
  */
 
-import { describe, it, expect, test } from "vitest";
+import { describe, expect, test } from "vitest";
+import { computeListingFitScore } from "./compute-listing-fit-score";
+import { FIT_SCORE_WEIGHTS, FIT_SCORE_VERSION } from "./fit-score-types";
 
 // ─── Test Fixtures ────────────────────────────────────────────────────────────
 
@@ -80,22 +79,15 @@ function createMockListing(overrides: Record<string, any> = {}) {
 describe("Story 10.2 — AC9: Type Exports from @reinder/shared", () => {
   test("[P0] T10.2-01: exports ListingFitScore interface", async () => {
     const mod = await import("./index");
-    // ListingFitScore should be importable as a type — we verify the module
-    // exports the computeListingFitScore function which returns it
     expect(mod).toHaveProperty("computeListingFitScore");
     expect(typeof mod.computeListingFitScore).toBe("function");
   });
 
-  test("[P0] T10.2-02: exports DimensionScores interface", async () => {
-    // DimensionScores is a type — verify via the result of computeListingFitScore
-    const { computeListingFitScore } = await import(
-      "./compute-listing-fit-score"
-    );
+  test("[P0] T10.2-02: exports DimensionScores interface", () => {
     const vector = createMockVector();
     const listing = createMockListing();
     const result = computeListingFitScore(vector, listing);
 
-    // dimensionScores must have all 6 dimensions
     expect(result.dimensionScores).toHaveProperty("priceScore");
     expect(result.dimensionScores).toHaveProperty("sizeScore");
     expect(result.dimensionScores).toHaveProperty("bedroomScore");
@@ -104,32 +96,26 @@ describe("Story 10.2 — AC9: Type Exports from @reinder/shared", () => {
     expect(result.dimensionScores).toHaveProperty("engagementDepthScore");
   });
 
-  test("[P0] T10.2-03: exports FIT_SCORE_WEIGHTS constant", async () => {
-    const mod = await import("./index");
-    expect(mod).toHaveProperty("FIT_SCORE_WEIGHTS");
-
-    const weights = mod.FIT_SCORE_WEIGHTS;
-    expect(weights.priceScore).toBe(0.3);
-    expect(weights.locationScore).toBe(0.25);
-    expect(weights.sizeScore).toBe(0.15);
-    expect(weights.bedroomScore).toBe(0.15);
-    expect(weights.photoAffinityScore).toBe(0.1);
-    expect(weights.engagementDepthScore).toBe(0.05);
+  test("[P0] T10.2-03: exports FIT_SCORE_WEIGHTS constant", () => {
+    expect(FIT_SCORE_WEIGHTS).toBeDefined();
+    expect(FIT_SCORE_WEIGHTS.priceScore).toBe(0.3);
+    expect(FIT_SCORE_WEIGHTS.locationScore).toBe(0.25);
+    expect(FIT_SCORE_WEIGHTS.sizeScore).toBe(0.15);
+    expect(FIT_SCORE_WEIGHTS.bedroomScore).toBe(0.15);
+    expect(FIT_SCORE_WEIGHTS.photoAffinityScore).toBe(0.1);
+    expect(FIT_SCORE_WEIGHTS.engagementDepthScore).toBe(0.05);
   });
 
-  test("[P0] T10.2-04: exports FIT_SCORE_VERSION constant", async () => {
-    const mod = await import("./index");
-    expect(mod).toHaveProperty("FIT_SCORE_VERSION");
-    expect(typeof mod.FIT_SCORE_VERSION).toBe("number");
-    expect(mod.FIT_SCORE_VERSION).toBeGreaterThanOrEqual(1);
+  test("[P0] T10.2-04: exports FIT_SCORE_VERSION constant", () => {
+    expect(FIT_SCORE_VERSION).toBeDefined();
+    expect(typeof FIT_SCORE_VERSION).toBe("number");
+    expect(FIT_SCORE_VERSION).toBeGreaterThanOrEqual(1);
   });
 
   test(
     "[P1] T10.2-05: exports ListingFitScoreRow type via module",
     async () => {
-      // ListingFitScoreRow is a type-only export — verify module structure
       const mod = await import("./index");
-      // We can only verify that the module compiles and exports expected items
       expect(mod.computeListingFitScore).toBeDefined();
       expect(mod.FIT_SCORE_WEIGHTS).toBeDefined();
       expect(mod.FIT_SCORE_VERSION).toBeDefined();
@@ -142,10 +128,7 @@ describe("Story 10.2 — AC9: Type Exports from @reinder/shared", () => {
 describe("Story 10.2 — AC2: DimensionScores Structure", () => {
   test(
     "[P0] T10.2-06: dimension_scores contains all 6 required dimensions",
-    async () => {
-      const { computeListingFitScore } = await import(
-        "./compute-listing-fit-score"
-      );
+    () => {
       const vector = createMockVector();
       const listing = createMockListing();
       const result = computeListingFitScore(vector, listing);
@@ -165,16 +148,13 @@ describe("Story 10.2 — AC2: DimensionScores Structure", () => {
 
   test(
     "[P0] T10.2-07: all dimension scores are numbers in [0, 1]",
-    async () => {
-      const { computeListingFitScore } = await import(
-        "./compute-listing-fit-score"
-      );
+    () => {
       const vector = createMockVector();
       const listing = createMockListing();
       const result = computeListingFitScore(vector, listing);
 
       const ds = result.dimensionScores;
-      for (const [key, value] of Object.entries(ds)) {
+      for (const [, value] of Object.entries(ds)) {
         expect(typeof value).toBe("number");
         expect(value).toBeGreaterThanOrEqual(0);
         expect(value).toBeLessThanOrEqual(1);
@@ -186,22 +166,19 @@ describe("Story 10.2 — AC2: DimensionScores Structure", () => {
 
   test(
     "[P0] T10.2-08: overall_score is weighted mean of dimensions",
-    async () => {
-      const { computeListingFitScore } = await import(
-        "./compute-listing-fit-score"
-      );
+    () => {
       const vector = createMockVector();
       const listing = createMockListing();
       const result = computeListingFitScore(vector, listing);
 
       const ds = result.dimensionScores;
       const expectedOverall =
-        ds.priceScore * 0.3 +
-        ds.locationScore * 0.25 +
-        ds.sizeScore * 0.15 +
-        ds.bedroomScore * 0.15 +
-        ds.photoAffinityScore * 0.1 +
-        ds.engagementDepthScore * 0.05;
+        ds.priceScore * FIT_SCORE_WEIGHTS.priceScore +
+        ds.locationScore * FIT_SCORE_WEIGHTS.locationScore +
+        ds.sizeScore * FIT_SCORE_WEIGHTS.sizeScore +
+        ds.bedroomScore * FIT_SCORE_WEIGHTS.bedroomScore +
+        ds.photoAffinityScore * FIT_SCORE_WEIGHTS.photoAffinityScore +
+        ds.engagementDepthScore * FIT_SCORE_WEIGHTS.engagementDepthScore;
 
       expect(result.overallScore).toBeCloseTo(expectedOverall, 4);
     }
@@ -209,10 +186,7 @@ describe("Story 10.2 — AC2: DimensionScores Structure", () => {
 
   test(
     "[P0] T10.2-09: overall_score is in [0, 1] range",
-    async () => {
-      const { computeListingFitScore } = await import(
-        "./compute-listing-fit-score"
-      );
+    () => {
       const vector = createMockVector();
       const listing = createMockListing();
       const result = computeListingFitScore(vector, listing);
@@ -225,10 +199,7 @@ describe("Story 10.2 — AC2: DimensionScores Structure", () => {
 
   test(
     "[P1] T10.2-10: recommendedPhotoIndex is null (computed in Story 10.3)",
-    async () => {
-      const { computeListingFitScore } = await import(
-        "./compute-listing-fit-score"
-      );
+    () => {
       const vector = createMockVector();
       const listing = createMockListing();
       const result = computeListingFitScore(vector, listing);
@@ -243,10 +214,7 @@ describe("Story 10.2 — AC2: DimensionScores Structure", () => {
 describe("Story 10.2 — AC3: priceScore Calculation", () => {
   test(
     "[P0] T10.2-11: priceScore = 1.0 when listing price within buyer range",
-    async () => {
-      const { computeListingFitScore } = await import(
-        "./compute-listing-fit-score"
-      );
+    () => {
       const vector = createMockVector({
         priceAffinity: {
           mean: 300000,
@@ -265,10 +233,7 @@ describe("Story 10.2 — AC3: priceScore Calculation", () => {
 
   test(
     "[P0] T10.2-12: priceScore = 1.0 at range boundary (rangeMin)",
-    async () => {
-      const { computeListingFitScore } = await import(
-        "./compute-listing-fit-score"
-      );
+    () => {
       const vector = createMockVector({
         priceAffinity: {
           mean: 300000,
@@ -286,10 +251,7 @@ describe("Story 10.2 — AC3: priceScore Calculation", () => {
 
   test(
     "[P0] T10.2-13: priceScore = 1.0 at range boundary (rangeMax)",
-    async () => {
-      const { computeListingFitScore } = await import(
-        "./compute-listing-fit-score"
-      );
+    () => {
       const vector = createMockVector({
         priceAffinity: {
           mean: 300000,
@@ -307,10 +269,7 @@ describe("Story 10.2 — AC3: priceScore Calculation", () => {
 
   test(
     "[P0] T10.2-14: priceScore decays exponentially outside range",
-    async () => {
-      const { computeListingFitScore } = await import(
-        "./compute-listing-fit-score"
-      );
+    () => {
       const vector = createMockVector({
         priceAffinity: {
           mean: 300000,
@@ -330,10 +289,7 @@ describe("Story 10.2 — AC3: priceScore Calculation", () => {
 
   test(
     "[P1] T10.2-15: priceScore decreases as distance from range increases",
-    async () => {
-      const { computeListingFitScore } = await import(
-        "./compute-listing-fit-score"
-      );
+    () => {
       const vector = createMockVector({
         priceAffinity: {
           mean: 300000,
@@ -357,10 +313,7 @@ describe("Story 10.2 — AC3: priceScore Calculation", () => {
 
   test(
     "[P1] T10.2-16: priceScore minimum is 0.0",
-    async () => {
-      const { computeListingFitScore } = await import(
-        "./compute-listing-fit-score"
-      );
+    () => {
       const vector = createMockVector({
         priceAffinity: {
           mean: 300000,
@@ -383,10 +336,7 @@ describe("Story 10.2 — AC3: priceScore Calculation", () => {
 describe("Story 10.2 — AC3: sizeScore Calculation", () => {
   test(
     "[P0] T10.2-17: sizeScore uses gaussian distance from mean",
-    async () => {
-      const { computeListingFitScore } = await import(
-        "./compute-listing-fit-score"
-      );
+    () => {
       const vector = createMockVector({
         sizeAffinity: { mean: 100, stddev: 20 },
       });
@@ -401,10 +351,7 @@ describe("Story 10.2 — AC3: sizeScore Calculation", () => {
 
   test(
     "[P0] T10.2-18: sizeScore = exp(-0.5 * ((sizeSqm - mean) / stddev)^2)",
-    async () => {
-      const { computeListingFitScore } = await import(
-        "./compute-listing-fit-score"
-      );
+    () => {
       const vector = createMockVector({
         sizeAffinity: { mean: 100, stddev: 20 },
       });
@@ -419,11 +366,7 @@ describe("Story 10.2 — AC3: sizeScore Calculation", () => {
 
   test(
     "[P1] T10.2-19: sizeScore when stddev = 0 → exact match = 1.0, else 0.5",
-    async () => {
-      const { computeListingFitScore } = await import(
-        "./compute-listing-fit-score"
-      );
-
+    () => {
       // stddev = 0, exact match
       const vector = createMockVector({
         sizeAffinity: { mean: 100, stddev: 0 },
@@ -445,10 +388,7 @@ describe("Story 10.2 — AC3: sizeScore Calculation", () => {
 describe("Story 10.2 — AC3: bedroomScore Calculation", () => {
   test(
     "[P0] T10.2-20: bedroomScore from distribution lookup",
-    async () => {
-      const { computeListingFitScore } = await import(
-        "./compute-listing-fit-score"
-      );
+    () => {
       const vector = createMockVector({
         bedroomAffinity: {
           mode: 3,
@@ -471,10 +411,7 @@ describe("Story 10.2 — AC3: bedroomScore Calculation", () => {
 
   test(
     "[P0] T10.2-21: bedroomScore = 0.1 when bedrooms not in distribution",
-    async () => {
-      const { computeListingFitScore } = await import(
-        "./compute-listing-fit-score"
-      );
+    () => {
       const vector = createMockVector({
         bedroomAffinity: {
           mode: 3,
@@ -495,10 +432,7 @@ describe("Story 10.2 — AC3: bedroomScore Calculation", () => {
 describe("Story 10.2 — AC3: locationScore Calculation", () => {
   test(
     "[P0] T10.2-22: locationScore = 1.0 for first preferredCity",
-    async () => {
-      const { computeListingFitScore } = await import(
-        "./compute-listing-fit-score"
-      );
+    () => {
       const vector = createMockVector({
         locationAffinity: {
           preferredCities: ["Madrid", "Barcelona", "Valencia"],
@@ -514,10 +448,7 @@ describe("Story 10.2 — AC3: locationScore Calculation", () => {
 
   test(
     "[P0] T10.2-23: locationScore = 0.8 for second preferredCity",
-    async () => {
-      const { computeListingFitScore } = await import(
-        "./compute-listing-fit-score"
-      );
+    () => {
       const vector = createMockVector({
         locationAffinity: {
           preferredCities: ["Madrid", "Barcelona", "Valencia"],
@@ -533,10 +464,7 @@ describe("Story 10.2 — AC3: locationScore Calculation", () => {
 
   test(
     "[P0] T10.2-24: locationScore = 0.6 for third preferredCity",
-    async () => {
-      const { computeListingFitScore } = await import(
-        "./compute-listing-fit-score"
-      );
+    () => {
       const vector = createMockVector({
         locationAffinity: {
           preferredCities: ["Madrid", "Barcelona", "Valencia"],
@@ -552,10 +480,7 @@ describe("Story 10.2 — AC3: locationScore Calculation", () => {
 
   test(
     "[P0] T10.2-25: locationScore minimum is 0.3 for cities in preferredCities",
-    async () => {
-      const { computeListingFitScore } = await import(
-        "./compute-listing-fit-score"
-      );
+    () => {
       // 5+ cities to test the minimum
       const vector = createMockVector({
         locationAffinity: {
@@ -579,10 +504,7 @@ describe("Story 10.2 — AC3: locationScore Calculation", () => {
 
   test(
     "[P0] T10.2-26: locationScore uses haversine decay when city not in preferredCities but geoCentroid exists",
-    async () => {
-      const { computeListingFitScore } = await import(
-        "./compute-listing-fit-score"
-      );
+    () => {
       const vector = createMockVector({
         locationAffinity: {
           preferredCities: ["Madrid"],
@@ -605,10 +527,7 @@ describe("Story 10.2 — AC3: locationScore Calculation", () => {
 
   test(
     "[P1] T10.2-27: locationScore = 0.5 at ~100km from geoCentroid",
-    async () => {
-      const { computeListingFitScore } = await import(
-        "./compute-listing-fit-score"
-      );
+    () => {
       const vector = createMockVector({
         locationAffinity: {
           preferredCities: [],
@@ -629,10 +548,7 @@ describe("Story 10.2 — AC3: locationScore Calculation", () => {
 
   test(
     "[P1] T10.2-28: locationScore = 0.1 when no match and no geoCentroid",
-    async () => {
-      const { computeListingFitScore } = await import(
-        "./compute-listing-fit-score"
-      );
+    () => {
       const vector = createMockVector({
         locationAffinity: {
           preferredCities: ["Madrid"],
@@ -652,10 +568,7 @@ describe("Story 10.2 — AC3: locationScore Calculation", () => {
 describe("Story 10.2 — AC3: photoAffinityScore Calculation", () => {
   test(
     "[P0] T10.2-29: photoAffinityScore > 0.5 when listing has preferred photo indices",
-    async () => {
-      const { computeListingFitScore } = await import(
-        "./compute-listing-fit-score"
-      );
+    () => {
       const vector = createMockVector({
         photoEngagement: {
           avgViewTimeMs: 3500,
@@ -674,10 +587,7 @@ describe("Story 10.2 — AC3: photoAffinityScore Calculation", () => {
 
   test(
     "[P0] T10.2-30: photoAffinityScore = 0.5 (neutral) with no engagement data",
-    async () => {
-      const { computeListingFitScore } = await import(
-        "./compute-listing-fit-score"
-      );
+    () => {
       const vector = createMockVector({
         photoEngagement: {
           avgViewTimeMs: 0,
@@ -697,10 +607,7 @@ describe("Story 10.2 — AC3: photoAffinityScore Calculation", () => {
 describe("Story 10.2 — AC3: engagementDepthScore Calculation", () => {
   test(
     "[P0] T10.2-31: engagementDepthScore = 1.0 for high engagement buyer",
-    async () => {
-      const { computeListingFitScore } = await import(
-        "./compute-listing-fit-score"
-      );
+    () => {
       // avgScrollDepthPct > 70% AND avgDetailViewMs > 5000ms → 1.0
       const vector = createMockVector({
         engagementDepth: {
@@ -717,10 +624,7 @@ describe("Story 10.2 — AC3: engagementDepthScore Calculation", () => {
 
   test(
     "[P0] T10.2-32: engagementDepthScore scales linearly between 0.3 and 1.0",
-    async () => {
-      const { computeListingFitScore } = await import(
-        "./compute-listing-fit-score"
-      );
+    () => {
       // Low engagement
       const vectorLow = createMockVector({
         engagementDepth: {
@@ -758,10 +662,7 @@ describe("Story 10.2 — AC3: engagementDepthScore Calculation", () => {
 describe("Story 10.2 — AC3: Incomplete Data Handling", () => {
   test(
     "[P0] T10.2-33: listing with null price → priceScore = 0.5 (neutral)",
-    async () => {
-      const { computeListingFitScore } = await import(
-        "./compute-listing-fit-score"
-      );
+    () => {
       const vector = createMockVector();
       const listing = createMockListing({ price: null });
       const result = computeListingFitScore(vector, listing);
@@ -772,10 +673,7 @@ describe("Story 10.2 — AC3: Incomplete Data Handling", () => {
 
   test(
     "[P0] T10.2-34: listing with null coordinates → locationScore = 0.5 (neutral)",
-    async () => {
-      const { computeListingFitScore } = await import(
-        "./compute-listing-fit-score"
-      );
+    () => {
       const vector = createMockVector();
       const listing = createMockListing({
         city: "UnknownCity",
@@ -792,10 +690,7 @@ describe("Story 10.2 — AC3: Incomplete Data Handling", () => {
 
   test(
     "[P0] T10.2-35: listing with null sizeSqm → sizeScore = 0.5 (neutral)",
-    async () => {
-      const { computeListingFitScore } = await import(
-        "./compute-listing-fit-score"
-      );
+    () => {
       const vector = createMockVector();
       const listing = createMockListing({ sizeSqm: null });
       const result = computeListingFitScore(vector, listing);
@@ -806,10 +701,7 @@ describe("Story 10.2 — AC3: Incomplete Data Handling", () => {
 
   test(
     "[P0] T10.2-36: listing with null bedrooms → bedroomScore = 0.5 (neutral)",
-    async () => {
-      const { computeListingFitScore } = await import(
-        "./compute-listing-fit-score"
-      );
+    () => {
       const vector = createMockVector();
       const listing = createMockListing({ bedrooms: null });
       const result = computeListingFitScore(vector, listing);
@@ -819,13 +711,10 @@ describe("Story 10.2 — AC3: Incomplete Data Handling", () => {
   );
 
   test(
-    "[P0] T10.2-37: overall_score reponderates weights when dimensions have incomplete data",
-    async () => {
-      const { computeListingFitScore } = await import(
-        "./compute-listing-fit-score"
-      );
+    "[P0] T10.2-37: overall_score valid when all numeric dimensions have null data (neutral fallback)",
+    () => {
       const vector = createMockVector();
-      // All numeric fields null — only photo and engagement dimensions have data
+      // All numeric fields null — price, size, bedroom, location get 0.5 neutral
       const listing = createMockListing({
         price: null,
         sizeSqm: null,
@@ -836,6 +725,12 @@ describe("Story 10.2 — AC3: Incomplete Data Handling", () => {
       });
       const result = computeListingFitScore(vector, listing);
 
+      // All 4 missing-data dimensions should be neutral (0.5)
+      expect(result.dimensionScores.priceScore).toBe(0.5);
+      expect(result.dimensionScores.sizeScore).toBe(0.5);
+      expect(result.dimensionScores.bedroomScore).toBe(0.5);
+      expect(result.dimensionScores.locationScore).toBe(0.5);
+
       // Score should still be valid and in [0, 1]
       expect(result.overallScore).toBeGreaterThanOrEqual(0);
       expect(result.overallScore).toBeLessThanOrEqual(1);
@@ -844,11 +739,8 @@ describe("Story 10.2 — AC3: Incomplete Data Handling", () => {
   );
 
   test(
-    "[P1] T10.2-38: incomplete data dimensions get 0.5, weights redistributed proportionally",
-    async () => {
-      const { computeListingFitScore } = await import(
-        "./compute-listing-fit-score"
-      );
+    "[P1] T10.2-38: incomplete dimensions get 0.5 neutral, overall uses standard weights",
+    () => {
       const vector = createMockVector();
       // Only price is null — the rest should compute normally
       const listing = createMockListing({ price: null });
@@ -857,9 +749,16 @@ describe("Story 10.2 — AC3: Incomplete Data Handling", () => {
       // priceScore should be 0.5
       expect(result.dimensionScores.priceScore).toBe(0.5);
 
-      // Overall score should still be valid
-      expect(result.overallScore).toBeGreaterThanOrEqual(0);
-      expect(result.overallScore).toBeLessThanOrEqual(1);
+      // Overall score should equal standard weighted mean (not redistribution)
+      const ds = result.dimensionScores;
+      const expectedOverall =
+        ds.priceScore * FIT_SCORE_WEIGHTS.priceScore +
+        ds.locationScore * FIT_SCORE_WEIGHTS.locationScore +
+        ds.sizeScore * FIT_SCORE_WEIGHTS.sizeScore +
+        ds.bedroomScore * FIT_SCORE_WEIGHTS.bedroomScore +
+        ds.photoAffinityScore * FIT_SCORE_WEIGHTS.photoAffinityScore +
+        ds.engagementDepthScore * FIT_SCORE_WEIGHTS.engagementDepthScore;
+      expect(result.overallScore).toBeCloseTo(expectedOverall, 4);
     }
   );
 });
@@ -869,10 +768,7 @@ describe("Story 10.2 — AC3: Incomplete Data Handling", () => {
 describe("Story 10.2 — AC3: Function Signature & Return Shape", () => {
   test(
     "[P0] T10.2-39: computeListingFitScore is synchronous (pure, no I/O)",
-    async () => {
-      const { computeListingFitScore } = await import(
-        "./compute-listing-fit-score"
-      );
+    () => {
       const vector = createMockVector();
       const listing = createMockListing();
 
@@ -886,10 +782,7 @@ describe("Story 10.2 — AC3: Function Signature & Return Shape", () => {
 
   test(
     "[P0] T10.2-40: return shape is { overallScore, dimensionScores, recommendedPhotoIndex }",
-    async () => {
-      const { computeListingFitScore } = await import(
-        "./compute-listing-fit-score"
-      );
+    () => {
       const vector = createMockVector();
       const listing = createMockListing();
       const result = computeListingFitScore(vector, listing);
@@ -907,10 +800,7 @@ describe("Story 10.2 — AC3: Function Signature & Return Shape", () => {
 describe("Story 10.2 — AC3: Edge Cases", () => {
   test(
     "[P1] T10.2-41: perfect match listing produces overallScore close to 1.0",
-    async () => {
-      const { computeListingFitScore } = await import(
-        "./compute-listing-fit-score"
-      );
+    () => {
       // Vector that perfectly matches the listing
       const vector = createMockVector({
         priceAffinity: {
@@ -945,10 +835,7 @@ describe("Story 10.2 — AC3: Edge Cases", () => {
 
   test(
     "[P1] T10.2-42: completely mismatched listing produces low overallScore",
-    async () => {
-      const { computeListingFitScore } = await import(
-        "./compute-listing-fit-score"
-      );
+    () => {
       const vector = createMockVector({
         priceAffinity: {
           mean: 100000,
@@ -983,10 +870,7 @@ describe("Story 10.2 — AC3: Edge Cases", () => {
 
   test(
     "[P2] T10.2-43: deterministic — same inputs always produce same output",
-    async () => {
-      const { computeListingFitScore } = await import(
-        "./compute-listing-fit-score"
-      );
+    () => {
       const vector = createMockVector();
       const listing = createMockListing();
 
