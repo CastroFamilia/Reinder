@@ -39,7 +39,7 @@ describe("PrivacySettings — Rendering (AC3)", () => {
     vi.clearAllMocks();
   });
 
-  test.skip('[P0] T10.5-12: renders "Privacidad y Datos" section heading', async () => {
+  test('[P0] T10.5-12: renders "Privacidad y Datos" section heading', async () => {
     // Import will fail until component is created
     const { PrivacySettings } = await import(
       "@/components/profile/PrivacySettings"
@@ -54,7 +54,7 @@ describe("PrivacySettings — Rendering (AC3)", () => {
     ).toBeInTheDocument();
   });
 
-  test.skip("[P0] T10.5-13: renders toggle labeled 'Personalización de contenido'", async () => {
+  test("[P0] T10.5-13: renders toggle labeled 'Personalización de contenido'", async () => {
     const { PrivacySettings } = await import(
       "@/components/profile/PrivacySettings"
     );
@@ -68,7 +68,7 @@ describe("PrivacySettings — Rendering (AC3)", () => {
     ).toBeInTheDocument();
   });
 
-  test.skip('[P0] T10.5-14: renders explanatory text about personalization', async () => {
+  test('[P0] T10.5-14: renders explanatory text about personalization', async () => {
     const { PrivacySettings } = await import(
       "@/components/profile/PrivacySettings"
     );
@@ -87,7 +87,7 @@ describe("PrivacySettings — Rendering (AC3)", () => {
     ).toBeInTheDocument();
   });
 
-  test.skip('[P0] T10.5-15: section has testID "privacy-settings-section"', async () => {
+  test('[P0] T10.5-15: section has testID "privacy-settings-section"', async () => {
     const { PrivacySettings } = await import(
       "@/components/profile/PrivacySettings"
     );
@@ -101,7 +101,7 @@ describe("PrivacySettings — Rendering (AC3)", () => {
     ).toBeInTheDocument();
   });
 
-  test.skip('[P0] T10.5-16: toggle has testID "personalization-toggle"', async () => {
+  test('[P0] T10.5-16: toggle has testID "personalization-toggle"', async () => {
     const { PrivacySettings } = await import(
       "@/components/profile/PrivacySettings"
     );
@@ -123,7 +123,7 @@ describe("PrivacySettings — Toggle State (AC3)", () => {
     vi.clearAllMocks();
   });
 
-  test.skip("[P0] T10.5-17: toggle is ON when personalizationEnabled is true", async () => {
+  test("[P0] T10.5-17: toggle is ON when personalizationEnabled is true", async () => {
     const { PrivacySettings } = await import(
       "@/components/profile/PrivacySettings"
     );
@@ -137,7 +137,7 @@ describe("PrivacySettings — Toggle State (AC3)", () => {
     expect(toggle).toBeChecked();
   });
 
-  test.skip("[P0] T10.5-18: toggle is OFF when personalizationEnabled is false", async () => {
+  test("[P0] T10.5-18: toggle is OFF when personalizationEnabled is false", async () => {
     const { PrivacySettings } = await import(
       "@/components/profile/PrivacySettings"
     );
@@ -158,7 +158,7 @@ describe("PrivacySettings — Toggle Interaction (AC3)", () => {
     vi.clearAllMocks();
   });
 
-  test.skip("[P0] T10.5-19: calls onToggle(false) when disabling personalization", async () => {
+  test("[P0] T10.5-19: calls onToggle(false) when disabling personalization", async () => {
     const { PrivacySettings } = await import(
       "@/components/profile/PrivacySettings"
     );
@@ -177,7 +177,7 @@ describe("PrivacySettings — Toggle Interaction (AC3)", () => {
     });
   });
 
-  test.skip("[P0] T10.5-20: calls onToggle(true) when enabling personalization", async () => {
+  test("[P0] T10.5-20: calls onToggle(true) when enabling personalization", async () => {
     const { PrivacySettings } = await import(
       "@/components/profile/PrivacySettings"
     );
@@ -196,7 +196,7 @@ describe("PrivacySettings — Toggle Interaction (AC3)", () => {
     });
   });
 
-  test.skip('[P1] T10.5-21: shows toast "Personalización desactivada" after disabling', async () => {
+  test('[P1] T10.5-21: shows toast "Personalización desactivada" after disabling', async () => {
     const { PrivacySettings } = await import(
       "@/components/profile/PrivacySettings"
     );
@@ -219,7 +219,7 @@ describe("PrivacySettings — Toggle Interaction (AC3)", () => {
     });
   });
 
-  test.skip('[P1] T10.5-22: shows toast "Personalización activada" after enabling', async () => {
+  test('[P1] T10.5-22: shows toast "Personalización activada" after enabling', async () => {
     const { PrivacySettings } = await import(
       "@/components/profile/PrivacySettings"
     );
@@ -240,7 +240,7 @@ describe("PrivacySettings — Toggle Interaction (AC3)", () => {
     });
   });
 
-  test.skip("[P1] T10.5-23: toggle shows optimistic UI — changes immediately before API response", async () => {
+  test("[P1] T10.5-23: toggle shows optimistic UI — changes immediately before API response", async () => {
     const { PrivacySettings } = await import(
       "@/components/profile/PrivacySettings"
     );
@@ -267,7 +267,7 @@ describe("PrivacySettings — Toggle Interaction (AC3)", () => {
     resolveToggle!();
   });
 
-  test.skip("[P2] T10.5-24: toggle reverts on API error (rollback)", async () => {
+  test("[P2] T10.5-24: toggle reverts on API error (rollback)", async () => {
     const { PrivacySettings } = await import(
       "@/components/profile/PrivacySettings"
     );

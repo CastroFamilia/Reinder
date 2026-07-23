@@ -27,7 +27,7 @@ import { describe, it, expect, vi, beforeEach, test } from "vitest";
 // ─── AC1: Schema field personalization_enabled ──────────────────────────────
 
 describe("Schema — personalization_enabled field (AC1)", () => {
-  test.skip("[P0] T10.5-25: userProfiles table has personalizationEnabled field in Drizzle schema", async () => {
+  test("[P0] T10.5-25: userProfiles table has personalizationEnabled field in Drizzle schema", async () => {
     // Import the schema — this will fail until the field is added
     const { userProfiles } = await import("@reinder/shared/db/schema");
 
@@ -35,7 +35,7 @@ describe("Schema — personalization_enabled field (AC1)", () => {
     expect(userProfiles).toHaveProperty("personalizationEnabled");
   });
 
-  test.skip("[P0] T10.5-26: personalizationEnabled defaults to true", async () => {
+  test("[P0] T10.5-26: personalizationEnabled defaults to true", async () => {
     const { userProfiles } = await import("@reinder/shared/db/schema");
 
     // The column definition should have a default value of true
@@ -45,7 +45,7 @@ describe("Schema — personalization_enabled field (AC1)", () => {
     expect(column.config?.default).toBe(true);
   });
 
-  test.skip("[P1] T10.5-27: personalizationEnabled is NOT NULL", async () => {
+  test("[P1] T10.5-27: personalizationEnabled is NOT NULL", async () => {
     const { userProfiles } = await import("@reinder/shared/db/schema");
 
     const column = (userProfiles as any).personalizationEnabled;
@@ -54,7 +54,7 @@ describe("Schema — personalization_enabled field (AC1)", () => {
     expect(column.config?.notNull).toBe(true);
   });
 
-  test.skip("[P1] T10.5-28: personalizationEnabled is boolean type", async () => {
+  test("[P1] T10.5-28: personalizationEnabled is boolean type", async () => {
     const { userProfiles } = await import("@reinder/shared/db/schema");
 
     const column = (userProfiles as any).personalizationEnabled;
@@ -66,7 +66,7 @@ describe("Schema — personalization_enabled field (AC1)", () => {
 // ─── AC5: Feed personalization guard ────────────────────────────────────────
 
 describe("Feed Personalization Guard (AC5)", () => {
-  test.skip("[P0] T10.5-29: feed uses default agency content when personalization_enabled = false", async () => {
+  test("[P0] T10.5-29: feed uses default agency content when personalization_enabled = false", async () => {
     // This test validates that when a buyer has personalization disabled,
     // the feed logic returns original listing content (not personalized)
     //
@@ -89,7 +89,7 @@ describe("Feed Personalization Guard (AC5)", () => {
     // - Original description order is used (not Story 10.4 adapted highlights)
   });
 
-  test.skip("[P0] T10.5-30: feed applies personalization when personalization_enabled = true", async () => {
+  test("[P0] T10.5-30: feed applies personalization when personalization_enabled = true", async () => {
     const buyerProfile = {
       id: "buyer-uuid-001",
       personalizationEnabled: true,
@@ -102,7 +102,7 @@ describe("Feed Personalization Guard (AC5)", () => {
     expect(buyerProfile.personalizationEnabled).toBe(true);
   });
 
-  test.skip("[P1] T10.5-31: personalization check is a simple boolean read — no performance degradation", async () => {
+  test("[P1] T10.5-31: personalization check is a simple boolean read — no performance degradation", async () => {
     // The guard should be a simple if(!personalizationEnabled) check
     // No additional DB queries, no complex computation
     const startTime = Date.now();
@@ -121,7 +121,7 @@ describe("Feed Personalization Guard (AC5)", () => {
 // ─── AC6: Aggregation job guard ─────────────────────────────────────────────
 
 describe("Aggregation Job — Personalization Guard (AC6)", () => {
-  test.skip("[P0] T10.5-32: aggregation job omits buyers with personalization_enabled = false", async () => {
+  test("[P0] T10.5-32: aggregation job omits buyers with personalization_enabled = false", async () => {
     // The compute_buyer_preference_vectors() job (pg_cron, every 6h)
     // should filter out buyers with personalization_enabled = false
     //
@@ -143,7 +143,7 @@ describe("Aggregation Job — Personalization Guard (AC6)", () => {
     expect(eligibleBuyers.map((b) => b.id)).not.toContain("buyer-2");
   });
 
-  test.skip("[P0] T10.5-33: existing preference vector is preserved when personalization is disabled", async () => {
+  test("[P0] T10.5-33: existing preference vector is preserved when personalization is disabled", async () => {
     // When a buyer disables personalization:
     // - Their existing buyer_preference_vectors row is NOT deleted
     // - The vector persists for potential reactivation
@@ -160,7 +160,7 @@ describe("Aggregation Job — Personalization Guard (AC6)", () => {
     expect(existingVector.buyerId).toBe("buyer-uuid-001");
   });
 
-  test.skip("[P0] T10.5-34: reactivated buyer uses existing vector immediately without recalculation", async () => {
+  test("[P0] T10.5-34: reactivated buyer uses existing vector immediately without recalculation", async () => {
     // When a buyer reactivates personalization:
     // 1. The existing vector is used IMMEDIATELY
     // 2. The aggregation job will refresh it in the next cycle (every 6h)
@@ -181,7 +181,7 @@ describe("Aggregation Job — Personalization Guard (AC6)", () => {
 // ─── AC7: RLS — buyer only modifies own personalization_enabled ─────────────
 
 describe("RLS — Own Record Only (AC7)", () => {
-  test.skip("[P0] T10.5-35: buyer cannot update another buyer's personalization_enabled", async () => {
+  test("[P0] T10.5-35: buyer cannot update another buyer's personalization_enabled", async () => {
     // RLS policies on user_profiles already restrict:
     // - SELECT: id = auth.uid()
     // - UPDATE: id = auth.uid()
@@ -199,7 +199,7 @@ describe("RLS — Own Record Only (AC7)", () => {
     expect(authUserId).not.toBe(targetUserId);
   });
 
-  test.skip("[P1] T10.5-36: existing RLS policies on user_profiles are NOT modified", async () => {
+  test("[P1] T10.5-36: existing RLS policies on user_profiles are NOT modified", async () => {
     // Story 10.5 should NOT create new RLS policies or modify existing ones
     // The existing policies already cover the personalization_enabled field
     //
@@ -212,7 +212,7 @@ describe("RLS — Own Record Only (AC7)", () => {
 // ─── AC8: Migration SQL ─────────────────────────────────────────────────────
 
 describe("Migration SQL (AC8)", () => {
-  test.skip("[P0] T10.5-37: migration file exists with correct naming pattern", async () => {
+  test("[P0] T10.5-37: migration file exists with correct naming pattern", async () => {
     // Migration should be at:
     // supabase/migrations/YYYYMMDD000001_add_personalization_enabled.sql
     //
@@ -234,7 +234,7 @@ describe("Migration SQL (AC8)", () => {
     expect(migrationFile).toBeDefined();
   });
 
-  test.skip("[P1] T10.5-38: migration adds BOOLEAN NOT NULL DEFAULT TRUE column", async () => {
+  test("[P1] T10.5-38: migration adds BOOLEAN NOT NULL DEFAULT TRUE column", async () => {
     // The migration SQL should contain:
     // ALTER TABLE user_profiles ADD COLUMN personalization_enabled BOOLEAN NOT NULL DEFAULT TRUE
     //
@@ -264,7 +264,7 @@ describe("Migration SQL (AC8)", () => {
     expect(content.toUpperCase()).toContain("DEFAULT TRUE");
   });
 
-  test.skip("[P1] T10.5-39: migration is idempotent (IF NOT EXISTS guard)", async () => {
+  test("[P1] T10.5-39: migration is idempotent (IF NOT EXISTS guard)", async () => {
     const fs = await import("fs");
     const path = await import("path");
 
@@ -288,7 +288,7 @@ describe("Migration SQL (AC8)", () => {
     expect(content.toUpperCase()).toContain("IF NOT EXISTS");
   });
 
-  test.skip("[P2] T10.5-40: migration does NOT modify existing RLS policies", async () => {
+  test("[P2] T10.5-40: migration does NOT modify existing RLS policies", async () => {
     const fs = await import("fs");
     const path = await import("path");
 

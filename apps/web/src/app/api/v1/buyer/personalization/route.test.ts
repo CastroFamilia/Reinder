@@ -101,7 +101,7 @@ describe("PATCH /api/v1/buyer/personalization — Auth (AC2)", () => {
     vi.resetModules();
   });
 
-  test.skip("[P0] T10.5-01: returns 401 when no user session exists", async () => {
+  test("[P0] T10.5-01: returns 401 when no user session exists", async () => {
     const mockClient = {
       auth: {
         getUser: vi
@@ -122,7 +122,7 @@ describe("PATCH /api/v1/buyer/personalization — Auth (AC2)", () => {
     expect(body.error.code).toBeDefined();
   });
 
-  test.skip("[P0] T10.5-02: returns 403 when agent attempts access", async () => {
+  test("[P0] T10.5-02: returns 403 when agent attempts access", async () => {
     mockSupabaseClient(AGENT_USER, "agent");
 
     const { PATCH } = await import("./route");
@@ -135,7 +135,7 @@ describe("PATCH /api/v1/buyer/personalization — Auth (AC2)", () => {
     expect(body.error).toBeDefined();
   });
 
-  test.skip("[P0] T10.5-03: returns 403 when agency_admin attempts access", async () => {
+  test("[P0] T10.5-03: returns 403 when agency_admin attempts access", async () => {
     mockSupabaseClient(AGENCY_ADMIN_USER, "agency_admin");
 
     const { PATCH } = await import("./route");
@@ -148,7 +148,7 @@ describe("PATCH /api/v1/buyer/personalization — Auth (AC2)", () => {
     expect(body.error).toBeDefined();
   });
 
-  test.skip("[P0] T10.5-04: returns 403 when platform_admin attempts access", async () => {
+  test("[P0] T10.5-04: returns 403 when platform_admin attempts access", async () => {
     mockSupabaseClient(PLATFORM_ADMIN_USER, "platform_admin");
 
     const { PATCH } = await import("./route");
@@ -170,7 +170,7 @@ describe("PATCH /api/v1/buyer/personalization — Disable (AC2)", () => {
     vi.resetModules();
   });
 
-  test.skip("[P0] T10.5-05: buyer disables personalization successfully", async () => {
+  test("[P0] T10.5-05: buyer disables personalization successfully", async () => {
     mockSupabaseClient(BUYER_USER, "buyer");
 
     const { PATCH } = await import("./route");
@@ -186,7 +186,7 @@ describe("PATCH /api/v1/buyer/personalization — Disable (AC2)", () => {
     expect(typeof body.data.updatedAt).toBe("string");
   });
 
-  test.skip("[P0] T10.5-06: buyer enables personalization successfully", async () => {
+  test("[P0] T10.5-06: buyer enables personalization successfully", async () => {
     mockSupabaseClient(BUYER_USER, "buyer");
 
     const { PATCH } = await import("./route");
@@ -201,7 +201,7 @@ describe("PATCH /api/v1/buyer/personalization — Disable (AC2)", () => {
     expect(body.data.updatedAt).toBeDefined();
   });
 
-  test.skip("[P1] T10.5-07: response follows ApiResponse<T> convention", async () => {
+  test("[P1] T10.5-07: response follows ApiResponse<T> convention", async () => {
     mockSupabaseClient(BUYER_USER, "buyer");
 
     const { PATCH } = await import("./route");
@@ -225,7 +225,7 @@ describe("PATCH /api/v1/buyer/personalization — Validation (AC2)", () => {
     vi.resetModules();
   });
 
-  test.skip("[P1] T10.5-08: rejects request with missing enabled field", async () => {
+  test("[P1] T10.5-08: rejects request with missing enabled field", async () => {
     mockSupabaseClient(BUYER_USER, "buyer");
 
     const { PATCH } = await import("./route");
@@ -238,7 +238,7 @@ describe("PATCH /api/v1/buyer/personalization — Validation (AC2)", () => {
     expect(body.error).toBeDefined();
   });
 
-  test.skip("[P1] T10.5-09: rejects request with non-boolean enabled field", async () => {
+  test("[P1] T10.5-09: rejects request with non-boolean enabled field", async () => {
     mockSupabaseClient(BUYER_USER, "buyer");
 
     const { PATCH } = await import("./route");
@@ -251,7 +251,7 @@ describe("PATCH /api/v1/buyer/personalization — Validation (AC2)", () => {
     expect(body.error).toBeDefined();
   });
 
-  test.skip("[P2] T10.5-10: rejects request with invalid JSON body", async () => {
+  test("[P2] T10.5-10: rejects request with invalid JSON body", async () => {
     mockSupabaseClient(BUYER_USER, "buyer");
 
     const { PATCH } = await import("./route");
@@ -275,7 +275,7 @@ describe("PATCH /api/v1/buyer/personalization — Own Record (AC2, AC7)", () => 
     vi.resetModules();
   });
 
-  test.skip("[P0] T10.5-11: update targets auth.uid() — buyer updates own profile only", async () => {
+  test("[P0] T10.5-11: update targets auth.uid() — buyer updates own profile only", async () => {
     const mockClient = mockSupabaseClient(BUYER_USER, "buyer");
 
     const { PATCH } = await import("./route");
