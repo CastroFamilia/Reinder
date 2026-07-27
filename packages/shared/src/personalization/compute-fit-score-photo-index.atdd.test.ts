@@ -1,8 +1,6 @@
 /**
  * Story 10.3 — ATDD: computeListingFitScore() recommendedPhotoIndex integration
  *
- * TDD RED PHASE — All tests use test.skip() and will FAIL until implementation.
- *
  * AC1: computeListingFitScore() now returns a computed recommendedPhotoIndex
  *      (instead of hardcoded null).
  * AC2: Batch job persists the recommendedPhotoIndex in the UPSERT.
@@ -67,7 +65,7 @@ function createMockListing(overrides: Record<string, any> = {}) {
 // ─── AC1: recommendedPhotoIndex in computeListingFitScore() ─────────────────
 
 describe("Story 10.3 — AC1: computeListingFitScore() returns computed recommendedPhotoIndex", () => {
-  test.skip(
+  test(
     "[P0] T10.3-12: returns recommendedPhotoIndex=2 for buyer with preferredPhotoIndices [2,0,4] and listing with 6 images",
     () => {
       // AC1 scenario 1: preferredPhotoIndices = [2, 0, 4], images.length = 6
@@ -85,7 +83,7 @@ describe("Story 10.3 — AC1: computeListingFitScore() returns computed recommen
     }
   );
 
-  test.skip(
+  test(
     "[P0] T10.3-13: returns recommendedPhotoIndex=3 when first indices are out of range",
     () => {
       // AC1 scenario 1 variant: preferredPhotoIndices = [5, 3, 1], images.length = 4
@@ -102,7 +100,7 @@ describe("Story 10.3 — AC1: computeListingFitScore() returns computed recommen
     }
   );
 
-  test.skip(
+  test(
     "[P0] T10.3-14: returns recommendedPhotoIndex=0 when preferredPhotoIndices is empty",
     () => {
       // AC1 scenario 2: empty preferredPhotoIndices → fallback 0
@@ -117,7 +115,7 @@ describe("Story 10.3 — AC1: computeListingFitScore() returns computed recommen
     }
   );
 
-  test.skip(
+  test(
     "[P0] T10.3-15: returns recommendedPhotoIndex=null when listing has no images",
     () => {
       // AC1 scenario 3: images null → null
@@ -130,7 +128,7 @@ describe("Story 10.3 — AC1: computeListingFitScore() returns computed recommen
     }
   );
 
-  test.skip(
+  test(
     "[P0] T10.3-16: returns recommendedPhotoIndex=null when listing has empty images array",
     () => {
       // AC1 scenario 3 variant: images = [] → null
@@ -143,7 +141,7 @@ describe("Story 10.3 — AC1: computeListingFitScore() returns computed recommen
     }
   );
 
-  test.skip(
+  test(
     "[P0] T10.3-17: returns recommendedPhotoIndex=0 when all preferred indices are out of range",
     () => {
       // AC1 scenario 4: all indices >= images.length → fallback 0
@@ -160,7 +158,7 @@ describe("Story 10.3 — AC1: computeListingFitScore() returns computed recommen
     }
   );
 
-  test.skip(
+  test(
     "[P1] T10.3-18: overall score and dimension scores remain unchanged by photo index logic",
     () => {
       // Verify the addition of selectRecommendedPhotoIndex does NOT alter existing score computation

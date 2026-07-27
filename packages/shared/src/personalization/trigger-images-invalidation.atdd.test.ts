@@ -1,8 +1,6 @@
 /**
  * Story 10.3 — ATDD: SQL Migration — Trigger includes `images` field
  *
- * TDD RED PHASE — All tests use test.skip() and will FAIL until implementation.
- *
  * AC7: Invalidación al cambiar fotos del listing
  *
  * The existing trigger `invalidate_listing_fit_scores()` in
@@ -25,11 +23,11 @@ import { join } from "path";
 describe("Story 10.3 — AC7: SQL trigger migration includes images field", () => {
   const migrationsDir = join(
     __dirname,
-    "../../../../..", // navigate from packages/shared/src/personalization/ to project root
+    "../../../..", // navigate from packages/shared/src/personalization/ to project root
     "supabase/migrations",
   );
 
-  test.skip(
+  test(
     "[P0] T10.3-27: migration file for images trigger exists",
     () => {
       // Given: Story 10.3 requires a new migration to add `images` to the trigger
@@ -46,7 +44,7 @@ describe("Story 10.3 — AC7: SQL trigger migration includes images field", () =
     }
   );
 
-  test.skip(
+  test(
     "[P0] T10.3-28: migration adds OLD.images IS DISTINCT FROM NEW.images to trigger",
     () => {
       // Given: the trigger migration file exists
@@ -71,7 +69,7 @@ describe("Story 10.3 — AC7: SQL trigger migration includes images field", () =
     }
   );
 
-  test.skip(
+  test(
     "[P1] T10.3-29: migration deletes listing_fit_scores when images change",
     () => {
       // The trigger should DELETE from listing_fit_scores WHERE listing_id = OLD.id

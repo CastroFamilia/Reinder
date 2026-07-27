@@ -196,13 +196,15 @@ describe("Story 10.2 — AC2: DimensionScores Structure", () => {
   );
 
   test(
-    "[P1] T10.2-10: recommendedPhotoIndex is null (computed in Story 10.3)",
+    "[P1] T10.2-10: recommendedPhotoIndex is computed (Story 10.3)",
     () => {
       const vector = createMockVector();
       const listing = createMockListing();
       const result = computeListingFitScore(vector, listing);
 
-      expect(result.recommendedPhotoIndex).toBeNull();
+      // Story 10.3: recommendedPhotoIndex is now computed from preferredPhotoIndices
+      // Mock vector has preferredPhotoIndices: [0, 2, 4], listing has images → returns 0
+      expect(result.recommendedPhotoIndex).toBe(0);
     }
   );
 });
