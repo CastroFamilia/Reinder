@@ -6,6 +6,7 @@
  * AC3: TypeScript types exported from @reinder/shared
  * AC7: Exhaustive unit test coverage
  *
+ * Test-review applied: 2026-07-27
  * Run: npx vitest run src/personalization/extract-description-highlights.test.ts
  */
 
@@ -16,7 +17,7 @@ import { describe, expect, test } from "vitest";
 
 import { extractDescriptionHighlights } from "./extract-description-highlights";
 import type { DescriptionHighlight, HighlightCategory } from "./highlight-types";
-import { HIGHLIGHT_KEYWORDS } from "./highlight-types";
+import { CATEGORY_DIMENSION_MAP, HIGHLIGHT_KEYWORDS } from "./highlight-types";
 import type { DimensionScores } from "./fit-score-types";
 
 // ─── Test Fixtures ────────────────────────────────────────────────────────────
@@ -213,15 +214,22 @@ describe("Story 10.4 — AC1: fallback when dimensionScores is undefined/null", 
     }
   });
 
-  test("maintains original order when dimensionScores is absent", () => {
+  test("maintains original extraction order when dimensionScores is absent", () => {
     const result = extractDescriptionHighlights(
       MULTI_CATEGORY_DESCRIPTION,
       undefined
     );
 
-    // All have same relevanceScore, so order should match extraction order
-    for (let i = 1; i < result.length; i++) {
-      expect(result[i].relevanceScore).toBe(result[i - 1].relevanceScore);
+    // All have same relevanceScore — verify equality
+    for (const highlight of result) {
+      expect(highlight.relevanceScore).toBe(0.5);
+    }
+
+    // Verify order matches sentence appearance in the description
+    // The first detected category in MULTI_CATEGORY_DESCRIPTION is "size" ("amplio")
+    if (result.length >= 2) {
+      const firstCategory = result[0].category;
+      expect(firstCategory).toBe("size");
     }
   });
 });
@@ -329,17 +337,22 @@ describe("Story 10.4 — AC2: category-to-dimension mapping", () => {
     expect(amenityHighlight!.relevanceScore).toBeCloseTo(0.56, 2);
   });
 
-  test("general category always receives relevanceScore 0.3", () => {
-    // Use a description that produces a general category highlight
+  test("general category mapping function returns 0.3", () => {
+    // The implementation skips unmatched sentences (no general fallback in output),
+    // so we verify the CATEGORY_DIMENSION_MAP directly for the general formula.
+    const scores = createMockDimensionScores();
+    const generalRelevance = CATEGORY_DIMENSION_MAP.general(scores);
+    expect(generalRelevance).toBeCloseTo(0.3, 2);
+  });
+
+  test("sentences with no keyword match are excluded (not assigned general)", () => {
+    // Verify that a description without matching keywords returns []
     const description =
       "Esta propiedad tiene características únicas que la hacen interesante para diversos perfiles.";
     const scores = createMockDimensionScores();
     const result = extractDescriptionHighlights(description, scores);
 
-    const generalHighlight = result.find((h) => h.category === "general");
-    if (generalHighlight) {
-      expect(generalHighlight.relevanceScore).toBeCloseTo(0.3, 2);
-    }
+    expect(result).toEqual([]);
   });
 
   test("relevanceScore is clamped to [0, 1]", () => {
@@ -380,7 +393,6 @@ describe("Story 10.4 — AC3: type and constant exports", () => {
   });
 
   test("HIGHLIGHT_KEYWORDS.price contains expected Spanish keywords", () => {
-    const priceKeywords = HIGHLIGHT_KEYWORDS.price as string[];
     const expectedKeywords = [
       "precio",
       "€",
@@ -393,12 +405,11 @@ describe("Story 10.4 — AC3: type and constant exports", () => {
     ];
 
     for (const keyword of expectedKeywords) {
-      expect(priceKeywords).toContain(keyword);
+      expect(HIGHLIGHT_KEYWORDS.price).toContain(keyword);
     }
   });
 
   test("HIGHLIGHT_KEYWORDS.size contains expected Spanish keywords", () => {
-    const sizeKeywords = HIGHLIGHT_KEYWORDS.size as string[];
     const expectedKeywords = [
       "m²",
       "metros",
@@ -409,12 +420,11 @@ describe("Story 10.4 — AC3: type and constant exports", () => {
     ];
 
     for (const keyword of expectedKeywords) {
-      expect(sizeKeywords).toContain(keyword);
+      expect(HIGHLIGHT_KEYWORDS.size).toContain(keyword);
     }
   });
 
   test("HIGHLIGHT_KEYWORDS.bedrooms contains expected Spanish keywords", () => {
-    const bedroomKeywords = HIGHLIGHT_KEYWORDS.bedrooms as string[];
     const expectedKeywords = [
       "habitación",
       "habitaciones",
@@ -425,12 +435,11 @@ describe("Story 10.4 — AC3: type and constant exports", () => {
     ];
 
     for (const keyword of expectedKeywords) {
-      expect(bedroomKeywords).toContain(keyword);
+      expect(HIGHLIGHT_KEYWORDS.bedrooms).toContain(keyword);
     }
   });
 
   test("HIGHLIGHT_KEYWORDS.location contains expected Spanish keywords", () => {
-    const locationKeywords = HIGHLIGHT_KEYWORDS.location as string[];
     const expectedKeywords = [
       "zona",
       "barrio",
@@ -445,12 +454,11 @@ describe("Story 10.4 — AC3: type and constant exports", () => {
     ];
 
     for (const keyword of expectedKeywords) {
-      expect(locationKeywords).toContain(keyword);
+      expect(HIGHLIGHT_KEYWORDS.location).toContain(keyword);
     }
   });
 
   test("HIGHLIGHT_KEYWORDS.amenity contains expected Spanish keywords", () => {
-    const amenityKeywords = HIGHLIGHT_KEYWORDS.amenity as string[];
     const expectedKeywords = [
       "garaje",
       "piscina",
@@ -467,7 +475,7 @@ describe("Story 10.4 — AC3: type and constant exports", () => {
     ];
 
     for (const keyword of expectedKeywords) {
-      expect(amenityKeywords).toContain(keyword);
+      expect(HIGHLIGHT_KEYWORDS.amenity).toContain(keyword);
     }
   });
 
@@ -516,59 +524,37 @@ describe("Story 10.4 — AC7: exhaustive scenarios", () => {
     expect(uniqueTexts.size).toBe(texts.length);
   });
 
-  test("with dimensionScores — ordered by relevance DESC", () => {
+  test("returns the top-5 most relevant highlights when capped", () => {
+    // Craft scores where location is clearly highest and price clearly lowest
     const scores = createMockDimensionScores({
-      priceScore: 0.2,
-      sizeScore: 0.4,
-      bedroomScore: 0.6,
-      locationScore: 0.95,
+      locationScore: 0.99,
+      priceScore: 0.01,
+      sizeScore: 0.5,
+      bedroomScore: 0.5,
     });
 
     const result = extractDescriptionHighlights(
-      MULTI_CATEGORY_DESCRIPTION,
+      MANY_HIGHLIGHTS_DESCRIPTION,
       scores
     );
 
+    expect(result.length).toBeLessThanOrEqual(5);
+    expect(result.length).toBeGreaterThan(0);
+
+    // All returned highlights should be sorted DESC
     for (let i = 1; i < result.length; i++) {
       expect(result[i - 1].relevanceScore).toBeGreaterThanOrEqual(
         result[i].relevanceScore
       );
     }
-  });
 
-  test("without dimensionScores — all relevanceScore 0.5, original order", () => {
-    const result = extractDescriptionHighlights(MULTI_CATEGORY_DESCRIPTION);
-
-    for (const highlight of result) {
-      expect(highlight.relevanceScore).toBe(0.5);
-    }
-  });
-
-  test("max 5 highlights when more than 5 candidates", () => {
-    const result = extractDescriptionHighlights(
-      MANY_HIGHLIGHTS_DESCRIPTION,
-      createMockDimensionScores()
-    );
-
-    expect(result.length).toBeLessThanOrEqual(5);
-    expect(result.length).toBeGreaterThan(0);
-  });
-
-  test("returns the 5 most relevant highlights (highest scores)", () => {
-    const scores = createMockDimensionScores({
-      locationScore: 0.99,
-      priceScore: 0.01,
-    });
-
-    const result = extractDescriptionHighlights(
-      MANY_HIGHLIGHTS_DESCRIPTION,
-      scores
-    );
-
-    // If location is highest scored, location highlights should appear first
-    if (result.length > 0) {
-      const topCategory = result[0].category;
-      expect(["location", "bedrooms", "size"]).toContain(topCategory);
+    // The lowest returned score should be >= what we'd expect from the highest-scored categories,
+    // meaning low-scored categories (price=0.01) should be dropped if there are enough better ones
+    const lowestReturned = result[result.length - 1].relevanceScore;
+    const priceHighlights = result.filter((h) => h.category === "price");
+    // Price (0.01) should not appear if 5+ higher-scored highlights exist
+    if (result.length === 5) {
+      expect(priceHighlights.length).toBe(0);
     }
   });
 });
