@@ -62,6 +62,15 @@ function splitSentences(description: string): string[] {
     .filter((s) => s.length > 0);
 }
 
+// Pre-calculate normalized keywords to avoid repeated normalizations per sentence
+const NORMALIZED_KEYWORDS: Record<Exclude<HighlightCategory, "general">, string[]> = {
+  price: HIGHLIGHT_KEYWORDS.price.map(normalizeKeyword),
+  size: HIGHLIGHT_KEYWORDS.size.map(normalizeKeyword),
+  bedrooms: HIGHLIGHT_KEYWORDS.bedrooms.map(normalizeKeyword),
+  location: HIGHLIGHT_KEYWORDS.location.map(normalizeKeyword),
+  amenity: HIGHLIGHT_KEYWORDS.amenity.map(normalizeKeyword),
+};
+
 /**
  * Detect the most matching category for a sentence.
  * Returns the category with the most keyword hits, or null if none.
@@ -72,16 +81,16 @@ function detectCategory(
   let bestCategory: Exclude<HighlightCategory, "general"> | null = null;
   let bestCount = 0;
 
-  const categories = Object.keys(HIGHLIGHT_KEYWORDS) as Array<
+  const categories = Object.keys(NORMALIZED_KEYWORDS) as Array<
     Exclude<HighlightCategory, "general">
   >;
 
   for (const category of categories) {
-    const keywords = HIGHLIGHT_KEYWORDS[category];
+    const keywords = NORMALIZED_KEYWORDS[category];
     let count = 0;
 
     for (const keyword of keywords) {
-      if (normalizedSentence.includes(normalizeKeyword(keyword))) {
+      if (normalizedSentence.includes(keyword)) {
         count++;
       }
     }
