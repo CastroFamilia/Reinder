@@ -1,9 +1,6 @@
 /**
  * Story 10.4 — ATDD Acceptance Tests: extractDescriptionHighlights()
  *
- * TDD RED PHASE — All tests are skipped (test.skip) and will FAIL
- * until the feature module is implemented.
- *
  * AC1: Pure function extractDescriptionHighlights()
  * AC2: HighlightCategory → DimensionScores mapping
  * AC3: TypeScript types exported from @reinder/shared
@@ -14,15 +11,11 @@
 
 import { describe, expect, test } from "vitest";
 
-// ─── Imports — will fail until module is created ──────────────────────────────
-// These imports reference files that don't exist yet (TDD red phase).
+// ─── Imports ──────────────────────────────────────────────────────────────────
 // AC3: Types and function must be exported from the personalization module.
 
-// @ts-expect-error — Module does not exist yet (TDD red phase)
 import { extractDescriptionHighlights } from "./extract-description-highlights";
-// @ts-expect-error — Module does not exist yet (TDD red phase)
 import type { DescriptionHighlight, HighlightCategory } from "./highlight-types";
-// @ts-expect-error — Module does not exist yet (TDD red phase)
 import { HIGHLIGHT_KEYWORDS } from "./highlight-types";
 import type { DimensionScores } from "./fit-score-types";
 
@@ -85,7 +78,7 @@ const TILDES_DESCRIPTION =
 // ─── AC1: Pure function extractDescriptionHighlights() ────────────────────────
 
 describe("Story 10.4 — AC1: extractDescriptionHighlights() pure function", () => {
-  test.skip("returns DescriptionHighlight[] with correct shape", () => {
+  test("returns DescriptionHighlight[] with correct shape", () => {
     const result = extractDescriptionHighlights(
       MULTI_CATEGORY_DESCRIPTION,
       createMockDimensionScores()
@@ -104,7 +97,7 @@ describe("Story 10.4 — AC1: extractDescriptionHighlights() pure function", () 
     }
   });
 
-  test.skip("extracts highlights with correct categories from multi-category description", () => {
+  test("extracts highlights with correct categories from multi-category description", () => {
     const result = extractDescriptionHighlights(
       MULTI_CATEGORY_DESCRIPTION,
       createMockDimensionScores()
@@ -119,7 +112,7 @@ describe("Story 10.4 — AC1: extractDescriptionHighlights() pure function", () 
     expect(categories).toContain("amenity"); // "terraza", "garaje", "vistas", "reformado"
   });
 
-  test.skip("categorizes price keywords correctly", () => {
+  test("categorizes price keywords correctly", () => {
     const result = extractDescriptionHighlights(
       PRICE_ONLY_DESCRIPTION,
       createMockDimensionScores()
@@ -131,7 +124,7 @@ describe("Story 10.4 — AC1: extractDescriptionHighlights() pure function", () 
     }
   });
 
-  test.skip("orders highlights by relevanceScore DESC", () => {
+  test("orders highlights by relevanceScore DESC", () => {
     const scores = createMockDimensionScores({
       priceScore: 0.3,
       locationScore: 0.9,
@@ -150,7 +143,7 @@ describe("Story 10.4 — AC1: extractDescriptionHighlights() pure function", () 
     }
   });
 
-  test.skip("returns maximum 5 highlights when more candidates exist", () => {
+  test("returns maximum 5 highlights when more candidates exist", () => {
     const result = extractDescriptionHighlights(
       MANY_HIGHLIGHTS_DESCRIPTION,
       createMockDimensionScores()
@@ -159,7 +152,7 @@ describe("Story 10.4 — AC1: extractDescriptionHighlights() pure function", () 
     expect(result.length).toBeLessThanOrEqual(5);
   });
 
-  test.skip("is pure — same input produces same output", () => {
+  test("is pure — same input produces same output", () => {
     const scores = createMockDimensionScores();
     const result1 = extractDescriptionHighlights(
       MULTI_CATEGORY_DESCRIPTION,
@@ -173,7 +166,7 @@ describe("Story 10.4 — AC1: extractDescriptionHighlights() pure function", () 
     expect(result1).toEqual(result2);
   });
 
-  test.skip("is synchronous — returns immediately without promises", () => {
+  test("is synchronous — returns immediately without promises", () => {
     const result = extractDescriptionHighlights(
       MULTI_CATEGORY_DESCRIPTION,
       createMockDimensionScores()
@@ -184,7 +177,7 @@ describe("Story 10.4 — AC1: extractDescriptionHighlights() pure function", () 
     expect(Array.isArray(result)).toBe(true);
   });
 
-  test.skip("highlight text is max ~150 characters", () => {
+  test("highlight text is max ~150 characters", () => {
     const result = extractDescriptionHighlights(
       MULTI_CATEGORY_DESCRIPTION,
       createMockDimensionScores()
@@ -199,7 +192,7 @@ describe("Story 10.4 — AC1: extractDescriptionHighlights() pure function", () 
 // ─── AC1: No dimensionScores fallback behavior ───────────────────────────────
 
 describe("Story 10.4 — AC1: fallback when dimensionScores is undefined/null", () => {
-  test.skip("all highlights receive relevanceScore 0.5 when dimensionScores is undefined", () => {
+  test("all highlights receive relevanceScore 0.5 when dimensionScores is undefined", () => {
     const result = extractDescriptionHighlights(MULTI_CATEGORY_DESCRIPTION);
 
     expect(result.length).toBeGreaterThan(0);
@@ -208,7 +201,7 @@ describe("Story 10.4 — AC1: fallback when dimensionScores is undefined/null", 
     }
   });
 
-  test.skip("all highlights receive relevanceScore 0.5 when dimensionScores is null", () => {
+  test("all highlights receive relevanceScore 0.5 when dimensionScores is null", () => {
     const result = extractDescriptionHighlights(
       MULTI_CATEGORY_DESCRIPTION,
       null
@@ -220,7 +213,7 @@ describe("Story 10.4 — AC1: fallback when dimensionScores is undefined/null", 
     }
   });
 
-  test.skip("maintains original order when dimensionScores is absent", () => {
+  test("maintains original order when dimensionScores is absent", () => {
     const result = extractDescriptionHighlights(
       MULTI_CATEGORY_DESCRIPTION,
       undefined
@@ -236,7 +229,7 @@ describe("Story 10.4 — AC1: fallback when dimensionScores is undefined/null", 
 // ─── AC1: Edge cases — empty and null descriptions ───────────────────────────
 
 describe("Story 10.4 — AC1: edge cases for description input", () => {
-  test.skip("returns empty array for empty description", () => {
+  test("returns empty array for empty description", () => {
     const result = extractDescriptionHighlights(
       EMPTY_DESCRIPTION,
       createMockDimensionScores()
@@ -245,7 +238,7 @@ describe("Story 10.4 — AC1: edge cases for description input", () => {
     expect(result).toEqual([]);
   });
 
-  test.skip("returns empty array for null description", () => {
+  test("returns empty array for null description", () => {
     const result = extractDescriptionHighlights(
       null as unknown as string,
       createMockDimensionScores()
@@ -254,7 +247,7 @@ describe("Story 10.4 — AC1: edge cases for description input", () => {
     expect(result).toEqual([]);
   });
 
-  test.skip("returns empty array for undefined description", () => {
+  test("returns empty array for undefined description", () => {
     const result = extractDescriptionHighlights(
       undefined as unknown as string,
       createMockDimensionScores()
@@ -263,7 +256,7 @@ describe("Story 10.4 — AC1: edge cases for description input", () => {
     expect(result).toEqual([]);
   });
 
-  test.skip("returns empty array or only general highlights for description without keywords", () => {
+  test("returns empty array or only general highlights for description without keywords", () => {
     const result = extractDescriptionHighlights(
       NO_KEYWORDS_DESCRIPTION,
       createMockDimensionScores()
@@ -280,7 +273,7 @@ describe("Story 10.4 — AC1: edge cases for description input", () => {
 // ─── AC2: HighlightCategory → DimensionScores mapping ────────────────────────
 
 describe("Story 10.4 — AC2: category-to-dimension mapping", () => {
-  test.skip("price category uses dimensionScores.priceScore × 1.0", () => {
+  test("price category uses dimensionScores.priceScore × 1.0", () => {
     const scores = createMockDimensionScores({ priceScore: 0.75 });
     const result = extractDescriptionHighlights(
       PRICE_ONLY_DESCRIPTION,
@@ -292,7 +285,7 @@ describe("Story 10.4 — AC2: category-to-dimension mapping", () => {
     expect(priceHighlight!.relevanceScore).toBeCloseTo(0.75, 2);
   });
 
-  test.skip("size category uses dimensionScores.sizeScore × 1.0", () => {
+  test("size category uses dimensionScores.sizeScore × 1.0", () => {
     const description = "Piso amplio de 120 m² muy espacioso y luminoso.";
     const scores = createMockDimensionScores({ sizeScore: 0.65 });
     const result = extractDescriptionHighlights(description, scores);
@@ -302,7 +295,7 @@ describe("Story 10.4 — AC2: category-to-dimension mapping", () => {
     expect(sizeHighlight!.relevanceScore).toBeCloseTo(0.65, 2);
   });
 
-  test.skip("bedrooms category uses dimensionScores.bedroomScore × 1.0", () => {
+  test("bedrooms category uses dimensionScores.bedroomScore × 1.0", () => {
     const description = "Cuenta con 3 habitaciones amplias y un dormitorio de servicio.";
     const scores = createMockDimensionScores({ bedroomScore: 0.8 });
     const result = extractDescriptionHighlights(description, scores);
@@ -312,7 +305,7 @@ describe("Story 10.4 — AC2: category-to-dimension mapping", () => {
     expect(bedroomHighlight!.relevanceScore).toBeCloseTo(0.8, 2);
   });
 
-  test.skip("location category uses dimensionScores.locationScore × 1.0", () => {
+  test("location category uses dimensionScores.locationScore × 1.0", () => {
     const description = "Ubicado en zona céntrica cerca del metro y colegios.";
     const scores = createMockDimensionScores({ locationScore: 0.92 });
     const result = extractDescriptionHighlights(description, scores);
@@ -322,7 +315,7 @@ describe("Story 10.4 — AC2: category-to-dimension mapping", () => {
     expect(locationHighlight!.relevanceScore).toBeCloseTo(0.92, 2);
   });
 
-  test.skip("amenity category uses max(sizeScore, bedroomScore) × 0.7", () => {
+  test("amenity category uses max(sizeScore, bedroomScore) × 0.7", () => {
     const description = "Terraza con vistas y garaje privado incluido.";
     const scores = createMockDimensionScores({
       sizeScore: 0.6,
@@ -336,7 +329,7 @@ describe("Story 10.4 — AC2: category-to-dimension mapping", () => {
     expect(amenityHighlight!.relevanceScore).toBeCloseTo(0.56, 2);
   });
 
-  test.skip("general category always receives relevanceScore 0.3", () => {
+  test("general category always receives relevanceScore 0.3", () => {
     // Use a description that produces a general category highlight
     const description =
       "Esta propiedad tiene características únicas que la hacen interesante para diversos perfiles.";
@@ -349,7 +342,7 @@ describe("Story 10.4 — AC2: category-to-dimension mapping", () => {
     }
   });
 
-  test.skip("relevanceScore is clamped to [0, 1]", () => {
+  test("relevanceScore is clamped to [0, 1]", () => {
     // Edge case: extreme dimension scores
     const scores = createMockDimensionScores({
       priceScore: 1.5, // artificially above 1
@@ -368,7 +361,7 @@ describe("Story 10.4 — AC2: category-to-dimension mapping", () => {
 // ─── AC3: TypeScript types exported from @reinder/shared ─────────────────────
 
 describe("Story 10.4 — AC3: type and constant exports", () => {
-  test.skip("HIGHLIGHT_KEYWORDS constant is exported and has all categories", () => {
+  test("HIGHLIGHT_KEYWORDS constant is exported and has all categories", () => {
     expect(HIGHLIGHT_KEYWORDS).toBeDefined();
 
     const expectedCategories: HighlightCategory[] = [
@@ -386,7 +379,7 @@ describe("Story 10.4 — AC3: type and constant exports", () => {
     }
   });
 
-  test.skip("HIGHLIGHT_KEYWORDS.price contains expected Spanish keywords", () => {
+  test("HIGHLIGHT_KEYWORDS.price contains expected Spanish keywords", () => {
     const priceKeywords = HIGHLIGHT_KEYWORDS.price as string[];
     const expectedKeywords = [
       "precio",
@@ -404,7 +397,7 @@ describe("Story 10.4 — AC3: type and constant exports", () => {
     }
   });
 
-  test.skip("HIGHLIGHT_KEYWORDS.size contains expected Spanish keywords", () => {
+  test("HIGHLIGHT_KEYWORDS.size contains expected Spanish keywords", () => {
     const sizeKeywords = HIGHLIGHT_KEYWORDS.size as string[];
     const expectedKeywords = [
       "m²",
@@ -420,7 +413,7 @@ describe("Story 10.4 — AC3: type and constant exports", () => {
     }
   });
 
-  test.skip("HIGHLIGHT_KEYWORDS.bedrooms contains expected Spanish keywords", () => {
+  test("HIGHLIGHT_KEYWORDS.bedrooms contains expected Spanish keywords", () => {
     const bedroomKeywords = HIGHLIGHT_KEYWORDS.bedrooms as string[];
     const expectedKeywords = [
       "habitación",
@@ -436,7 +429,7 @@ describe("Story 10.4 — AC3: type and constant exports", () => {
     }
   });
 
-  test.skip("HIGHLIGHT_KEYWORDS.location contains expected Spanish keywords", () => {
+  test("HIGHLIGHT_KEYWORDS.location contains expected Spanish keywords", () => {
     const locationKeywords = HIGHLIGHT_KEYWORDS.location as string[];
     const expectedKeywords = [
       "zona",
@@ -456,7 +449,7 @@ describe("Story 10.4 — AC3: type and constant exports", () => {
     }
   });
 
-  test.skip("HIGHLIGHT_KEYWORDS.amenity contains expected Spanish keywords", () => {
+  test("HIGHLIGHT_KEYWORDS.amenity contains expected Spanish keywords", () => {
     const amenityKeywords = HIGHLIGHT_KEYWORDS.amenity as string[];
     const expectedKeywords = [
       "garaje",
@@ -478,7 +471,7 @@ describe("Story 10.4 — AC3: type and constant exports", () => {
     }
   });
 
-  test.skip("extractDescriptionHighlights is a function", () => {
+  test("extractDescriptionHighlights is a function", () => {
     expect(typeof extractDescriptionHighlights).toBe("function");
   });
 });
@@ -486,7 +479,7 @@ describe("Story 10.4 — AC3: type and constant exports", () => {
 // ─── AC7: Exhaustive unit test scenarios ──────────────────────────────────────
 
 describe("Story 10.4 — AC7: exhaustive scenarios", () => {
-  test.skip("multiple categories detected — highlights correctly categorized", () => {
+  test("multiple categories detected — highlights correctly categorized", () => {
     const result = extractDescriptionHighlights(
       MULTI_CATEGORY_DESCRIPTION,
       createMockDimensionScores()
@@ -497,7 +490,7 @@ describe("Story 10.4 — AC7: exhaustive scenarios", () => {
     expect(categorySet.size).toBeGreaterThanOrEqual(3);
   });
 
-  test.skip("keywords with tildes matched correctly", () => {
+  test("keywords with tildes matched correctly", () => {
     const result = extractDescriptionHighlights(
       TILDES_DESCRIPTION,
       createMockDimensionScores()
@@ -510,7 +503,7 @@ describe("Story 10.4 — AC7: exhaustive scenarios", () => {
     expect(categories).toContain("location"); // "próximo", "metro", "colegio"
   });
 
-  test.skip("each sentence assigned to single category — no duplicate content", () => {
+  test("each sentence assigned to single category — no duplicate content", () => {
     const result = extractDescriptionHighlights(
       MULTI_CATEGORY_DESCRIPTION,
       createMockDimensionScores()
@@ -523,7 +516,7 @@ describe("Story 10.4 — AC7: exhaustive scenarios", () => {
     expect(uniqueTexts.size).toBe(texts.length);
   });
 
-  test.skip("with dimensionScores — ordered by relevance DESC", () => {
+  test("with dimensionScores — ordered by relevance DESC", () => {
     const scores = createMockDimensionScores({
       priceScore: 0.2,
       sizeScore: 0.4,
@@ -543,7 +536,7 @@ describe("Story 10.4 — AC7: exhaustive scenarios", () => {
     }
   });
 
-  test.skip("without dimensionScores — all relevanceScore 0.5, original order", () => {
+  test("without dimensionScores — all relevanceScore 0.5, original order", () => {
     const result = extractDescriptionHighlights(MULTI_CATEGORY_DESCRIPTION);
 
     for (const highlight of result) {
@@ -551,7 +544,7 @@ describe("Story 10.4 — AC7: exhaustive scenarios", () => {
     }
   });
 
-  test.skip("max 5 highlights when more than 5 candidates", () => {
+  test("max 5 highlights when more than 5 candidates", () => {
     const result = extractDescriptionHighlights(
       MANY_HIGHLIGHTS_DESCRIPTION,
       createMockDimensionScores()
@@ -561,7 +554,7 @@ describe("Story 10.4 — AC7: exhaustive scenarios", () => {
     expect(result.length).toBeGreaterThan(0);
   });
 
-  test.skip("returns the 5 most relevant highlights (highest scores)", () => {
+  test("returns the 5 most relevant highlights (highest scores)", () => {
     const scores = createMockDimensionScores({
       locationScore: 0.99,
       priceScore: 0.01,
@@ -583,7 +576,7 @@ describe("Story 10.4 — AC7: exhaustive scenarios", () => {
 // ─── Performance assertion ───────────────────────────────────────────────────
 
 describe("Story 10.4 — NFR2: performance < 1ms", () => {
-  test.skip("executes in under 1ms for typical description", () => {
+  test("executes in under 1ms for typical description", () => {
     const scores = createMockDimensionScores();
     const start = performance.now();
 

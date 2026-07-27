@@ -46,3 +46,17 @@ export {
   computeListingFitScore,
   selectRecommendedPhotoIndex,
 } from "./compute-listing-fit-score";
+
+// ─── Story 10.4: Description Highlights ───────────────────────────────────────
+
+// Types
+export type {
+  HighlightCategory,
+  DescriptionHighlight,
+} from "./highlight-types";
+
+// Constants
+export { HIGHLIGHT_KEYWORDS, CATEGORY_DIMENSION_MAP } from "./highlight-types";
+
+// Functions
+export { extractDescriptionHighlights } from "./extract-description-highlights";
