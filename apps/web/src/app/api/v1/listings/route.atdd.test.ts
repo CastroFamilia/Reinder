@@ -171,7 +171,7 @@ describe("Story 10.3 — AC6: imageUrls gallery maintains original agency order"
   test.skip(
     "[P0] T10.3-24: imageUrls array is NOT reordered regardless of personalization",
     async () => {
-      // Given: buyer with personalization_enabled=true
+      // Given: buyer with personalization_enabled=true and personalized imageUrl
       // When: GET /api/v1/listings
       // Then: imageUrls contains all photos in the original agency order
       // And: only imageUrl (hero) is personalized — gallery is untouched
@@ -183,11 +183,13 @@ describe("Story 10.3 — AC6: imageUrls gallery maintains original agency order"
       expect(response.status).toBe(200);
       body.data.forEach((listing: any) => {
         if (listing.imageUrls && listing.imageUrls.length > 0) {
-          // imageUrls should remain the full, unmodified array
-          // imageUrl may differ from imageUrls[0] (personalized)
-          // but imageUrls order must be preserved
+          // imageUrls must be the full, unmodified array from the DB
           expect(listing.imageUrls).toBeInstanceOf(Array);
           expect(listing.imageUrls.length).toBeGreaterThan(0);
+          // The personalized imageUrl MUST exist within the original imageUrls
+          expect(listing.imageUrls).toContain(listing.imageUrl);
+          // imageUrls itself must NOT be reordered — order matches the agency's original
+          // (When DB fixtures are set up, compare against known fixture order here)
         }
       });
     }
@@ -198,23 +200,22 @@ describe("Story 10.3 — AC6: imageUrls gallery maintains original agency order"
 
 describe("Story 10.3 — AC5: Performance — fit score lookup uses index", () => {
   test.skip(
-    "[P1] T10.3-25: endpoint response time does not degrade significantly with personalization",
+    "[P1] T10.3-25: endpoint responds successfully with LEFT JOIN (structural performance check)",
     async () => {
       // Given: buyer with 50 fit scores pre-calculated
       // When: GET /api/v1/listings (with LEFT JOIN to listing_fit_scores)
-      // Then: response completes within acceptable time
-      // NOTE: This is a structural test — the actual <5ms assertion
-      //       requires DB profiling. This test verifies the endpoint
-      //       still responds successfully with the JOIN in place.
+      // Then: response completes successfully — verifies JOIN does not break query
+      //
+      // NOTE: Actual <5ms query time (AC5) MUST be verified via EXPLAIN ANALYZE
+      // on the production database, not in a unit test. This test validates
+      // structural correctness (the JOIN works) rather than timing.
       const { GET } = await import("./route");
-      const startTime = Date.now();
       const request = makeAuthenticatedRequest("buyer-with-personalization");
       const response = await GET(request);
-      const elapsed = Date.now() - startTime;
+      const body = await response.json();
 
       expect(response.status).toBe(200);
-      // Generous threshold — actual <5ms is verified via EXPLAIN ANALYZE in prod
-      expect(elapsed).toBeLessThan(5000);
+      expect(body.data).toBeInstanceOf(Array);
     }
   );
 });
