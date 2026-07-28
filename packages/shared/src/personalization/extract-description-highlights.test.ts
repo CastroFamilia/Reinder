@@ -548,9 +548,7 @@ describe("Story 10.4 — AC7: exhaustive scenarios", () => {
       );
     }
 
-    // The lowest returned score should be >= what we'd expect from the highest-scored categories,
-    // meaning low-scored categories (price=0.01) should be dropped if there are enough better ones
-    const lowestReturned = result[result.length - 1].relevanceScore;
+    // Low-scored categories (price=0.01) should be dropped if there are enough better ones
     const priceHighlights = result.filter((h) => h.category === "price");
     // Price (0.01) should not appear if 5+ higher-scored highlights exist
     if (result.length === 5) {

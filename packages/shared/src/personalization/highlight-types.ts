@@ -94,7 +94,7 @@ export const HIGHLIGHT_KEYWORDS: Record<
     "climatización",
     "calefacción",
   ],
-} as const;
+};
 
 // ─── Category → Dimension Mapping ─────────────────────────────────────────────
 
