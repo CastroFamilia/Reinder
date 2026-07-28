@@ -101,11 +101,11 @@
 | **9.4** | Auto-promoción de Variante Ganadora al Alcanzar Significancia | 4 | — | ✅ done — PR #34 |
 | **9.5** | Recomendaciones Proactivas de Experimentos para Listings Underperforming | 2 | — | ✅ done — PR #36 |
 | **9.6** | Generación de Variantes de Título y Descripción con IA (Human-in-the-loop) | 5 | ☝️ Integración OpenAI GPT-4o: API key + prompt engineering + UI de aprobación | ✅ done — PR #35 |
-| **10.1** | Buyer Preference Vector — Generación y Persistencia | 5 | ☝️ Migración SQL: tabla `buyer_preference_vectors` + evaluación legal GDPR | 🔵 backlog |
-| **10.2** | Listing Fit Score — Cálculo de Afinidad Listing × Comprador | 4 | — | 🔵 backlog |
-| **10.3** | Personalización de Foto de Portada en Swipe Feed | 4 | — | 🔵 backlog |
-| **10.4** | Adaptación de Highlights de Descripción por Perfil | 3 | — | 🔵 backlog |
-| **10.5** | Control de Privacidad — Desactivación de Personalización desde Perfil | 2 | ☝️ Revisión legal GDPR del modelo de personalización completada | 🔵 backlog |
+| **10.1** | Buyer Preference Vector — Generación y Persistencia | 5 | ☝️ Migración SQL: tabla `buyer_preference_vectors` + evaluación legal GDPR | ✅ done — PR #42 |
+| **10.2** | Listing Fit Score — Cálculo de Afinidad Listing × Comprador | 4 | — | ✅ done — PR #44 |
+| **10.3** | Personalización de Foto de Portada en Swipe Feed | 4 | — | ✅ done — PR #46 |
+| **10.4** | Adaptación de Highlights de Descripción por Perfil | 3 | — | ✅ done — PR #45 |
+| **10.5** | Control de Privacidad — Desactivación de Personalización desde Perfil | 2 | ☝️ Revisión legal GDPR del modelo de personalización completada | ✅ done — PR #43 |
 
 ---
 
@@ -166,4 +166,4 @@
 
 ---
 
-*Última actualización: 2026-07-13 — Epic 9 completado (6/6 done). Stories 9.4–9.6 implementadas: significancia estadística, recomendaciones proactivas, generación IA con OpenAI. PRs #34, #35, #36 abiertos para merge.*
+*Última actualización: 2026-07-28 — 🏁 Sprint completo. 11/11 epics done, 59/59 stories done. Epic 10 (Personalized Content Layer) completado vía BAD pipeline: PRs #42–#46 merged. Pendiente: sesión de testing humano (53 stories `human_review: pending`).*

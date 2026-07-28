@@ -65,7 +65,7 @@ Arquitectura técnica, épicas y validación de preparación para implementació
 
 ---
 
-### Fase 4 — Implementation 🚧 En Progreso
+### Fase 4 — Implementation ✅
 
 Ciclo de desarrollo: sprint planning → crear story → desarrollar → code review → retrospectiva.
 
@@ -97,8 +97,8 @@ Create Story → [Validate Story] → Dev Story → [QA Automation] → [Code Re
 | **Epic 6** | Descubrimiento Orgánico y SEO | 3/3 done | ✅ **Completado** |
 | **Epic 7** | Administración de Plataforma | 4/4 done | ✅ **Completado** |
 | **Epic 8** | Engagement Intelligence | 7/7 done | ✅ **Completado** |
-| **Epic 9** | Content Optimization & A/B Testing | 6/6 done | ✅ **Completado** — stories 9.1–9.3 merged, 9.4–9.6 PRs #34/#35/#36 |
-| **Epic 10** | Personalized Content Layer | 0/5 | ⬜ Backlog |
+| **Epic 9** | Content Optimization & A/B Testing | 6/6 done | ✅ **Completado** — PRs #25/#31–#36 merged |
+| **Epic 10** | Personalized Content Layer | 5/5 done | ✅ **Completado** — PRs #42–#46, pipeline BAD 2026-07-21/28 |
 | **Epic 11** | Experiencia Web del Comprador | 7/7 done | ✅ **Completado** |
 
 **🔧 Sesión 2026-06-18/19 — Consolidación: Verificación + Epic 5 Re-implementación:**
@@ -119,6 +119,14 @@ Create Story → [Validate Story] → Dev Story → [QA Automation] → [Code Re
 - ✅ Story 9.5: Detector de underperformance (z-score), motor de recomendaciones con caps semanales, API + UI (PR #36)
 - ✅ Story 9.6: Generación de variantes con IA (OpenAI GPT-4o), content safety, rate limiting, UI (PR #35)
 
+**🧠 Sesión 2026-07-21/28 — Epic 10: Personalized Content Layer (5/5) — BAD Pipeline:**
+- ✅ Story 10.1: Buyer Preference Vector — 8 dimensiones, pg_cron batch job, admin API trigger (PR #42)
+- ✅ Story 10.2: Listing Fit Score — 6 dimensiones ponderadas, haversine, invalidación por trigger (PR #44)
+- ✅ Story 10.3: Personalización de Foto de Portada — `selectRecommendedPhotoIndex`, LEFT JOIN en feed API (PR #46)
+- ✅ Story 10.4: Highlights de Descripción — `extractDescriptionHighlights()`, keywords en español (PR #45)
+- ✅ Story 10.5: Control de Privacidad — toggle `personalization_enabled`, GDPR-compliant (PR #43)
+- 🔄 199 tests de aceptación totales, 20+ findings de code review corregidos automáticamente
+
 **🧪 Sesión 2026-06-30 — Registro Web, Redirects y Swipe Mobile View Modes:**
 - ✅ **Flujo de Registro & Callbacks**: Corregida redirección y visualización de pantalla de confirmación de email; mejorada la robustez al usar el cliente Supabase autenticado en API Route Handlers.
 - ✅ **Modos de Vista Swipe Mobile**: Agregada alternancia entre vistas `cover` (foto completa) y `detail` (tarjeta dividida con datos visibles directamente: m², habitaciones, ubicación, descripción) en el feed móvil con un toggle persistente (Zustand/AsyncStorage). Removidos mocks y agregada resiliencia nativa con empty/error states.
@@ -136,7 +144,7 @@ Create Story → [Validate Story] → Dev Story → [QA Automation] → [Code Re
 | 5 | **Listing detail Epic 6 vs 11** — auditoría | 🟡 Medio | P2 | 🟡 Parcial — listing detail modificado |
 | 6 | **Sin concepto de "plan" en schema de agencias** | 🟡 Medio | P3 | ❌ Pendiente |
 
-**Siguiente:** Email transaccional (G4) → Plan schema (G6) → Epic 10
+**Siguiente:** Email transaccional (G4) → Plan schema (G6) → Testing session (53 stories `human_review: pending`)
 
 
 ---
