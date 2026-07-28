@@ -10,7 +10,7 @@
  */
 
 import { describe, expect, test } from "vitest";
-import { computeListingFitScore } from "./compute-listing-fit-score";
+import { computeListingFitScore, selectRecommendedPhotoIndex } from "./compute-listing-fit-score";
 import { FIT_SCORE_WEIGHTS, FIT_SCORE_VERSION } from "./fit-score-types";
 
 // ─── Test Fixtures ────────────────────────────────────────────────────────────
@@ -196,13 +196,15 @@ describe("Story 10.2 — AC2: DimensionScores Structure", () => {
   );
 
   test(
-    "[P1] T10.2-10: recommendedPhotoIndex is null (computed in Story 10.3)",
+    "[P1] T10.2-10: recommendedPhotoIndex is computed (Story 10.3)",
     () => {
       const vector = createMockVector();
       const listing = createMockListing();
       const result = computeListingFitScore(vector, listing);
 
-      expect(result.recommendedPhotoIndex).toBeNull();
+      // Story 10.3: recommendedPhotoIndex is now computed from preferredPhotoIndices
+      // Mock vector has preferredPhotoIndices: [0, 2, 4], listing has images → returns 0
+      expect(result.recommendedPhotoIndex).toBe(0);
     }
   );
 });
@@ -887,4 +889,37 @@ describe("Story 10.2 — AC3: Edge Cases", () => {
       expect(result1.dimensionScores).toEqual(result2.dimensionScores);
     }
   );
+});
+
+// ─── Story 10.3 — AC1/AC8: selectRecommendedPhotoIndex ───────────────────────────
+
+describe("Story 10.3 — AC1/AC8: selectRecommendedPhotoIndex", () => {
+  test("[P0] T10.3-01: selects first valid index from preferredPhotoIndices", () => {
+    // preferredPhotoIndices: [2, 0, 4], images length: 6
+    expect(selectRecommendedPhotoIndex([2, 0, 4], 6)).toBe(2);
+    // preferredPhotoIndices: [5, 3, 1], images length: 4 -> selects 3 (first < 4)
+    expect(selectRecommendedPhotoIndex([5, 3, 1], 4)).toBe(3);
+  });
+
+  test("[P0] T10.3-02: empty preferredPhotoIndices -> fallback 0", () => {
+    expect(selectRecommendedPhotoIndex([], 6)).toBe(0);
+  });
+
+  test("[P0] T10.3-03: listing without images -> null", () => {
+    expect(selectRecommendedPhotoIndex([2, 0, 4], 0)).toBeNull();
+  });
+
+  test("[P0] T10.3-04: all preferred indices out of range -> fallback 0", () => {
+    // preferredPhotoIndices: [5, 6, 7], images length: 3 -> selects 0
+    expect(selectRecommendedPhotoIndex([5, 6, 7], 3)).toBe(0);
+  });
+
+  test("[P0] T10.3-05: listing with 1 single photo -> always 0", () => {
+    // if preferred is [2, 1], and imageCount is 1 -> all out of range -> 0
+    expect(selectRecommendedPhotoIndex([2, 1], 1)).toBe(0);
+    // if empty -> 0
+    expect(selectRecommendedPhotoIndex([], 1)).toBe(0);
+    // if preferred has 0 -> 0
+    expect(selectRecommendedPhotoIndex([0], 1)).toBe(0);
+  });
 });

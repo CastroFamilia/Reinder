@@ -7,13 +7,17 @@
  * Conectado a Supabase vía Drizzle ORM.
  * Acepta query params de filtrado: zone, max_price, min_rooms, min_sqm.
  *
+ * Story 10.3: Personalized cover photo — LEFT JOIN with listing_fit_scores
+ * to resolve recommended_photo_index per buyer.
+ *
  * Formato respuesta: ApiResponse<Listing[]> — wrapper obligatorio (arch.md)
  */
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/supabase/db';
-import { listings } from '@reinder/shared/db/schema';
+import { listings, listingFitScores, userProfiles } from '@reinder/shared/db/schema';
 import { eq, gte, lte, ilike, or, and, desc, type SQL } from 'drizzle-orm';
 import type { Listing, ApiResponse } from '@reinder/shared';
+import { authenticateApiRequest } from '@/lib/supabase/api-auth';
 
 /**
  * GET /api/v1/listings
@@ -22,6 +26,9 @@ import type { Listing, ApiResponse } from '@reinder/shared';
  *   ?max_price=400000            → filtra por price
  *   ?min_rooms=2                 → filtra por bedrooms
  *   ?min_sqm=60                  → filtra por sizeSqm
+ *
+ * Story 10.3: If buyer is authenticated and personalization_enabled=true,
+ * resolves imageUrl from listing_fit_scores.recommended_photo_index.
  */
 export async function GET(request: Request): Promise<NextResponse<ApiResponse<Listing[]>>> {
   try {
@@ -30,6 +37,24 @@ export async function GET(request: Request): Promise<NextResponse<ApiResponse<Li
     const maxPrice = searchParams.get('max_price') ? Number(searchParams.get('max_price')) : null;
     const minRooms = searchParams.get('min_rooms') ? Number(searchParams.get('min_rooms')) : null;
     const minSqm = searchParams.get('min_sqm') ? Number(searchParams.get('min_sqm')) : null;
+
+    // ─── Story 10.3: Authenticate buyer (optional — unauthenticated = no personalization)
+    let userId: string | null = null;
+    let personalizationEnabled = false;
+
+    const authResult = await authenticateApiRequest(request);
+    if (authResult.user) {
+      userId = authResult.user.id;
+
+      // Check personalization_enabled in user_profiles
+      const [profile] = await db
+        .select({ personalizationEnabled: userProfiles.personalizationEnabled })
+        .from(userProfiles)
+        .where(eq(userProfiles.id, userId))
+        .limit(1);
+
+      personalizationEnabled = profile?.personalizationEnabled ?? false;
+    }
 
     // ─── Build WHERE conditions ───────────────────────────────────────────────
     const conditions: SQL[] = [eq(listings.status, 'active')];
@@ -63,31 +88,66 @@ export async function GET(request: Request): Promise<NextResponse<ApiResponse<Li
     }
 
     // ─── Execute query ────────────────────────────────────────────────────────
-    const rows = await db
-      .select()
-      .from(listings)
-      .where(and(...conditions))
-      .orderBy(desc(listings.createdAt))
-      .limit(50);
+    // Story 10.3: LEFT JOIN with listing_fit_scores when personalization is enabled
+    let rows: Array<{
+      listing: typeof listings.$inferSelect;
+      recommendedPhotoIndex: number | null;
+    }>;
+
+    if (personalizationEnabled && userId) {
+      rows = await db
+        .select({
+          listing: listings,
+          recommendedPhotoIndex: listingFitScores.recommendedPhotoIndex,
+        })
+        .from(listings)
+        .leftJoin(
+          listingFitScores,
+          and(
+            eq(listingFitScores.listingId, listings.id),
+            eq(listingFitScores.buyerId, userId),
+          ),
+        )
+        .where(and(...conditions))
+        .orderBy(desc(listings.createdAt))
+        .limit(50);
+    } else {
+      // No personalization — simple query, no JOIN needed
+      const simpleRows = await db
+        .select()
+        .from(listings)
+        .where(and(...conditions))
+        .orderBy(desc(listings.createdAt))
+        .limit(50);
+
+      rows = simpleRows.map((row) => ({
+        listing: row,
+        recommendedPhotoIndex: null,
+      }));
+    }
 
     // ─── Map DB rows → Listing type ──────────────────────────────────────────
     const data: Listing[] = rows.map((row) => {
-      const images = (row.images as string[] | null) ?? [];
-      const firstImage = images.length > 0 ? images[0] : '';
+      const images = (row.listing.images as string[] | null) ?? [];
+      const photoIndex = personalizationEnabled
+        ? (row.recommendedPhotoIndex ?? 0)
+        : 0;
+      const safeIndex = photoIndex >= 0 && photoIndex < images.length ? photoIndex : 0;
+      const firstImage = images.length > 0 ? images[safeIndex] : '';
 
       return {
-        id: row.id,
-        title: row.title,
-        price: row.price ? Number(row.price) : 0,
-        location: [row.address, row.city].filter(Boolean).join(', ') || '',
-        rooms: row.bedrooms ?? 0,
-        squareMeters: row.sizeSqm ? Number(row.sizeSqm) : 0,
+        id: row.listing.id,
+        title: row.listing.title,
+        price: row.listing.price ? Number(row.listing.price) : 0,
+        location: [row.listing.address, row.listing.city].filter(Boolean).join(', ') || '',
+        rooms: row.listing.bedrooms ?? 0,
+        squareMeters: row.listing.sizeSqm ? Number(row.listing.sizeSqm) : 0,
         imageUrl: firstImage,
         imageUrls: images.length > 0 ? images : undefined,
-        status: row.status as Listing['status'],
-        agencyId: row.agencyId,
-        createdAt: row.createdAt.toISOString(),
-        description: row.description ?? undefined,
+        status: row.listing.status as Listing['status'],
+        agencyId: row.listing.agencyId,
+        createdAt: row.listing.createdAt.toISOString(),
+        description: row.listing.description ?? undefined,
       };
     });
 

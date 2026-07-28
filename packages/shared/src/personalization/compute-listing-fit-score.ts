@@ -5,6 +5,7 @@
  * preference vector and a listing's characteristics.
  *
  * Story 10.2 — AC3: Calculation logic for all 6 dimensions.
+ * Story 10.3 — AC1/AC8: Adds selectRecommendedPhotoIndex() for personalized cover photo.
  *
  * This function has NO I/O, NO side effects, NO DB access.
  * It receives (vector, listing) and returns a ListingFitScore.
@@ -215,6 +216,33 @@ function computeEngagementDepthScore(
   return Math.min(1.0, score);
 }
 
+// ─── Recommended photo index selection ────────────────────────────────────────
+
+/**
+ * Selects the best cover photo index for this buyer based on their
+ * preferred photo indices from engagement data.
+ *
+ * Algorithm: Pick the first preferredPhotoIndex that exists in the
+ * listing's image array. Falls back to 0 (agency default).
+ *
+ * @param preferredIndices - Buyer's preferred photo indices, ordered by engagement time
+ * @param imageCount - Number of images in the listing
+ * @returns Photo index (0-based), or null if listing has no images.
+ */
+export function selectRecommendedPhotoIndex(
+  preferredIndices: number[],
+  imageCount: number,
+): number | null {
+  if (imageCount === 0) return null;
+  if (preferredIndices.length === 0) return 0;
+
+  for (const idx of preferredIndices) {
+    if (idx >= 0 && idx < imageCount) return idx;
+  }
+
+  return 0; // All preferred indices out of range
+}
+
 // ─── Main computation function ───────────────────────────────────────────────
 
 /**
@@ -224,7 +252,7 @@ function computeEngagementDepthScore(
  *
  * @param vector - The buyer's preference vector (from Story 10.1)
  * @param listing - The listing data to score
- * @returns ListingFitScore with overall score, dimension breakdown, and null recommendedPhotoIndex
+ * @returns ListingFitScore with overall score, dimension breakdown, and computed recommendedPhotoIndex
  */
 export function computeListingFitScore(
   vector: BuyerPreferenceVector,
@@ -287,6 +315,9 @@ export function computeListingFitScore(
   return {
     overallScore,
     dimensionScores,
-    recommendedPhotoIndex: null, // Computed in Story 10.3
+    recommendedPhotoIndex: selectRecommendedPhotoIndex(
+      vector.photoEngagement.preferredPhotoIndices,
+      listing.images?.length ?? 0,
+    ),
   };
 }

@@ -42,4 +42,7 @@ export type {
 export { FIT_SCORE_WEIGHTS, FIT_SCORE_VERSION } from "./fit-score-types";
 
 // Functions
-export { computeListingFitScore } from "./compute-listing-fit-score";
+export {
+  computeListingFitScore,
+  selectRecommendedPhotoIndex,
+} from "./compute-listing-fit-score";
