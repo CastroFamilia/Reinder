@@ -132,7 +132,7 @@ export async function GET(request: Request): Promise<NextResponse<ApiResponse<Li
       const photoIndex = personalizationEnabled
         ? (row.recommendedPhotoIndex ?? 0)
         : 0;
-      const safeIndex = photoIndex < images.length ? photoIndex : 0;
+      const safeIndex = photoIndex >= 0 && photoIndex < images.length ? photoIndex : 0;
       const firstImage = images.length > 0 ? images[safeIndex] : '';
 
       return {

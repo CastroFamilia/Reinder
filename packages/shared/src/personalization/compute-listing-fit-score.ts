@@ -237,7 +237,7 @@ export function selectRecommendedPhotoIndex(
   if (preferredIndices.length === 0) return 0;
 
   for (const idx of preferredIndices) {
-    if (idx < imageCount) return idx;
+    if (idx >= 0 && idx < imageCount) return idx;
   }
 
   return 0; // All preferred indices out of range
