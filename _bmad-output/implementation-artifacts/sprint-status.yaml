@@ -36,7 +36,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: 2026-03-18T12:42:21+01:00
-last_updated: 2026-07-23T14:07:00+02:00
+last_updated: 2026-07-28T17:20:00+02:00
 project: Reinder
 project_key: NOKEY
 tracking_system: file-system
@@ -127,11 +127,11 @@ development_status:
   epic-9-retrospective: optional
 
   # ─── Epic 10: Personalized Content Layer ──────────────────────────────────
-  epic-10: in-progress
+  epic-10: done
   10-1-buyer-preference-vector-generacion-persistencia: done  # PR #42 — code review passed 2026-07-21
   10-2-listing-fit-score-calculo-afinidad: done  # PR #44 — code review passed 2026-07-23
-  10-3-personalizacion-foto-portada-swipe-feed: backlog
-  10-4-adaptacion-highlights-descripcion-perfil: backlog
+  10-3-personalizacion-foto-portada-swipe-feed: done  # PR #46 — code review passed 2026-07-28
+  10-4-adaptacion-highlights-descripcion-perfil: done  # PR #45 — code review passed 2026-07-28
   10-5-control-privacidad-desactivacion-personalizacion: done  # PR #43 — code review passed 2026-07-23
   epic-10-retrospective: optional
 
@@ -220,9 +220,11 @@ human_review_tracking:
   9-5-recomendaciones-proactivas-experimentos-underperforming: pending
   9-6-generacion-variantes-titulo-descripcion-ia: pending
 
-  # ─── Epic 10 (only done stories) ────────────────────────────────────────────
+  # ─── Epic 10 ────────────────────────────────────────────────────────────────
   10-1-buyer-preference-vector-generacion-persistencia: pending  # PR #42, code review passed
   10-2-listing-fit-score-calculo-afinidad: pending  # PR #44, code review passed 2026-07-23
+  10-3-personalizacion-foto-portada-swipe-feed: pending  # PR #46, code review passed 2026-07-28
+  10-4-adaptacion-highlights-descripcion-perfil: pending  # PR #45, code review passed 2026-07-28
   10-5-control-privacidad-desactivacion-personalizacion: pending  # PR #43, code review passed 2026-07-23
 
   # ─── Epic 11 ────────────────────────────────────────────────────────────────
