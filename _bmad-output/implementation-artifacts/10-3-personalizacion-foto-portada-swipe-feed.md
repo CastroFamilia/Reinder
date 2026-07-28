@@ -1,6 +1,6 @@
 # Story 10.3: Personalización de Foto de Portada en Swipe Feed
 
-Status: ready-for-dev
+Status: done
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -109,30 +109,30 @@ para que vea primero el aspecto de la propiedad que más me interesa sin tener q
 
 ## Tasks / Subtasks
 
-- [ ] Task 1: Actualizar lógica de `computeListingFitScore()` para calcular `recommendedPhotoIndex` (AC: #1)
-  - [ ] 1.1 Modificar `packages/shared/src/personalization/compute-listing-fit-score.ts`: implementar selección de `recommendedPhotoIndex` basada en `preferredPhotoIndices` del vector
-  - [ ] 1.2 Añadir función helper `selectRecommendedPhotoIndex(preferredIndices: number[], imageCount: number): number | null`
-  - [ ] 1.3 Actualizar tests `compute-listing-fit-score.test.ts` con todos los escenarios de AC1 y AC8
+- [x] Task 1: Actualizar lógica de `computeListingFitScore()` para calcular `recommendedPhotoIndex` (AC: #1)
+  - [x] 1.1 Modificar `packages/shared/src/personalization/compute-listing-fit-score.ts`: implementar selección de `recommendedPhotoIndex` basada en `preferredPhotoIndices` del vector
+  - [x] 1.2 Añadir función helper `selectRecommendedPhotoIndex(preferredIndices: number[], imageCount: number): number | null`
+  - [x] 1.3 Actualizar tests `compute-listing-fit-score.test.ts` con todos los escenarios de AC1 y AC8
 
-- [ ] Task 2: Actualizar batch job para persistir `recommended_photo_index` (AC: #2)
-  - [ ] 2.1 Verificar que el endpoint `POST /api/v1/admin/fit-scores/compute` ya persiste `recommendedPhotoIndex` en el UPSERT — si no, actualizar el UPSERT query
-  - [ ] 2.2 Verificar que la migración SQL del trigger `AFTER UPDATE` en `listings` detecta cambios en el campo `images` (AC7) — si no, actualizar el trigger
+- [x] Task 2: Actualizar batch job para persistir `recommended_photo_index` (AC: #2)
+  - [x] 2.1 Verificar que el endpoint `POST /api/v1/admin/fit-scores/compute` ya persiste `recommendedPhotoIndex` en el UPSERT — si no, actualizar el UPSERT query
+  - [x] 2.2 Verificar que la migración SQL del trigger `AFTER UPDATE` en `listings` detecta cambios en el campo `images` (AC7) — si no, actualizar el trigger
 
-- [ ] Task 3: Personalizar `imageUrl` en el endpoint GET `/api/v1/listings` (AC: #3, #5)
-  - [ ] 3.1 Modificar `apps/web/src/app/api/v1/listings/route.ts`:
+- [x] Task 3: Personalizar `imageUrl` en el endpoint GET `/api/v1/listings` (AC: #3, #5)
+  - [x] 3.1 Modificar `apps/web/src/app/api/v1/listings/route.ts`:
     - Extraer `buyer_id` del JWT (`auth.uid()`) via Supabase server client
     - Consultar `user_profiles.personalization_enabled` para el buyer
     - Si `personalization_enabled = true`: hacer LEFT JOIN con `listing_fit_scores` para obtener `recommended_photo_index` por listing
     - Si `personalization_enabled = false` o no hay fit scores: usar `images[0]`
-  - [ ] 3.2 Mapear `images[recommended_photo_index]` a `imageUrl` en la respuesta, con fallback `images[0]` si el índice es inválido
-  - [ ] 3.3 Tests del endpoint: buyer personalizado, buyer sin personalización, buyer nuevo sin scores, índice fuera de rango
+  - [x] 3.2 Mapear `images[recommended_photo_index]` a `imageUrl` en la respuesta, con fallback `images[0]` si el índice es inválido
+  - [x] 3.3 Tests del endpoint: buyer personalizado, buyer sin personalización, buyer nuevo sin scores, índice fuera de rango
 
-- [ ] Task 4: Actualizar trigger de invalidación para incluir cambios en `images` (AC: #7)
-  - [ ] 4.1 Crear migración `supabase/migrations/YYYYMMDD000001_listing_fit_scores_images_trigger.sql` — la migración existente (`20260722000002_listing_fit_scores.sql` L91-97) monitorea `price`, `size_sqm`, `bedrooms`, `city`, `latitude`, `longitude` pero NO `images`. Añadir `OR OLD.images IS DISTINCT FROM NEW.images` al trigger `invalidate_listing_fit_scores()` usando `CREATE OR REPLACE FUNCTION`
+- [x] Task 4: Actualizar trigger de invalidación para incluir cambios en `images` (AC: #7)
+  - [x] 4.1 Crear migración `supabase/migrations/YYYYMMDD000001_listing_fit_scores_images_trigger.sql` — la migración existente (`20260722000002_listing_fit_scores.sql` L91-97) monitorea `price`, `size_sqm`, `bedrooms`, `city`, `latitude`, `longitude` pero NO `images`. Añadir `OR OLD.images IS DISTINCT FROM NEW.images` al trigger `invalidate_listing_fit_scores()` usando `CREATE OR REPLACE FUNCTION`
 
-- [ ] Task 5: Verificación de rendimiento (AC: #5)
-  - [ ] 5.1 Verificar que la consulta LEFT JOIN con `listing_fit_scores` usa el índice `idx_lfs_buyer_overall` y se resuelve en <5ms
-  - [ ] 5.2 Si es necesario, añadir índice adicional `(buyer_id, listing_id)` — pero el UNIQUE constraint `listing_fit_scores_buyer_listing_unique` ya cubre este caso
+- [x] Task 5: Verificación de rendimiento (AC: #5)
+  - [x] 5.1 Verificar que la consulta LEFT JOIN con `listing_fit_scores` usa el índice `idx_lfs_buyer_overall` y se resuelve en <5ms
+  - [x] 5.2 Si es necesario, añadir índice adicional `(buyer_id, listing_id)` — pero el UNIQUE constraint `listing_fit_scores_buyer_listing_unique` ya cubre este caso
 
 ## Dev Notes
 
